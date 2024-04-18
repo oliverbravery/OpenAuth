@@ -35,6 +35,7 @@ class Account(BaseModel):
     Args:
         user_id (str): The unique attribute used to identify and differentiate users.
         username (str): The username of the user.
+        display_name (str): The display name of the user.
         email (str): The email of the user.
         hashed_password (str): The hashed password of the user.
         hashed_totp_pin (Optional[str]): The hashed TOTP pin of the user.
@@ -42,6 +43,7 @@ class Account(BaseModel):
     """
     user_id: str
     username: str
+    display_name: str
     email: str
     hashed_password: str
     hashed_totp_pin: Optional[str] = None
