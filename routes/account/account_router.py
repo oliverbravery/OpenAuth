@@ -4,6 +4,7 @@ from routes.account.models import NewAccountForm
 from models import Account
 from main import db_manager
 from routes.account.account_utils import *
+from routes.models import Response, ResponseStatus
 
 router = APIRouter(
     prefix="/account",
@@ -30,5 +31,7 @@ async def register_account(form_data: NewAccountForm = Depends()):
         return {"status": "Error", "message": "User already exists."}
     response: int = db_manager.accounts_interface.add_account(account=new_account)
     if response == 0:
-        return {"status": "Success", "message": "Account registered successfully."}
-    return {"status": "Error", "message": "Account registration failed."}
+        return Response(status=ResponseStatus.SUCCESS, 
+                        message="Account registered successfully.").model_dump()
+    return Response(status=ResponseStatus.ERROR,
+        message="Account registration failed.").model_dump()
