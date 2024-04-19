@@ -3,14 +3,14 @@ from pymongo.database import Database
 from database.models import DBCollection
 from models import Account
 
-class db_accounts_interface(DBGenericInterface):
+class AccountsInterface(DBGenericInterface):
     """
     Class for interacting with the accounts collection in the database.
     Derived from the DBGenericInterface class.
     """
     def __init__(self, database: Database) -> None:
         """
-        Initializes the db_accounts_interface object, creating the accounts collection if it does not already exist.
+        Initializes the AccountsInterface object, creating the accounts collection if it does not already exist.
         """
         super().__init__(database=database, db_collection=DBCollection.ACCOUNTS.value)
         
