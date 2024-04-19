@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
-class RegisteredApplication(BaseModel):
+class Application(BaseModel):
     """
     Represents a registered application in the auth service. 
     An application is a client (app) that can request access to a user's account and store application-specific data in the user's profile.
