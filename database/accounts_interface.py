@@ -37,3 +37,15 @@ class AccountsInterface(DBGenericInterface):
             int: 0 if the account was added successfully, -1 otherwise.
         """
         return self.add_generic(object=account.model_dump())
+    
+    def update_account(self, account: Account) -> int:
+        """
+        Updates an account in the database.
+
+        Args:
+            account (Account): The account object to update.
+
+        Returns:
+            int: 0 if the account was updated successfully, -1 otherwise.
+        """
+        return self.update_generic(search_params={"user_id": account.user_id}, update_params={"$set": account.model_dump()})
