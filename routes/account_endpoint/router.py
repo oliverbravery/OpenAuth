@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from main import db_manager
 
 router = APIRouter(
     prefix="/account",
