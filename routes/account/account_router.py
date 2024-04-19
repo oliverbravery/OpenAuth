@@ -29,6 +29,6 @@ async def register_account(form_data: NewAccountForm = Depends()):
     if check_user_exists(username=new_account.username):
         return {"status": "Error", "message": "User already exists."}
     response: int = db_manager.accounts_interface.add_account(account=new_account)
-    if response == 1:
+    if response == 0:
         return {"status": "Success", "message": "Account registered successfully."}
     return {"status": "Error", "message": "Account registration failed."}
