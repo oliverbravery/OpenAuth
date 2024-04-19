@@ -1,23 +1,21 @@
 version: '3'
 services:
-  app:
+  auth_service_api:
     build: .
     ports:
       - "8000:8000"
-    environment:
-      DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
-      DB_NAME: ${DB_NAME}
+    env_file:
+      - .env
     depends_on:
       - mongodb
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    command: uvicorn main:app --host ${AUTH_SERVICE_HOST} --port ${AUTH_SERVICE_PORT}
 
   mongodb:
     image: mongo
     volumes:
       - mongodb_data:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    env_file:
+      - .env
 
 volumes:
   mongodb_data:
