@@ -1,0 +1,23 @@
+version: '3'
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
+      DB_NAME: ${DB_NAME}
+    depends_on:
+      - mongodb
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+
+  mongodb:
+    image: mongo
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+
+volumes:
+  mongodb_data:
