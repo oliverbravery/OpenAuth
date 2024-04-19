@@ -36,7 +36,7 @@ class AccountsInterface(DBGenericInterface):
         Returns:
             int: 0 if the account was added successfully, -1 otherwise.
         """
-        return self.add_generic(object=account.model_dump())
+        return self.add_generic(object=account)
     
     def update_account(self, account: Account) -> int:
         """
