@@ -17,6 +17,10 @@ pip install -r requirements.txt
 ```bash
 cp .env.template .env
 ```
+5. To run the API server, use the following command:
+```bash
+uvicorn app.main:app
+```
 
 ## Docker Setup
 For simple containerization, you can use the provided `Dockerfile` and `docker-compose.yml` files to build the image and run the container. 
@@ -24,7 +28,13 @@ For simple containerization, you can use the provided `Dockerfile` and `docker-c
 ```bash
 docker --version
 ```
-2. Use the following command to create, start and attach to the container:
+2. Use the following commands to build the image and run the container:
 ```bash
-docker-compose up
+docker-compose down
+docker-compose up -d
+```
+If you want to re-build the authentication service but not the database (useful for development):
+```bash
+docker-compose down
+docker-compose up -d --build auth_service_api
 ```
