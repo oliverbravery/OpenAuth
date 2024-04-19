@@ -19,15 +19,3 @@ class Response(BaseModel):
     """
     status: ResponseStatus
     message: str
-    
-    def dict(self, *args, **kwargs) -> dict:
-        """
-        Returns the dictionary representation of the Response object.
-
-        Returns:
-            dict: Dictionary representation of the Response object.
-        """
-        return {
-            "status": self.status.value,
-            "message": self.message
-        }
