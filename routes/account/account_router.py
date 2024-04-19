@@ -3,7 +3,7 @@ from fastapi import Depends
 from routes.account.models import NewAccountForm
 from models import Account
 from main import db_manager
-from account_utils import *
+from routes.account.account_utils import *
 
 router = APIRouter(
     prefix="/account",
