@@ -20,11 +20,10 @@ class DBGenericInterface:
         """
         self.db = database
         self.db_collection = db_collection
-        if self.db_collection is not None:
-            try:
-                self.db.validate_collection(self.db_collection)
-            except pymongo.errors.OperationFailure:
-                self.create_collection(collection = self.db_collection)
+        try:
+            self.db.validate_collection(self.db_collection)
+        except pymongo.errors.OperationFailure:
+            self.create_collection()
                 
     def create_collection(self) -> int:
         """

@@ -1,0 +1,21 @@
+version: '3'
+services:
+  auth_service_api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+    command: uvicorn main:app --host ${AUTH_SERVICE_HOST} --port ${AUTH_SERVICE_PORT}
+
+  mongodb:
+    image: mongo
+    volumes:
+      - mongodb_data:/data/db
+    env_file:
+      - .env
+
+volumes:
+  mongodb_data:
