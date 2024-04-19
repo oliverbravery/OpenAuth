@@ -30,6 +30,6 @@ async def register_account(form_data: NewAccountForm = Depends()):
                             detail="User already exists.")
     response: int = db_manager.accounts_interface.add_account(account=new_account)
     if response == 0:
-        return 
+        return "Account registered successfully."
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                         detail="Account registration failed.")
