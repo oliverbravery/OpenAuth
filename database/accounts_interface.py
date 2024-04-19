@@ -14,17 +14,17 @@ class AccountsInterface(DBGenericInterface):
         """
         super().__init__(database=database, db_collection=DBCollection.ACCOUNTS.value)
         
-    def get_account(self, user_id: str) -> Account | None:
+    def get_account(self, username: str) -> Account | None:
         """
-        Gets an account from the database based on the user_id.
+        Gets an account from the database based on the username.
 
         Args:
-            user_id (str): The user_id of the account to get.
+            username (str): The username of the account to get.
 
         Returns:
             Account | None: The account if it exists, None otherwise.
         """
-        return self.get_generic(search_params={"user_id": user_id}, object_class=Account)
+        return self.get_generic(search_params={"username": username}, object_class=Account)
     
     def add_account(self, account: Account) -> int:
         """
@@ -48,4 +48,4 @@ class AccountsInterface(DBGenericInterface):
         Returns:
             int: 0 if the account was updated successfully, -1 otherwise.
         """
-        return self.update_generic(search_params={"user_id": account.user_id}, update_params={"$set": account.model_dump()})
+        return self.update_generic(search_params={"username": account.username}, update_params={"$set": account.model_dump()})
