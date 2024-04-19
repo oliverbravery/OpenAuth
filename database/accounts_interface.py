@@ -25,3 +25,15 @@ class AccountsInterface(DBGenericInterface):
             Account | None: The account if it exists, None otherwise.
         """
         return self.get_generic(search_params={"user_id": user_id}, object_class=Account)
+    
+    def add_account(self, account: Account) -> int:
+        """
+        Adds an account to the database.
+
+        Args:
+            account (Account): The account object to add.
+
+        Returns:
+            int: 0 if the account was added successfully, -1 otherwise.
+        """
+        return self.add_generic(object=account.model_dump())
