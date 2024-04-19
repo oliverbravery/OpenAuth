@@ -22,19 +22,45 @@ cp .env.template .env
 uvicorn app.main:app
 ```
 
-## Docker Setup
+## Docker Setup and usage
 For simple containerization, you can use the provided `Dockerfile` and `docker-compose.yml` files to build the image and run the container. 
-1. Ensure docker is installed and running on your machine:
+
+*Ensure docker is installed and running on your machine before continuing:*
 ```bash
 docker --version
 ```
-2. Use the following commands to build the image and run the container:
+
+Once everything is up and running you can check that the service is working by sending a GET request to the `/` endpoint:
+```bash
+# replace the host and port with the correct values from the .env file
+curl http://${AUTH_SERVICE_HOST}:${AUTH_SERVICE_PORT}/
+```
+
+### Build and run the container
+Use the following commands to build the image and run the container:
 ```bash
 docker-compose down
 docker-compose up -d
 ```
+
+### Re-build the auth service api and run the container
 If you want to re-build the authentication service but not the database (useful for development):
 ```bash
 docker-compose down
+docker-compose up -d --build auth_service_api
+```
+
+### Clear the database
+To clear the database:
+```bash
+docker-compose down
+docker volume rm auth_service_mongodb_data
+```
+
+### Fully clear the database, rebuild the container and run it
+To fully clear the database, rebuild the container and run it:
+```bash
+docker-compose down
+docker volume rm auth_service_mongodb_data
 docker-compose up -d --build auth_service_api
 ```
