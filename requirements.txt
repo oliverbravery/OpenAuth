@@ -1,4 +1,4 @@
 fastapi
 uvicorn[standard]
-redis[hiredis]
 pymongo
+python-dotenv
