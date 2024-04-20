@@ -2,11 +2,13 @@ from main import db_manager
 from database.models import Account, Authorization
 from routes.authentication.password_manager import PasswordManager
 from routes.authentication.token_manager import TokenManager
+from routes.authentication.models import TokenType, TokenResponse
 from secrets import token_urlsafe
 import os
 from cryptography.fernet import Fernet
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 import hashlib
+import bcrypt
 
 fernet: Fernet = Fernet(os.getenv("AUTH_CODE_SECRET"))
 
@@ -95,20 +97,20 @@ def decrypt_authorization_code(auth_code: str) -> tuple[str, str]:
     combined_code_str: str = combined_code.decode()
     return combined_code_str.split(":")[0], combined_code_str[len(combined_code_str.split(":")[0])+1:]
 
-def verify_authorization_code(auth_code: str) -> bool:
+def verify_authorization_code(auth_code: str, username: str) -> bool:
     """
     Verify an authorization code.
 
     Args:
-        auth_code (str): The encrypted authorization code.
+        auth_code (str): The authorization code.
+        username: (str): The username of the user to be authorized.
         
     Returns:
         bool: True if the authorization code is valid, False otherwise.
     """
-    username, authorization_code = decrypt_authorization_code(auth_code)
     authorization: Authorization = db_manager.authorization_interface.get_authorization(username=username)
     if not authorization: return False
-    return authorization.auth_code == authorization_code
+    return authorization.auth_code == auth_code
 
 def verify_code_challenge(code_challenge: str, code_verifier: str) -> bool:
     """
@@ -125,10 +127,46 @@ def verify_code_challenge(code_challenge: str, code_verifier: str) -> bool:
     return code_challenge == generated_code_challenge
 
 
-def get_access_token_with_authorization_code(auth_code: str, code_verifier: str) -> int:
-    if not verify_authorization_code(auth_code=auth_code): return -1
-    if not verify_code_challenge(code_challenge=auth_code, code_verifier=code_verifier): return -1
-    # TODO: Generate access token and refresh token
+def get_tokens_with_authorization_code(auth_code: str, code_verifier: str, client_id: str) -> TokenResponse:
+    """
+    Get access and refresh tokens and store the refresh token in the database. 
+    Also, remove the authorization code and code challenge from the database after use.
 
-def get_access_token_with_refresh_token():
+    Args:
+        auth_code (str): Encrypted authenticaion code to be used to get the tokens.
+        code_verifier (str): Code verifier used to verify the code challenge.
+        client_id (str): The client id of the application requesting the tokens.
+
+    Returns:
+        TokenResponse: OAuth2.0 compliant token response.
+    """
+    username, decoded_authorization_code = decrypt_authorization_code(auth_code=auth_code)
+    if not verify_authorization_code(auth_code=decoded_authorization_code, username=username): return None
+    authorization: Authorization = db_manager.authorization_interface.get_authorization(username=username)
+    if not authorization or not authorization.code_challenge: return None
+    if not verify_code_challenge(code_challenge=authorization.code_challenge, code_verifier=code_verifier): return None
+    authorization.code_challenge = None
+    authorization.auth_code = None
+    user_account: Account = db_manager.accounts_interface.get_account(username=username)
+    if not user_account: return None
+    access_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.ACCESS,
+                                                                  account=user_account,
+                                                                  client_id=client_id)
+    refresh_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.REFRESH,
+                                                                   account=user_account,
+                                                                   client_id=client_id)
+    if not access_token or not refresh_token: return None
+    authorization.hashed_refresh_token = hash_string(plaintext=refresh_token)
+    response: int = db_manager.authorization_interface.update_authorization(authorization)
+    if response == -1: return None
+    access_token_expires_in_seconds: int = token_manager.get_token_expire_time(token_type=TokenType.ACCESS)*60
+    token_response: TokenResponse = TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=access_token_expires_in_seconds
+    )
+    return token_response
+
+def get_tokens_with_refresh_token():
+    # TODO: Ensuure only client (x) can request and gain access to certain profiles (using client_secret)
     pass
