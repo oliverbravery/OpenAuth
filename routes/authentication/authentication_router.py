@@ -8,12 +8,12 @@ router = APIRouter(
     tags=["Authentication"]
 )
 
-@router.post("/authorize", status_code=status.HTTP_200_OK)
+@router.get("/authorize", status_code=status.HTTP_200_OK, response_model=AuthorizeResponse)
 async def register_account(form_data: AuthorizationForm = Depends()):
     if validate_user_credentials(username=form_data.username, password=form_data.password) == -1:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid credentials.")
-    authorization_code: str = generate_authorization_code()
+    authorization_code: str = generate_authorization_code(username=form_data.username)
     csrf_state: str = form_data.state
     code_challenge: str = form_data.code_challenge
     user_authorization: Authorization = Authorization(
