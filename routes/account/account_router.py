@@ -1,6 +1,6 @@
 from fastapi import Depends, APIRouter, status, HTTPException
 from routes.account.models import UserRegistrationForm
-from models import Account
+from database.models import Account
 from main import db_manager
 from routes.account.account_utils import *
 

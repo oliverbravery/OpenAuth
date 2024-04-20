@@ -1,7 +1,7 @@
 from database.db_generic_interface import DBGenericInterface
 from pymongo.database import Database
 from database.models import DBCollection
-from models import Account
+from database.models import Account
 
 class AccountsInterface(DBGenericInterface):
     """
