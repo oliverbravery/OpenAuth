@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from pymongo.database import Database
 from database.accounts_interface import AccountsInterface
 from database.authorization_interface import AuthorizationInterface
+from database.clients_interface import ClientsInterface
 
 class DBManager:
     """
@@ -28,3 +29,4 @@ class DBManager:
         # self.users_interface: UsersDBInterface = UsersDBInterface(database=self.__db)
         self.accounts_interface: AccountsInterface = AccountsInterface(database=self.__db) 
         self.authorization_interface: AuthorizationInterface = AuthorizationInterface(database=self.__db)
+        self.clients_interface: ClientsInterface = ClientsInterface(database=self.__db)
