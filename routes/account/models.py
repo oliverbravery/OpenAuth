@@ -1,6 +1,6 @@
 from fastapi.param_functions import Form
 
-class NewAccountForm:
+class UserRegistrationForm:
     """
     A class used to represent a new account form. 
     It is used to parse the data from the request body when registering a new account.

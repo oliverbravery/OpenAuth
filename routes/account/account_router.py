@@ -1,5 +1,5 @@
 from fastapi import Depends, APIRouter, status, HTTPException
-from routes.account.models import NewAccountForm
+from routes.account.models import UserRegistrationForm
 from models import Account
 from main import db_manager
 from routes.account.account_utils import *
@@ -10,12 +10,12 @@ router = APIRouter(
 )
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register_account(form_data: NewAccountForm = Depends()):
+async def register_account(form_data: UserRegistrationForm = Depends()):
     """
     Register a new account.
 
     Args:
-        form_data (NewAccountForm): The form data for the new account.
+        form_data (UserRegistrationForm): The form data for the new account.
     """
     new_account: Account = Account(
         username=form_data.username,
