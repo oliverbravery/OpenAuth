@@ -142,3 +142,20 @@ class AccessToken(BaseModel):
         self.scope = scope
         self.iss = iss
         self.typ = typ
+        
+    def model_dump(self) -> dict:
+        """
+        Dumps the model into a dictionary, converting any datetime objects to their respective Unix timestamps.
+        
+        Returns:
+            dict: The dictionary representation of the model.
+        """
+        return {
+            "iss": self.iss,
+            "typ": self.typ,
+            "sub": self.sub,
+            "aud": self.aud,
+            "exp": self.exp.timestamp(),
+            "iat": self.iat.timestamp(),
+            "scope": self.scope
+        }
