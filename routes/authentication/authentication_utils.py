@@ -1,5 +1,5 @@
 from main import db_manager
-from database.models import Account, Authorization
+from database.models import Account, Authorization, Client
 from routes.authentication.password_manager import PasswordManager
 from routes.authentication.token_manager import TokenManager
 from routes.authentication.models import TokenType, TokenResponse
@@ -126,8 +126,22 @@ def verify_code_challenge(code_challenge: str, code_verifier: str) -> bool:
     generated_code_challenge: str = urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).decode()
     return code_challenge == generated_code_challenge
 
+def validate_client_credentials(client_id: str, client_secret: str) -> bool:
+    """
+    Validate the client credentials.
 
-def get_tokens_with_authorization_code(auth_code: str, code_verifier: str, client_id: str) -> TokenResponse:
+    Args:
+        client_id (str): The client id of the application.
+        client_secret (str): The client secret of the application.
+
+    Returns:
+        bool: True if the client credentials are valid, False otherwise.
+    """
+    client: Client = db_manager.clients_interface.get_client(client_id=client_id)
+    if not client: return False
+    return client.client_secret == client_secret
+
+def get_tokens_with_authorization_code(auth_code: str, code_verifier: str, client_id: str, client_secret: str) -> TokenResponse:
     """
     Get access and refresh tokens and store the refresh token in the database. 
     Also, remove the authorization code and code challenge from the database after use.
@@ -136,6 +150,7 @@ def get_tokens_with_authorization_code(auth_code: str, code_verifier: str, clien
         auth_code (str): Encrypted authenticaion code to be used to get the tokens.
         code_verifier (str): Code verifier used to verify the code challenge.
         client_id (str): The client id of the application requesting the tokens.
+        client_secret (str): The client secret of the application requesting the tokens.
 
     Returns:
         TokenResponse: OAuth2.0 compliant token response.
@@ -149,6 +164,7 @@ def get_tokens_with_authorization_code(auth_code: str, code_verifier: str, clien
     authorization.auth_code = None
     user_account: Account = db_manager.accounts_interface.get_account(username=username)
     if not user_account: return None
+    if not validate_client_credentials(client_id=client_id, client_secret=client_secret): return None
     access_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.ACCESS,
                                                                   account=user_account,
                                                                   client_id=client_id)
@@ -168,5 +184,4 @@ def get_tokens_with_authorization_code(auth_code: str, code_verifier: str, clien
     return token_response
 
 def get_tokens_with_refresh_token():
-    # TODO: Ensuure only client (x) can request and gain access to certain profiles (using client_secret)
     pass
