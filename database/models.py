@@ -8,12 +8,12 @@ class DBCollection(Enum):
     """
     AUTHORIZATION = "authorization"
     ACCOUNTS = "accounts"
-    APPLICATIONS = "applications"
+    CLIENTS = "clients"
 
-class Application(BaseModel):
+class Client(BaseModel):
     """
     Represents a registered application in the auth service. 
-    An application is a client (app) that can request access to a user's account and store application-specific data in the user's profile.
+    A client is an application that can request access to a user's account and store application-specific data in the user's profile.
     
     Args:
         client_id (str): The unique attribute used to identify and differentiate applications.
