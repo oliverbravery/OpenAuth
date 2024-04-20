@@ -1,5 +1,5 @@
 from main import db_manager
-from database.models import Account
+from database.models import Account, Authorization
 from routes.authentication.password_manager import PasswordManager
 from secrets import token_urlsafe
 import os
@@ -50,7 +50,7 @@ def decrypt_authorization_code(auth_code: str) -> tuple[str, str]:
         auth_code (str): The encrypted authorization code.
         
     Returns:
-        tuple[str, str]: The username and the authorization code.
+        tuple[str, str]: The username and the authorization code as a tuple (username, auth_code).
     """
     encrypted_code_urlsafe: bytes = auth_code.encode('ascii')
     encrypted_code: bytes = urlsafe_b64decode(encrypted_code_urlsafe)
@@ -58,8 +58,23 @@ def decrypt_authorization_code(auth_code: str) -> tuple[str, str]:
     combined_code_str: str = combined_code.decode()
     return combined_code_str.split(":")[0], combined_code_str[len(combined_code_str.split(":")[0])+1:]
 
-def get_access_token_with_authorization_code():
-    pass
+def verify_authorization_code(auth_code: str) -> bool:
+    """
+    Verify an authorization code.
+
+    Args:
+        auth_code (str): The encrypted authorization code.
+        
+    Returns:
+        bool: True if the authorization code is valid, False otherwise.
+    """
+    username, authorization_code = decrypt_authorization_code(auth_code)
+    authorization: Authorization = db_manager.authorization_interface.get_authorization(username=username)
+    if not authorization: return False
+    return authorization.auth_code == authorization_code
+
+def get_access_token_with_authorization_code(auth_code: str, code_verifier: str) -> int:
+    if not verify_authorization_code(auth_code=auth_code): return -1
 
 def get_access_token_with_refresh_token():
     pass
