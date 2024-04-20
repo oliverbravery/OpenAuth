@@ -4,6 +4,7 @@ from routes.authentication.password_manager import PasswordManager
 from secrets import token_urlsafe
 import os
 from cryptography.fernet import Fernet
+from base64 import urlsafe_b64encode, urlsafe_b64decode
 
 fernet: Fernet = Fernet(os.getenv("AUTH_CODE_SECRET"))
 
@@ -26,22 +27,24 @@ def validate_user_credentials(username: str, password: str) -> int:
 
 def generate_authorization_code(username: str) -> str:
     """
-    Generate an authorization code of 32 bytes (256bits), appends the username to the code and encrypts it using a secret key.
-    
+    Generate an encrypted authorization code with a username.
+        
     Args:
         username (str): The username of the user to be authorized.
 
     Returns:
-        str: The generated authorization code.
+        str: The generated URL safe authorization code.
     """
     auth_code: str = token_urlsafe(32)
     combined_code: str = f"{username}:{auth_code}"
-    encrpyted_code: bytes = fernet.encrypt(combined_code.encode())
-    return  encrpyted_code
+    encrypted_code: bytes = fernet.encrypt(combined_code.encode())
+    encrypted_code_urlsafe: bytes = urlsafe_b64encode(encrypted_code)
+    encrypted_code_str: str = encrypted_code_urlsafe.decode('ascii')
+    return  encrypted_code_str
 
 def decrypt_authorization_code(auth_code: str) -> tuple[str, str]:
     """
-    Decrypt an authorization code using a secret key.
+    Decrypt an encrypted authorization code.
 
     Args:
         auth_code (str): The encrypted authorization code.
@@ -49,5 +52,14 @@ def decrypt_authorization_code(auth_code: str) -> tuple[str, str]:
     Returns:
         tuple[str, str]: The username and the authorization code.
     """
-    decrypted_code: str = fernet.decrypt(auth_code.encode()).decode()
-    return decrypted_code.split(":")[0], decrypted_code[len(decrypted_code.split(":")[0])+1:]
+    encrypted_code_urlsafe: bytes = auth_code.encode('ascii')
+    encrypted_code: bytes = urlsafe_b64decode(encrypted_code_urlsafe)
+    combined_code: bytes = fernet.decrypt(encrypted_code)
+    combined_code_str: str = combined_code.decode()
+    return combined_code_str.split(":")[0], combined_code_str[len(combined_code_str.split(":")[0])+1:]
+
+def get_access_token_with_authorization_code():
+    pass
+
+def get_access_token_with_refresh_token():
+    pass
