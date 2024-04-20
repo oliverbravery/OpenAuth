@@ -1,7 +1,8 @@
 from datetime import timedelta
 import datetime
 from jose import jwt
-from routes.authentication.models import TokenType, AccessToken
+from routes.authentication.models import TokenType, AccessToken, BaseToken
+from database.models import Account, Profile
 
 class TokenManager:
     """
@@ -59,17 +60,40 @@ class TokenManager:
         expire: datetime.datetime = current_time + timedelta(minutes=self.get_token_expire_time(token_type=token_type))
         return current_time, expire
     
-    def sign_jwt_token(self, token: AccessToken) -> dict:
+    def sign_jwt_token(self, token: BaseToken) -> str:
         """
         Signs the JWT token using the provided data and token type.
 
         Args:
-            token (AccessToken): The data to be included in the JWT token.
+            token (BaseToken): The data to be included in the JWT token.
             token_type (TokenType): The type of token to be signed.
 
         Returns:
-            dict: The signed JWT token.
+            str: The signed string interpretation of the JWT token.
         """
         to_encode: dict = token.model_dump()
         encoded_jwt: str = jwt.encode(to_encode, self.secret_key, algorithm=self.token_algorithm)
         return encoded_jwt
+    
+    def generate_and_sign_jwt_token(self, tokenType: TokenType, account: Account, client_id: str) -> str:
+        """
+        Generates a JWT token for the given account and token type.
+
+        Args:
+            tokenType (TokenType): The type of token to be generated.
+            account (Account): The account for which the token is generated.
+
+        Returns:
+            str: The generated and signed JWT token.
+        """
+        iat, exp = self.calculate_jwt_timestamps(token_type=tokenType)
+        profile: Profile = account.get_profile(client_id=client_id)
+        if not profile: return None
+        token: AccessToken = AccessToken(
+            sub=account.username,
+            aud=[account.client_id],
+            exp=exp,
+            iat=iat,
+            scope=profile.scopes
+        )
+        return self.sign_jwt_token(token=token)
