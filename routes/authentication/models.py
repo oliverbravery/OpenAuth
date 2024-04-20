@@ -109,9 +109,9 @@ class AuthorizeResponse(BaseModel):
         self.authorization_code: str = authorization_code
         self.state: str = state
         
-class AccessToken(BaseModel):
+class BaseToken(BaseModel):
     """
-    A class used to represent the access token data.
+    A class used to represent the base token data.
     """
     iss: str = "auth-service"
     typ: str = "JWT"
@@ -119,19 +119,17 @@ class AccessToken(BaseModel):
     aud: list[str]
     exp: datetime
     iat: datetime
-    scope: list[str]
     
-    def __init__(self, sub: str, aud: list[str], exp: datetime, iat: datetime, scope: list[str],
+    def __init__(self, sub: str, aud: list[str], exp: datetime, iat: datetime,
                  iss: str = "auth-service", typ: str = "JWT"):
         """
-        The constructor for the AccessToken class.
+        The constructor for the BaseToken class.
         
         Args:
             sub (str): The subject of the token. Usually the username of the user.
             aud (list[str]): The audience of the token. Usually the client_id of the application.
             exp (datetime): The expiration time of the token. Recommended to allow for clock skew.
             iat (datetime): The time the token was issued. Used to determine if the token is expired.
-            scope (list[str]): The list of scopes allowed by the token.
             iss (str, optional): The issuer of the token. Defaults to "auth-service".
             typ (str, optional): The type of the token. Defaults to "JWT".
         """
@@ -139,7 +137,6 @@ class AccessToken(BaseModel):
         self.aud = aud
         self.exp = exp
         self.iat = iat
-        self.scope = scope
         self.iss = iss
         self.typ = typ
         
@@ -156,6 +153,41 @@ class AccessToken(BaseModel):
             "sub": self.sub,
             "aud": self.aud,
             "exp": self.exp.timestamp(),
-            "iat": self.iat.timestamp(),
+            "iat": self.iat.timestamp()
+        }
+        
+class AccessToken(BaseToken):
+    """
+    A class used to represent the access token data.
+    Inherited from the BaseToken class.
+    """
+    scope: list[str]
+    
+    def __init__(self, sub: str, aud: list[str], exp: datetime, iat: datetime, scope: list[str],
+                 iss: str = "auth-service", typ: str = "JWT"):
+        """
+        The constructor for the AccessToken class.
+        
+        Args:
+            sub (str): The subject of the token. Usually the username of the user.
+            aud (list[str]): The audience of the token. Usually the client_id of the application.
+            exp (datetime): The expiration time of the token. Recommended to allow for clock skew.
+            iat (datetime): The time the token was issued. Used to determine if the token is expired.
+            scope (list[str]): The list of scopes allowed by the token.
+            iss (str, optional): The issuer of the token. Defaults to "auth-service".
+            typ (str, optional): The type of the token. Defaults to "JWT".
+        """
+        super().__init__(sub=sub, aud=aud, exp=exp, iat=iat, iss=iss, typ=typ)
+        self.scope = scope
+        
+    def model_dump(self) -> dict:
+        """
+        Dumps the model into a dictionary, converting any datetime objects to their respective Unix timestamps.
+        
+        Returns:
+            dict: The dictionary representation of the model.
+        """
+        return {
+            **super().model_dump(),
             "scope": self.scope
         }
