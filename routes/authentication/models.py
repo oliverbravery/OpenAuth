@@ -2,6 +2,13 @@ from fastapi.param_functions import Form
 from pydantic import BaseModel
 from enum import Enum
 
+class TokenType(Enum, str):
+    """
+    Enum class for the token types.
+    """
+    ACCESS = "access"
+    REFRESH = "refresh"
+
 class GrantType(Enum, str):
     """
     Enum class for the grant types.
