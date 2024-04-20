@@ -33,3 +33,12 @@ class AuthorizationInterface(DBGenericInterface):
             int: 0 if the authorization was added successfully, -1 otherwise.
         """
         return self.add_generic(object=authorization)
+    
+    def update_authorization(self, authorization: Authorization) -> int:
+        """
+        Updates an authorization in the database.
+
+        Returns:
+            int: 0 if the authorization was updated successfully, -1 otherwise.
+        """
+        return self.update_generic(search_params={"username": authorization.username}, object=authorization)
