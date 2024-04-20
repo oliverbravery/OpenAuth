@@ -1,4 +1,4 @@
-import bcrypt
+from authentication_utils import hash_string, verify_hash
 
 class PasswordManager:
     """
@@ -17,7 +17,7 @@ class PasswordManager:
         Returns:
             bool: True if the plaintext password matches the hashed password, False otherwise.
         """
-        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+        return verify_hash(plaintext=plain_password, urlsafe_hash=hashed_password)
 
     @staticmethod
     def get_password_hash(password: str) -> str:
@@ -30,4 +30,4 @@ class PasswordManager:
         Returns:
             str: Salted and hashed password.
         """
-        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        return hash_string(plaintext=password)
