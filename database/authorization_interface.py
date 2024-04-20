@@ -13,6 +13,18 @@ class AuthorizationInterface(DBGenericInterface):
         """
         super().__init__(database=database, db_collection=DBCollection.AUTHORIZATION.value)
         
+    def get_authorization(self, username: str) -> Authorization | None:
+        """
+        Gets an authorization from the database based on the username.
+
+        Args:
+            username (str): The username of the account the authorization to get belongs to.
+
+        Returns:
+            Authorization | None: The authorization if it exists, None otherwise.
+        """
+        return self.get_generic(search_params={"username": username}, object_class=Authorization)
+        
     def add_authorization(self, authorization: Authorization) -> int:
         """
         Adds an authorization to the database.
