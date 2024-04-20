@@ -1,6 +1,7 @@
 from main import db_manager
 from database.models import Account
 from routes.authentication.password_manager import PasswordManager
+from secrets import token_urlsafe
 
 def validate_user_credentials(username: str, password: str) -> int:
     """
@@ -18,3 +19,12 @@ def validate_user_credentials(username: str, password: str) -> int:
     if not PasswordManager.verify_password(plain_password=password, 
                                            hashed_password=account.hashed_password): return -1
     return 0
+
+def generate_authorization_code() -> str:
+    """
+    Generate an authorization code of 32 bytes (256bits).
+
+    Returns:
+        str: The generated authorization code.
+    """
+    return  token_urlsafe(32)
