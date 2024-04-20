@@ -1,6 +1,7 @@
 from main import db_manager
 from database.models import Account, Authorization
 from routes.authentication.password_manager import PasswordManager
+from routes.authentication.token_manager import TokenManager
 from secrets import token_urlsafe
 import os
 from cryptography.fernet import Fernet
@@ -8,6 +9,13 @@ from base64 import urlsafe_b64encode, urlsafe_b64decode
 import hashlib
 
 fernet: Fernet = Fernet(os.getenv("AUTH_CODE_SECRET"))
+
+token_manager: TokenManager = TokenManager(
+    access_token_expire_time=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")),
+    refresh_token_expire_time=int(os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES")),
+    secret_key=str(os.getenv("TOKEN_SIGNING_KEY")),
+    token_algorithm=str(os.getenv("TOKEN_ALGORITHM"))
+)
 
 def validate_user_credentials(username: str, password: str) -> int:
     """
