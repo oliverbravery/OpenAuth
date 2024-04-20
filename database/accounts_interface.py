@@ -48,3 +48,15 @@ class AccountsInterface(DBGenericInterface):
             int: 0 if the account was updated successfully, -1 otherwise.
         """
         return self.update_generic(search_params={"username": account.username}, update_params={"$set": account.model_dump()})
+    
+    def delete_account(self, username: str) -> int:
+        """
+        Deletes an account from the database.
+
+        Args:
+            username (str): The username of the account to delete.
+
+        Returns:
+            int: 0 if the account was deleted successfully, -1 otherwise.
+        """
+        return self.remove_generic(search_params={"username": username})
