@@ -2,6 +2,7 @@ import pymongo
 from pymongo import MongoClient
 from pymongo.database import Database
 from database.accounts_interface import AccountsInterface
+from database.authorization_interface import AuthorizationInterface
 
 class DBManager:
     """
@@ -26,3 +27,4 @@ class DBManager:
         # For example, if the project has a users collection, the UsersDBInterface can be added here: 
         # self.users_interface: UsersDBInterface = UsersDBInterface(database=self.__db)
         self.accounts_interface: AccountsInterface = AccountsInterface(database=self.__db) 
+        self.authorization_interface: AuthorizationInterface = AuthorizationInterface(database=self.__db)
