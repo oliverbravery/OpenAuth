@@ -5,6 +5,7 @@ from secrets import token_urlsafe
 import os
 from cryptography.fernet import Fernet
 from base64 import urlsafe_b64encode, urlsafe_b64decode
+import hashlib
 
 fernet: Fernet = Fernet(os.getenv("AUTH_CODE_SECRET"))
 
@@ -39,7 +40,7 @@ def generate_authorization_code(username: str) -> str:
     combined_code: str = f"{username}:{auth_code}"
     encrypted_code: bytes = fernet.encrypt(combined_code.encode())
     encrypted_code_urlsafe: bytes = urlsafe_b64encode(encrypted_code)
-    encrypted_code_str: str = encrypted_code_urlsafe.decode('ascii')
+    encrypted_code_str: str = encrypted_code_urlsafe.decode()
     return  encrypted_code_str
 
 def decrypt_authorization_code(auth_code: str) -> tuple[str, str]:
@@ -52,7 +53,7 @@ def decrypt_authorization_code(auth_code: str) -> tuple[str, str]:
     Returns:
         tuple[str, str]: The username and the authorization code as a tuple (username, auth_code).
     """
-    encrypted_code_urlsafe: bytes = auth_code.encode('ascii')
+    encrypted_code_urlsafe: bytes = auth_code.encode()
     encrypted_code: bytes = urlsafe_b64decode(encrypted_code_urlsafe)
     combined_code: bytes = fernet.decrypt(encrypted_code)
     combined_code_str: str = combined_code.decode()
@@ -73,8 +74,25 @@ def verify_authorization_code(auth_code: str) -> bool:
     if not authorization: return False
     return authorization.auth_code == authorization_code
 
+def verify_code_challenge(code_challenge: str, code_verifier: str) -> bool:
+    """
+    Verify a code challenge using SHA-256.
+
+    Args:
+        code_challenge (str): The code challenge.
+        code_verifier (str): The code verifier.
+        
+    Returns:
+        bool: True if the code challenge is valid, False otherwise.
+    """
+    generated_code_challenge: str = urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).decode()
+    return code_challenge == generated_code_challenge
+
+
 def get_access_token_with_authorization_code(auth_code: str, code_verifier: str) -> int:
     if not verify_authorization_code(auth_code=auth_code): return -1
+    if not verify_code_challenge(code_challenge=auth_code, code_verifier=code_verifier): return -1
+    # TODO: Generate access token and refresh token
 
 def get_access_token_with_refresh_token():
     pass
