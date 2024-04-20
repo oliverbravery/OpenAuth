@@ -1,7 +1,6 @@
 from fastapi import Depends, APIRouter, status, HTTPException
 from routes.account.models import UserRegistrationForm
 from database.models import Account
-from main import db_manager
 from routes.account.account_utils import *
 
 router = APIRouter(
@@ -28,7 +27,7 @@ async def register_account(form_data: UserRegistrationForm = Depends()):
     if check_user_exists(username=new_account.username):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
                             detail="User already exists.")
-    response: int = db_manager.accounts_interface.add_account(account=new_account)
+    response: int = register_account_in_db_collections(new_account=new_account)
     if response == 0:
         return "Account registered successfully."
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
