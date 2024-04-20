@@ -62,11 +62,10 @@ class TokenManager:
     
     def sign_jwt_token(self, token: BaseToken) -> str:
         """
-        Signs the JWT token using the provided data and token type.
+        Signs the JWT token using the provided data.
 
         Args:
             token (BaseToken): The data to be included in the JWT token.
-            token_type (TokenType): The type of token to be signed.
 
         Returns:
             str: The signed string interpretation of the JWT token.
@@ -82,6 +81,7 @@ class TokenManager:
         Args:
             tokenType (TokenType): The type of token to be generated.
             account (Account): The account for which the token is generated.
+            client_id: (str): The requesting application's client_id.
 
         Returns:
             str: The generated and signed JWT token.
