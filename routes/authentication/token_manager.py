@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
+import datetime
 from jose import jwt
 from routes.authentication.models import TokenType, AccessToken
 
@@ -44,7 +45,7 @@ class TokenManager:
             case TokenType.REFRESH:
                 return self.refresh_token_expire_time
             
-    def calculate_jwt_timestamps(self, token_type: TokenType) -> tuple[datetime, datetime]:
+    def calculate_jwt_timestamps(self, token_type: TokenType) -> tuple[datetime.datetime, datetime.datetime]:
         """
         Calculates the iat and exp timestamps for the JWT token.
 
@@ -52,10 +53,10 @@ class TokenManager:
             token_type (TokenType): The type of token for which the timestamps are calculated.
 
         Returns:
-            tuple[datetime, datetime]: Tuple containing the iat and the exp for the token (iat, exp).
+            tuple[datetime.datetime, datetime.datetime]: Tuple containing the iat and the exp for the token (iat, exp).
         """
-        current_time: datetime = datetime.now(datetime.UT)
-        expire: datetime = current_time + timedelta(minutes=self.get_token_expire_time(token_type=token_type))
+        current_time: datetime.datetime = datetime.datetime.now(datetime.UTC)
+        expire: datetime.datetime = current_time + timedelta(minutes=self.get_token_expire_time(token_type=token_type))
         return current_time, expire
     
     def sign_jwt_token(self, token: AccessToken) -> dict:
