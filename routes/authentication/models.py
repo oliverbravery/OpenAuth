@@ -4,21 +4,21 @@ from enum import Enum
 from datetime import datetime
 from typing import Optional
 
-class TokenType(Enum, str):
+class TokenType(Enum):
     """
     Enum class for the token types.
     """
     ACCESS = "access"
     REFRESH = "refresh"
 
-class GrantType(Enum, str):
+class GrantType(Enum):
     """
     Enum class for the grant types.
     """
     AUTHORIZATION_CODE = "authorization_code"
     REFRESH_TOKEN = "refresh_token"
     
-class ResponseType(Enum, str):
+class ResponseType(Enum):
     """
     Enum class for the response types.
     """
