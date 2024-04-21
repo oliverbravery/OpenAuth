@@ -2,7 +2,7 @@ from main import db_manager
 from database.models import Account, Authorization, Client
 from routes.authentication.password_manager import PasswordManager
 from routes.authentication.token_manager import TokenManager
-from routes.authentication.models import TokenType, TokenResponse
+from routes.authentication.models import TokenType, TokenResponse, RefreshToken
 from secrets import token_urlsafe
 import os
 from cryptography.fernet import Fernet
@@ -211,14 +211,31 @@ def invalidate_refresh_token(username: str) -> bool:
     if not authorization: return False
     authorization.hashed_refresh_token = None
     response: int = db_manager.authorization_interface.update_authorization(authorization)
-    if response == -1: return None
-    access_token_expires_in_seconds: int = token_manager.get_token_expire_time(token_type=TokenType.ACCESS)*60
-    token_response: TokenResponse = TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        expires_in=access_token_expires_in_seconds
-    )
-    return token_response
+    return response != -1
 
-def get_tokens_with_refresh_token():
-    pass
+def get_tokens_with_refresh_token(refresh_token: str) -> TokenResponse:
+    """
+    Get access and refresh tokens using the refresh token.
+    Complies with the OAuth2.0 standard and refresh token rotation flow.
+
+    Args:
+        refresh_token (str): The signed refresh token to be used to get the new tokens.
+
+    Returns:
+        TokenResponse: The OAuth2.0 complient response object for the /token endpoint.
+    """
+    decoded_token: RefreshToken = token_manager.decode_jwt_token(token=refresh_token, 
+                                                                 token_type=TokenType.REFRESH)
+    if not decoded_token: return None
+    authorization: Authorization = db_manager.authorization_interface.get_authorization(
+        username=decoded_token.sub)
+    if not authorization: return None
+    hashed_refresh_token: str = authorization.hashed_refresh_token
+    if not hashed_refresh_token: return None
+    if not verify_hash(plaintext=refresh_token, urlsafe_hash=hashed_refresh_token): 
+        invalidate_refresh_token(username=decoded_token.sub)
+        return None
+    if len(decoded_token.aud) != 1: return None
+    user_account: Account = db_manager.accounts_interface.get_account(username=decoded_token.sub)
+    if not user_account: return None
+    return generate_and_store_tokens(authorization=authorization, user_account=user_account, client_id=decoded_token.aud[0])
