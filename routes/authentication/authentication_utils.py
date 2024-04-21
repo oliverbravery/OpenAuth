@@ -224,7 +224,7 @@ def get_tokens_with_refresh_token(refresh_token: str) -> TokenResponse:
     Returns:
         TokenResponse: The OAuth2.0 complient response object for the /token endpoint.
     """
-    decoded_token: RefreshToken = token_manager.decode_jwt_token(token=refresh_token, 
+    decoded_token: RefreshToken = token_manager.verify_and_decode_jwt_token(token=refresh_token, 
                                                                  token_type=TokenType.REFRESH)
     if not decoded_token: return None
     authorization: Authorization = db_manager.authorization_interface.get_authorization(
