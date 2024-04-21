@@ -111,6 +111,23 @@ class TokenManager:
         current_time: datetime.datetime = datetime.datetime.now(datetime.UTC)
         return current_time < token.exp and current_time > token.iat 
     
+    def verify_and_decode_jwt_token(self, token: str, token_type: TokenType) -> BaseToken:
+        """
+        Verifies and decodes the JWT token using the provided data.
+        Checks the token was signed with the correct secret key and has not expired.
+
+        Args:
+            token (str): The JWT token to be decoded.
+            token_type (TokenType): The type of token to be decoded.
+
+        Returns:
+            BaseToken: The decoded token object. None if the token is invalid or has expired.
+        """
+        decoded_token: BaseToken = self.decode_jwt_token(token=token, token_type=token_type)
+        if not decoded_token or not self.verify_token_not_expired(decoded_token):
+            return None
+        return decoded_token
+    
     def generate_and_sign_jwt_token(self, tokenType: TokenType, account: Account, client_id: str) -> str:
         """
         Generates a JWT token for the given account and token type.
