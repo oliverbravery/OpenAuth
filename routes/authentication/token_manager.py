@@ -77,13 +77,14 @@ class TokenManager:
     def decode_jwt_token(self, token: str, token_type: TokenType) -> BaseToken:
         """
         Decodes the JWT token using the provided data.
+        Checks the token was signed with the correct secret key.
 
         Args:
             token (str): The JWT token to be decoded.
             token_type (TokenType): The type of token to be decoded.
 
         Returns:
-            BaseToken: The decoded token object.
+            BaseToken: The decoded token object. None if the token is invalid.
         """
         token_class: BaseToken
         match token_type:
@@ -91,7 +92,10 @@ class TokenManager:
                 token_class = AccessToken
             case TokenType.REFRESH:
                 token_class = RefreshToken
-        decoded_jwt_token: dict[str, any] = jwt.decode(token, self.secret_key, algorithms=[self.token_algorithm])
+        try:
+            decoded_jwt_token: dict[str, any] = jwt.decode(token, self.secret_key, algorithms=[self.token_algorithm])
+        except jwt.JWTError:
+            return None
         return token_class(**decoded_jwt_token)
     
     def generate_and_sign_jwt_token(self, tokenType: TokenType, account: Account, client_id: str) -> str:
