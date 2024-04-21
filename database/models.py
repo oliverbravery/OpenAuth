@@ -9,6 +9,13 @@ class DBCollection(Enum):
     AUTHORIZATION = "authorization"
     ACCOUNTS = "accounts"
     CLIENTS = "clients"
+    
+class AccountRole(str, Enum):
+    """
+    Enum class for representing the different roles an account can have
+    """
+    STANDARD = "standard"
+    DEVELOPER = "developer"
 
 class Client(BaseModel):
     """
@@ -48,6 +55,7 @@ class Account(BaseModel):
         hashed_password (str): The hashed password of the user.
         hashed_totp_pin (Optional[str]): The hashed TOTP pin of the user.
         profiles (List[Profile]): The profiles associated with the user.
+        account_role (AccountRole): The role of the user in the auth service. Defaults to 'standard'.
     """
     username: str
     display_name: str
@@ -55,6 +63,7 @@ class Account(BaseModel):
     hashed_password: str
     hashed_totp_pin: Optional[str] = None
     profiles: List[Profile] = []
+    account_role: AccountRole = AccountRole.STANDARD
     
     def get_profile(self, client_id: str) -> Optional[Profile]:
         """
