@@ -16,6 +16,17 @@ class AccountRole(str, Enum):
     """
     STANDARD = "standard"
     DEVELOPER = "developer"
+    
+class ClientDeveloper(BaseModel):
+    """
+    Represents what scopes a developer has access to for a client.
+    
+    Args:
+        username (str): The unique username of the developer.
+        scopes (List[str]): The scopes that the developer has access to for the client.
+    """
+    username: str
+    scopes: List[str]
 
 class Client(BaseModel):
     """
@@ -26,10 +37,12 @@ class Client(BaseModel):
         client_id (str): The unique attribute used to identify and differentiate applications.
         client_secret (str): A long random string that is used to authenticate the application.
         name (str): The name of the application.
+        developers (List[ClientAdmin]): The list of developers that have access to the client.
     """
     client_id: str
     client_secret: str
     name: str
+    developers: List[ClientDeveloper] = []
     
 class Profile(BaseModel):
     """
