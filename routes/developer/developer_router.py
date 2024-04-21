@@ -10,7 +10,7 @@ router = APIRouter(
 
 bearer_token_auth: BearerTokenAuth = BearerTokenAuth()
 
-@router.get("/enroll", status_code=status.HTTP_200_OK)
+@router.post("/enroll", status_code=status.HTTP_200_OK)
 async def enroll_developer(account: Account = Depends(bearer_token_auth)):
     """
     Enroll the current account as a developer.
