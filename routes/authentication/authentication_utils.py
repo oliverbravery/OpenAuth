@@ -195,14 +195,21 @@ def get_tokens_with_authorization_code(auth_code: str, code_verifier: str, clien
     user_account: Account = db_manager.accounts_interface.get_account(username=username)
     if not user_account: return None
     if not validate_client_credentials(client_id=client_id, client_secret=client_secret): return None
-    access_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.ACCESS,
-                                                                  account=user_account,
-                                                                  client_id=client_id)
-    refresh_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.REFRESH,
-                                                                   account=user_account,
-                                                                   client_id=client_id)
-    if not access_token or not refresh_token: return None
-    authorization.hashed_refresh_token = hash_string(plaintext=refresh_token)
+    return generate_and_store_tokens(authorization=authorization, user_account=user_account, client_id=client_id)
+
+def invalidate_refresh_token(username: str) -> bool:
+    """
+    Invalidate the refresh token of a user.
+
+    Args:
+        username (str): The username of the user whose refresh token is to be invalidated.
+
+    Returns:
+        bool: True if the refresh token is invalidated, False otherwise.
+    """
+    authorization: Authorization = db_manager.authorization_interface.get_authorization(username=username)
+    if not authorization: return False
+    authorization.hashed_refresh_token = None
     response: int = db_manager.authorization_interface.update_authorization(authorization)
     if response == -1: return None
     access_token_expires_in_seconds: int = token_manager.get_token_expire_time(token_type=TokenType.ACCESS)*60
