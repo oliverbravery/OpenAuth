@@ -1,7 +1,7 @@
 from datetime import timedelta
 import datetime
 from jose import jwt
-from routes.authentication.models import TokenType, AccessToken, BaseToken
+from routes.authentication.models import TokenType, AccessToken, BaseToken, RefreshToken
 from database.models import Account, Profile
 
 class TokenManager:
@@ -87,13 +87,23 @@ class TokenManager:
             str: The generated and signed JWT token.
         """
         iat, exp = self.calculate_jwt_timestamps(token_type=tokenType)
-        profile: Profile = account.get_profile(client_id=client_id)
-        if not profile: return None
-        token: AccessToken = AccessToken(
-            sub=account.username,
-            aud=[account.client_id],
-            exp=exp,
-            iat=iat,
-            scope=profile.scopes
-        )
+        token: BaseToken
+        match tokenType:
+            case TokenType.ACCESS:
+                profile: Profile = account.get_profile(client_id=client_id)
+                if not profile: return None
+                token: AccessToken = AccessToken(
+                    sub=account.username,
+                    aud=[account.client_id],
+                    exp=exp,
+                    iat=iat,
+                    scope=profile.scopes
+                )
+            case TokenType.REFRESH:
+                token: RefreshToken = RefreshToken(
+                    sub=account.username,
+                    aud=[client_id],
+                    exp=exp,
+                    iat=iat,
+                )
         return self.sign_jwt_token(token=token)
