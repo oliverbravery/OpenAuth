@@ -98,6 +98,19 @@ class TokenManager:
             return None
         return token_class(**decoded_jwt_token)
     
+    def verify_token_not_expired(token: BaseToken) -> bool:
+        """
+        Verifies that the token has not expired.
+
+        Args:
+            token (BaseToken): The token to be verified.
+
+        Returns:
+            bool: True if the token has not expired, False otherwise.
+        """
+        current_time: datetime.datetime = datetime.datetime.now(datetime.UTC)
+        return current_time < token.exp and current_time > token.iat 
+    
     def generate_and_sign_jwt_token(self, tokenType: TokenType, account: Account, client_id: str) -> str:
         """
         Generates a JWT token for the given account and token type.
