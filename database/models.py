@@ -38,11 +38,13 @@ class Client(BaseModel):
         client_secret (str): A long random string that is used to authenticate the application.
         name (str): The name of the application.
         developers (List[ClientAdmin]): The list of developers that have access to the client.
+        scopes (List[str]): The list of scopes belonging to the client that can be requested by the application.
     """
     client_id: str
     client_secret: str
     name: str
     developers: List[ClientDeveloper] = []
+    scopes: List[str] = []
     
 class Profile(BaseModel):
     """
