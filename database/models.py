@@ -17,16 +17,27 @@ class AccountRole(str, Enum):
     STANDARD = "standard"
     DEVELOPER = "developer"
     
+class DeveloperScope(str, Enum):
+    """
+    Enum class for the different developer scopes
+    """
+    READ_PROFILE = "read:profile"
+    WRITE_PROFILE = "write:profile"
+    DELETE_PROFILE = "delete:profile"
+    READ_CLIENT = "read:client"
+    WRITE_CLIENT = "write:client"
+    DELETE_CLIENT = "delete:client"
+    
 class ClientDeveloper(BaseModel):
     """
     Represents what scopes a developer has access to for a client.
     
     Args:
         username (str): The unique username of the developer.
-        scopes (List[str]): The scopes that the developer has access to for the client.
+        scopes (List[DeveloperScope]): The scopes that the developer has access to for the client.
     """
     username: str
-    scopes: List[str]
+    scopes: List[DeveloperScope]
 
 class Client(BaseModel):
     """
