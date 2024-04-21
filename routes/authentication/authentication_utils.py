@@ -141,6 +141,36 @@ def validate_client_credentials(client_id: str, client_secret: str) -> bool:
     if not client: return False
     return client.client_secret == client_secret
 
+def generate_and_store_tokens(authorization: Authorization, user_account: Account, client_id: str) -> TokenResponse:
+    """
+    Generate access and refresh tokens and store the refresh token hash in the database.
+
+    Args:
+        authorization (Authorization): The authorization object related to the user.
+        user_account (Account): The account object of the user.
+        client_id (str): The client id of the application requesting the tokens.
+
+    Returns:
+        TokenResponse: OAuth2.0 compliant token response.
+    """
+    access_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.ACCESS,
+                                                                  account=user_account,
+                                                                  client_id=client_id)
+    refresh_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.REFRESH,
+                                                                   account=user_account,
+                                                                   client_id=client_id)
+    if not access_token or not refresh_token: return None
+    authorization.hashed_refresh_token = hash_string(plaintext=refresh_token)
+    response: int = db_manager.authorization_interface.update_authorization(authorization)
+    if response == -1: return None
+    access_token_expires_in_seconds: int = token_manager.get_token_expire_time(token_type=TokenType.ACCESS)*60
+    token_response: TokenResponse = TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=access_token_expires_in_seconds
+    )
+    return token_response
+
 def get_tokens_with_authorization_code(auth_code: str, code_verifier: str, client_id: str, client_secret: str) -> TokenResponse:
     """
     Get access and refresh tokens and store the refresh token in the database. 
