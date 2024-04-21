@@ -74,6 +74,26 @@ class TokenManager:
         encoded_jwt: str = jwt.encode(to_encode, self.secret_key, algorithm=self.token_algorithm)
         return encoded_jwt
     
+    def decode_jwt_token(self, token: str, token_type: TokenType) -> BaseToken:
+        """
+        Decodes the JWT token using the provided data.
+
+        Args:
+            token (str): The JWT token to be decoded.
+            token_type (TokenType): The type of token to be decoded.
+
+        Returns:
+            BaseToken: The decoded token object.
+        """
+        token_class: BaseToken
+        match token_type:
+            case TokenType.ACCESS:
+                token_class = AccessToken
+            case TokenType.REFRESH:
+                token_class = RefreshToken
+        decoded_jwt_token: dict[str, any] = jwt.decode(token, self.secret_key, algorithms=[self.token_algorithm])
+        return token_class(**decoded_jwt_token)
+    
     def generate_and_sign_jwt_token(self, tokenType: TokenType, account: Account, client_id: str) -> str:
         """
         Generates a JWT token for the given account and token type.
