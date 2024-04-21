@@ -2,7 +2,7 @@ from main import db_manager
 from database.models import Account, Authorization, Client
 from routes.authentication.password_manager import PasswordManager
 from routes.authentication.token_manager import TokenManager
-from routes.authentication.models import TokenType, TokenResponse, RefreshToken, AccessToken
+from routes.authentication.models import TokenType, TokenResponse, RefreshToken, AccessToken, AuthorizeResponse
 from secrets import token_urlsafe
 import os
 from cryptography.fernet import Fernet
@@ -241,6 +241,31 @@ def get_tokens_with_refresh_token(refresh_token: str) -> TokenResponse:
     user_account: Account = db_manager.accounts_interface.get_account(username=decoded_token.sub)
     if not user_account: return None
     return generate_and_store_tokens(authorization=authorization, user_account=user_account, client_id=decoded_token.aud[0])
+
+def generate_and_store_auth_code(state: str, username: str, code_challenge: str) -> AuthorizeResponse:
+    """
+    Generate an authorization code and store it in the database with the provided state, username, and code challenge.
+
+    Args:
+        state (str): The CSRF state.
+        username (str): The username of the user.
+        code_challenge (str): The code challenge for the authorization code provided by the client.s
+
+    Returns:
+        AuthorizeResponse: The response containing the authorization code and CSRF state.
+    """
+    authorization_code: str = generate_authorization_code(username=username)
+    csrf_state: str = state
+    user_authorization: Authorization = Authorization(
+        username=username,
+        authorization_code=authorization_code,
+        code_challenge=code_challenge,
+        hashed_refresh_token=None
+    )
+    response: int = db_manager.authorization_interface.update_authorization(authorization=user_authorization)
+    if response == -1: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Authorization failed.")
+    return AuthorizeResponse(authorization_code=authorization_code, csrf_state=csrf_state)
 
 class BearerTokenAuth:
     """
