@@ -31,7 +31,26 @@ async def authorize_endpoint(request: Request, request_data: AuthorizationReques
                                                           query_parameters=request_data.model_dump()) 
     return RedirectResponse(url=configured_redirect_url)
 
+@router.get("/login", response_class=HTMLResponse)
+async def login_form(request: Request, request_data: AuthorizationRequest = Depends()): 
+    """
+    Display the login form to the user, passing the request and request_data to the template.
+    """
+    return templates.TemplateResponse("login.html", {"request": request, 
+                                                     "request_data": request_data})
 
+@router.post("/login", response_class=HTMLResponse)
+async def login_submit(form_data: LoginForm = Depends()): 
+    """
+    Validate the user credentials and redirect to the consent page if the user is valid.
+    """
+    if validate_user_credentials(username=form_data.username, 
+                                 password=form_data.password) == -1:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Invalid credentials.")
+    configured_redirect_url: str = configure_redirect_uri(base_uri=None, 
+                                                          query_parameters=form_data.model_dump())
+    return RedirectResponse(url=configured_redirect_url)
 
 @router.post("/token", status_code=status.HTTP_200_OK, response_model=TokenResponse)
 async def get_access_token(form_data: TokenForm = Depends()):
