@@ -303,6 +303,21 @@ def configure_redirect_uri(base_uri: str, query_parameters: dict[str, str]) -> s
         complete_uri += f"{key}={value}&"
     return complete_uri
 
+def valid_client_credentials(client_id: str, client_secret: str) -> bool:
+    """
+    Validate the client credentials.xw
+
+    Args:
+        client_id (str): Client id of the application.
+        client_secret (str): Client secret of the application.
+
+    Returns:
+        bool: True if the client credentials are valid, False otherwise.
+    """
+    client: Client = db_manager.clients_interface.get_client(client_id=client_id)
+    if not client: return False
+    return client.client_secret == client_secret
+
 
 
 class BearerTokenAuth:
