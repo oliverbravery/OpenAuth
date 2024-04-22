@@ -7,3 +7,4 @@ bcrypt
 cryptography
 python-jose[cryptography]
 Jinja2
+requests
