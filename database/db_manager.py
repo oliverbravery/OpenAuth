@@ -3,7 +3,10 @@ from pymongo import MongoClient
 from pymongo.database import Database
 from database.accounts_interface import AccountsInterface
 from database.authorization_interface import AuthorizationInterface
+from database.models import Client
 from database.clients_interface import ClientsInterface
+import os
+import re
 
 class DBManager:
     """
@@ -30,3 +33,26 @@ class DBManager:
         self.accounts_interface: AccountsInterface = AccountsInterface(database=self.__db) 
         self.authorization_interface: AuthorizationInterface = AuthorizationInterface(database=self.__db)
         self.clients_interface: ClientsInterface = ClientsInterface(database=self.__db)
+        self.__create_auth_service_client()
+        
+    def __create_auth_service_client(self):
+        """
+        Creates an authentication client for the application.
+        """
+        AUTH_CLIENT_ID: str = os.getenv("AUTH_CLIENT_ID")
+        AUTH_CLIENT_SECRET: str = os.getenv("AUTH_CLIENT_SECRET")
+        if not AUTH_CLIENT_ID or not AUTH_CLIENT_SECRET:
+            raise ValueError("AUTH_CLIENT_ID and AUTH_CLIENT_SECRET must be set in the environment.")
+        if re.fullmatch(f"[0-9a-fA-F]{{{256 // 4}}}", AUTH_CLIENT_SECRET) is None or re.fullmatch(f"[0-9a-fA-F]{{{128 // 4}}}", AUTH_CLIENT_ID) is None:
+            raise ValueError("AUTH_CLIENT_ID and AUTH_CLIENT_SECRET must be hexadecimal strings of the correct length.")
+        AUTH_SERVICE_HOST: str = os.getenv("AUTH_SERVICE_HOST")
+        AUTH_SERVICE_PORT: str = os.getenv("AUTH_SERVICE_PORT")
+        if AUTH_SERVICE_HOST is None or AUTH_SERVICE_PORT is None:
+            raise ValueError("AUTH_SERVICE_HOST and AUTH_SERVICE_PORT must be set to create authentication client.")
+        auth_client_redirect_uri: str = f"http://{AUTH_SERVICE_HOST}:{AUTH_SERVICE_PORT}/"
+        auth_client: Client = Client(client_id=AUTH_CLIENT_ID, client_secret=AUTH_CLIENT_SECRET, 
+                                    name="Authentication Service", 
+                                    description="Client for the authentication service", 
+                                    redirect_uri=auth_client_redirect_uri,
+                                    scopes=["read:profile", "write:profile"])
+        self.clients_interface.add_client(client=auth_client)
