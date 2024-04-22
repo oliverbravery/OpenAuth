@@ -11,8 +11,14 @@ import hashlib
 import bcrypt
 from fastapi import HTTPException, status
 from starlette.requests import Request
+import requests
+from requests import Response
 
 fernet: Fernet = Fernet(os.getenv("AUTH_CODE_SECRET"))
+
+recaptcha_secret_key: str = os.getenv("RECAPTCHA_SECRET_KEY")
+if not recaptcha_secret_key: raise ValueError("RECAPTCHA_SECRET_KEY not set in environment variables.")
+google_verify_url: str = f"https://www.google.com/recaptcha/api/siteverify?secret={recaptcha_secret_key}&response="
 
 token_manager: TokenManager = TokenManager(
     access_token_expire_time=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")),
@@ -332,6 +338,24 @@ def valid_client_scopes(client_id: str, scopes: list[str]) -> bool:
     client: Client = db_manager.clients_interface.get_client(client_id=client_id)
     if not client: return False
     return all(scope in client.scopes for scope in scopes)
+
+def verify_captcha_completed(captcha_response: str) -> bool:
+    """
+    Verify that the captcha was completed.
+
+    Args:
+        captcha_response (str): The response from the captcha.
+
+    Returns:
+        bool: True if the captcha was completed, False otherwise.
+    """
+    
+    url: str = google_verify_url + captcha_response
+    response: Response = requests.request("GET",
+                                          url)
+    if response.status_code != 200: return False
+    if response.json()["success"]: return True
+    return False
 
 class BearerTokenAuth:
     """
