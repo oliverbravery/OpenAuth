@@ -10,7 +10,10 @@ router = APIRouter(
     prefix="/authentication",
     tags=["Authentication"]
 )
+
 templates = Jinja2Templates(directory="templates")
+
+recaptcha_site_key: str = os.getenv('RECAPTCHA_SITE_KEY')
 
 @router.get("/authorize", status_code=status.HTTP_200_OK)
 async def authorize_endpoint(request: Request, request_data: AuthorizationRequest = Depends()):
@@ -37,7 +40,8 @@ async def login_form(request: Request, request_data: AuthorizationRequest = Depe
     Display the login form to the user, passing the request and request_data to the template.
     """
     return templates.TemplateResponse("login.html", {"request": request, 
-                                                     "request_data": request_data})
+                                                     "request_data": request_data,
+                                                     "recaptcha_site_key": recaptcha_site_key})
 
 @router.post("/login", response_class=HTMLResponse)
 async def login_submit(form_data: LoginForm = Depends()): 
