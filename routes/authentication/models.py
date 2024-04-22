@@ -66,6 +66,7 @@ class ConcentForm(AuthorizationRequest):
     It is used to parse the data from the request body when getting user consent.
     """
     client_redirect_uri: str
+    consented: str
 
 class ConcentDetails(BaseModel):
     """
