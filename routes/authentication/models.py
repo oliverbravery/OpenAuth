@@ -54,6 +54,22 @@ class AuthorizationRequest(BaseModel):
     @field_validator('scope')
     def split_scope(cls, v):
         return v.split(' ')
+    
+    def model_dump(self) -> dict:
+        """
+        Dumps the model into a dictionary.
+        
+        Returns:
+            dict: The dictionary representation of the model.
+        """
+        return {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "response_type": self.response_type.value,
+            "state": self.state,
+            "code_challenge": self.code_challenge,
+            "scope": " ".join(self.scope)
+        }
         
 class LoginForm(AuthorizationRequest):
     """
