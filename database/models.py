@@ -48,6 +48,7 @@ class Client(BaseModel):
         client_id (str): The unique attribute used to identify and differentiate applications.
         client_secret (str): A long random string that is used to authenticate the application.
         name (str): The name of the application.
+        description (str): A description of the application and why it needs access to certain scopes.
         redirect_uri (str): The URI to which the user is redirected after granting or denying access to the application.
         developers (List[ClientAdmin]): The list of developers that have access to the client.
         scopes (List[str]): The list of scopes belonging to the client that can be requested by the application.
@@ -55,6 +56,7 @@ class Client(BaseModel):
     client_id: str
     client_secret: str
     name: str
+    description: str
     redirect_uri: str
     developers: List[ClientDeveloper] = []
     scopes: List[str] = []
