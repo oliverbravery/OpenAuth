@@ -12,13 +12,23 @@
                 <form method="post" action="/login">
                     <div class="form-group">
                         <label for="username">Username:</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                        <input type="text" class="form-control" id="username" name="username">
                     </div>
                     <div class="form-group">
                         <label for="password">Password:</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <input type="password" class="form-control" id="password" name="password">
                     </div>
-                    <button type="submit" class="btn btn-primary">Login</button>
+                    <div class="form-group">
+                        <label for="totp_pin">totp pin (Authentication App):</label>
+                        <input type="text" class="form-control" id="totp_pin" name="totp_pin">
+                    </div>
+                    <input type="hidden" name="client_id" value="{{ request_data.client_id }}">
+                    <input type="hidden" name="client_id" value="{{ request_data.client_secret }}">
+                    <input type="hidden" name="scope" value="{{ request_data.scope }}">
+                    <input type="hidden" name="response_type" value="{{ request_data.response_type }}">
+                    <input type="hidden" name="state" value="{{ request_data.state }}">
+                    <input type="hidden" name="code_challenge" value="{{ request_data.code_challenge }}">
+                    <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
             </div>
         </div>
