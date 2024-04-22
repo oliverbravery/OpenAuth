@@ -43,28 +43,14 @@ class AuthorizationRequest(BaseModel):
     state: str
     code_challenge: str
         
-class LoginForm:
+class LoginForm(AuthorizationRequest):
     """
     A class used to represent the data required to authenticate a user.
     It is used to parse the data from the request body when authenticating a user.
     """
-    def __init__(
-        self,
-        username: str = Form(),
-        password: str = Form(),
-        totp_pin: str = Form(),
-    ):
-        """
-        The constructor for the LoginForm class.
-        
-        Args:
-            username (str): The username of the user.
-            password (str): The password of the user.
-            totp_pin (str): The TOTP pin of the user.
-        """
-        self.username: str = username
-        self.password: str = password
-        self.totp_pin: str = totp_pin
+    username: str = Form()
+    password: str = Form()
+    totp_pin: str = Form()
         
 class TokenForm:
     """
