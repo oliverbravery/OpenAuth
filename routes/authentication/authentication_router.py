@@ -68,16 +68,19 @@ async def consent_submit(form_data: ConcentForm = Depends()):
     """
     Generate and store an authorization code, redirecting to redirect_uri with code and CSRF state.
     """
+    if form_data.consented != 'true':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="User did not consent to the scopes requested.")
     authorize_response: AuthorizeResponse = generate_and_store_auth_code(username=form_data.username,
-                                                                          state=form_data.state,
-                                                                          code_challenge=form_data.code_challenge)
+                                                                        state=form_data.state,
+                                                                        code_challenge=form_data.code_challenge)
     if authorize_response is None: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                                       detail="Authorization code generation failed.")
+                                                    detail="Authorization code generation failed.")
     configured_redirect_url: str = configure_redirect_uri(base_uri=form_data.client_redirect_uri, 
-                                                          query_parameters={
-                                                              "code": authorize_response.code,
-                                                              "state": authorize_response.state
-                                                          })
+                                                        query_parameters={
+                                                            "code": authorize_response.code,
+                                                            "state": authorize_response.state
+                                                        })
     return RedirectResponse(url=configured_redirect_url)
 
 @router.post("/token", status_code=status.HTTP_200_OK, response_model=TokenResponse)
