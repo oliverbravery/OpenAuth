@@ -2,7 +2,7 @@ from main import db_manager
 from database.models import Account, Authorization, Client
 from routes.authentication.password_manager import PasswordManager
 from routes.authentication.token_manager import TokenManager
-from routes.authentication.models import TokenType, TokenResponse, RefreshToken, AccessToken, AuthorizeResponse
+from routes.authentication.models import TokenType, TokenResponse, RefreshToken, AccessToken, AuthorizeResponse, ConcentDetails
 from secrets import token_urlsafe
 import os
 from cryptography.fernet import Fernet
@@ -266,6 +266,28 @@ def generate_and_store_auth_code(state: str, username: str, code_challenge: str)
     if response == -1: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Authorization failed.")
     return AuthorizeResponse(authorization_code=authorization_code, csrf_state=csrf_state)
+
+def get_client_concent_details(client_id: str, scopes: list[str]) -> ConcentDetails:
+    """
+    Fetches the details from the client required for the consent form.
+
+    Args:
+        client_id (str): The client id of the application.
+        scopes (list[str]): The scopes requested by the client.
+
+    Returns:
+        ConcentDetails: A model containing the details required for the consent form.
+    """
+    client: Client = db_manager.clients_interface.get_client(client_id=client_id)
+    if not client: return None
+    scopes_descriptions: dict[str, str] = {scope:None for scope in scopes}
+    # TODO: Implement logic to get descriptions of the scopes from the database
+    return ConcentDetails(client_name=client.name, 
+                          client_description=client.description, 
+                          scopes_descriptions=scopes_descriptions,
+                          client_redirect_uri=client.redirect_uri)
+
+
 
 class BearerTokenAuth:
     """
