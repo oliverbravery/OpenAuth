@@ -59,6 +59,28 @@ class LoginForm(AuthorizationRequest):
     username: str = Form()
     password: str = Form()
     totp_pin: str = Form()
+    
+class ConcentForm(AuthorizationRequest):
+    """
+    A class used to represent the data required to get user consent following the OAuth2.0 protocol.
+    It is used to parse the data from the request body when getting user consent.
+    """
+    client_redirect_uri: str
+
+class ConcentDetails(BaseModel):
+    """
+    A class used to represent the data required to display the consent page.
+    
+    Args:
+        client_name (str): The name of the client application.
+        description (str): The description of the client application / the scopes requested.
+        scopes_description (dict[str, str]): The description of the scopes requested. Key is the scope name, value is the scope description.
+        client_redirect_uri (str): The redirect uri of the client application.
+    """
+    client_name: str
+    description: str
+    scopes_description: dict[str, str]
+    client_redirect_uri: str
         
 class TokenForm:
     """
