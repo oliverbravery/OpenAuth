@@ -22,6 +22,14 @@ class ResponseType(Enum):
     Enum class for the response types.
     """
     CODE = "code"
+    
+class Endpoints(str, Enum):
+    """
+    Enum class for the authorization endpoints.
+    """
+    AUTHORIZE = "authentication/authorization"
+    LOGIN = "authentication/login"
+    CONSENT = "authentication/consent"
         
 class AuthorizationRequest(BaseModel):
     """
