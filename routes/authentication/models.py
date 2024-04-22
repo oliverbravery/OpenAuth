@@ -23,7 +23,7 @@ class ResponseType(Enum):
     """
     CODE = "code"
         
-class AuthorizationForm(BaseModel):
+class AuthorizationRequest(BaseModel):
     """
     A class used to represent the data required to authorize a user following the OAuth2.0 protocol.
     It is used to parse the data from the request body when authorizing a user.
