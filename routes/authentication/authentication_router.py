@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, Depends, HTTPException
 from routes.authentication.authentication_utils import *
-from routes.authentication.models import AuthorizationRequest, AuthorizeResponse, TokenForm, GrantType, TokenResponse, LoginForm, ConcentForm
+from routes.authentication.models import AuthorizationRequest, AuthorizeResponse, TokenForm, GrantType, TokenResponse, LoginForm, ConcentForm, Endpoints
 from starlette.responses import RedirectResponse
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -29,7 +29,7 @@ async def authorize_endpoint(request_data: AuthorizationRequest = Depends()):
                                    scopes=request_data.scope):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                             detail="Invalid client scopes.")
-    configured_redirect_url: str = configure_redirect_uri(base_uri=None, 
+    configured_redirect_url: str = configure_redirect_uri(base_uri=Endpoints.LOGIN.value, 
                                                           query_parameters=request_data.model_dump()) 
     return RedirectResponse(url=configured_redirect_url)
 
@@ -50,7 +50,7 @@ async def login_submit(form_data: LoginForm = Depends()):
                                  password=form_data.password) == -1:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid credentials.")
-    configured_redirect_url: str = configure_redirect_uri(base_uri=None, 
+    configured_redirect_url: str = configure_redirect_uri(base_uri=Endpoints.CONSENT.value, 
                                                           query_parameters=form_data.model_dump())
     return RedirectResponse(url=configured_redirect_url)
 
