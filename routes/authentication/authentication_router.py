@@ -61,7 +61,7 @@ async def consent_form(request: Request, request_data: LoginForm = Depends()):
                                                                  scopes=request_data.scope)
     return templates.TemplateResponse("consent.html", {"request": request, 
                                                        "request_data": request_data, 
-                                                       concent_details: concent_details})
+                                                       "concent_details": concent_details})
 
 @router.post("/consent", response_class=HTMLResponse)
 async def consent_submit(form_data: ConcentForm = Depends()):
@@ -89,6 +89,7 @@ async def get_access_token(form_data: TokenForm = Depends()):
     Args:
         form_data (TokenForm): TokenForm object containing the OAuth2.0 /token request parameters.
     """
+    # TODO: Check that the parameters should be passed in the query or in the query
     token_response: TokenResponse = None
     match form_data.grant_type:
         case GrantType.AUTHORIZATION_CODE:
