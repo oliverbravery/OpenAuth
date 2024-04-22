@@ -1,7 +1,6 @@
-from fastapi import APIRouter, status, Depends, HTTPException, Query
+from fastapi import APIRouter, status, Depends, HTTPException
 from routes.authentication.authentication_utils import *
 from routes.authentication.models import AuthorizationRequest, AuthorizeResponse, TokenForm, GrantType, TokenResponse, LoginForm, ConcentForm
-from database.models import Authorization
 from starlette.responses import RedirectResponse
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -16,7 +15,7 @@ templates = Jinja2Templates(directory="templates")
 recaptcha_site_key: str = os.getenv('RECAPTCHA_SITE_KEY')
 
 @router.get("/authorize", status_code=status.HTTP_200_OK)
-async def authorize_endpoint(request: Request, request_data: AuthorizationRequest = Depends()):
+async def authorize_endpoint(request_data: AuthorizationRequest = Depends()):
     """
     Validate client credentials and requested scopes.
     Redirects to login page if the client is valid.
@@ -35,12 +34,11 @@ async def authorize_endpoint(request: Request, request_data: AuthorizationReques
     return RedirectResponse(url=configured_redirect_url)
 
 @router.get("/login", response_class=HTMLResponse)
-async def login_form(request: Request, request_data: AuthorizationRequest = Depends()): 
+async def login_form(request_data: AuthorizationRequest = Depends()): 
     """
     Display the login form to the user, passing the request and request_data to the template.
     """
-    return templates.TemplateResponse("login.html", {"request": request, 
-                                                     "request_data": request_data,
+    return templates.TemplateResponse("login.html", {"request_data": request_data,
                                                      "recaptcha_site_key": recaptcha_site_key})
 
 @router.post("/login", response_class=HTMLResponse)
@@ -57,14 +55,13 @@ async def login_submit(form_data: LoginForm = Depends()):
     return RedirectResponse(url=configured_redirect_url)
 
 @router.get("/consent", response_class=HTMLResponse)
-async def consent_form(request: Request, request_data: LoginForm = Depends()):
+async def consent_form(request_data: LoginForm = Depends()):
     """
     Display the consent form to the user, fetching and passing the concent details for the client.
     """
     concent_details: ConcentDetails = get_client_concent_details(client_id=request_data.client_id, 
                                                                  scopes=request_data.scope)
-    return templates.TemplateResponse("consent.html", {"request": request, 
-                                                       "request_data": request_data, 
+    return templates.TemplateResponse("consent.html", {"request_data": request_data, 
                                                        "concent_details": concent_details})
 
 @router.post("/consent", response_class=HTMLResponse)
