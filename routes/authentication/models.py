@@ -79,6 +79,7 @@ class LoginForm(AuthorizationRequest):
     username: str = Form()
     password: str = Form()
     totp_pin: str = Form()
+    g_recaptcha_response: str = Form()
     
 class ConcentForm(AuthorizationRequest):
     """

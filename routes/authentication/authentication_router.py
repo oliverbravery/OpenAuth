@@ -47,6 +47,9 @@ async def login_submit(form_data: LoginForm = Depends()):
     """
     Validate the user credentials and redirect to the consent page if the user is valid.
     """
+    if not verify_captcha_completed(captcha_response=form_data.g_recaptcha_response):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Captcha verification failed.")
     if validate_user_credentials(username=form_data.username, 
                                  password=form_data.password) == -1:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
