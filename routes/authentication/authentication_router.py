@@ -1,31 +1,37 @@
-from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi import APIRouter, status, Depends, HTTPException, Query
 from routes.authentication.authentication_utils import *
-from routes.authentication.models import AuthorizationForm, AuthorizeResponse, TokenForm, GrantType, TokenResponse
+from routes.authentication.models import AuthorizationRequest, AuthorizeResponse, TokenForm, GrantType, TokenResponse, LoginForm, ConcentForm
 from database.models import Authorization
+from starlette.responses import RedirectResponse
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 router = APIRouter(
     prefix="/authentication",
     tags=["Authentication"]
 )
+templates = Jinja2Templates(directory="templates")
 
-@router.get("/authorize", status_code=status.HTTP_200_OK, response_model=AuthorizeResponse)
-async def register_account(form_data: AuthorizationForm = Depends()):
-    if validate_user_credentials(username=form_data.username, password=form_data.password) == -1:
+@router.get("/authorize", status_code=status.HTTP_200_OK)
+async def authorize_endpoint(request: Request, request_data: AuthorizationRequest = Depends()):
+    """
+    Validate client credentials and requested scopes.
+    Redirects to login page if the client is valid.
+    Conforms to OAuth2.0 Authorization Code Flow with Proof Key for Code Exchange (PKCE).
+    """
+    if not valid_client_credentials(client_id=request_data.client_id, 
+                                    client_secret=request_data.client_secret):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Invalid credentials.")
-    authorization_code: str = generate_authorization_code(username=form_data.username)
-    csrf_state: str = form_data.state
-    code_challenge: str = form_data.code_challenge
-    user_authorization: Authorization = Authorization(
-        username=form_data.username,
-        authorization_code=authorization_code,
-        code_challenge=code_challenge,
-        hashed_refresh_token=None
-    )
-    response: int = db_manager.authorization_interface.update_authorization(authorization=user_authorization)
-    if response == -1: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Authorization failed.")
-    return AuthorizeResponse(authorization_code=authorization_code, csrf_state=csrf_state).model_dump()
+                            detail="Invalid client credentials.")
+    if not valid_client_scopes(client_id=request_data.client_id, 
+                                   scopes=request_data.scope):
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                            detail="Invalid client scopes.")
+    configured_redirect_url: str = configure_redirect_uri(base_uri=None, 
+                                                          query_parameters=request_data.model_dump()) 
+    return RedirectResponse(url=configured_redirect_url)
+
+
 
 @router.post("/token", status_code=status.HTTP_200_OK, response_model=TokenResponse)
 async def get_access_token(form_data: TokenForm = Depends()):
