@@ -287,6 +287,22 @@ def get_client_concent_details(client_id: str, scopes: list[str]) -> ConcentDeta
                           scopes_descriptions=scopes_descriptions,
                           client_redirect_uri=client.redirect_uri)
 
+def configure_redirect_uri(base_uri: str, query_parameters: dict[str, str]) -> str:
+    """
+    Configure the redirect uri with the query parameters.
+
+    Args:
+        base_uri (str): The base uri of the redirect.
+        query_parameters (dict[str, str]): The query parameters to be added to the redirect uri.
+
+    Returns:
+        str: The complete redirect uri with the query parameters.
+    """
+    complete_uri: str = base_uri + "?"
+    for key, value in query_parameters.items():
+        complete_uri += f"{key}={value}&"
+    return complete_uri
+
 
 
 class BearerTokenAuth:
