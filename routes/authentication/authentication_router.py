@@ -52,6 +52,34 @@ async def login_submit(form_data: LoginForm = Depends()):
                                                           query_parameters=form_data.model_dump())
     return RedirectResponse(url=configured_redirect_url)
 
+@router.get("/consent", response_class=HTMLResponse)
+async def consent_form(request: Request, request_data: LoginForm = Depends()):
+    """
+    Display the consent form to the user, fetching and passing the concent details for the client.
+    """
+    concent_details: ConcentDetails = get_client_concent_details(client_id=request_data.client_id, 
+                                                                 scopes=request_data.scope)
+    return templates.TemplateResponse("consent.html", {"request": request, 
+                                                       "request_data": request_data, 
+                                                       concent_details: concent_details})
+
+@router.post("/consent", response_class=HTMLResponse)
+async def consent_submit(form_data: ConcentForm = Depends()):
+    """
+    Generate and store an authorization code, redirecting to redirect_uri with code and CSRF state.
+    """
+    authorize_response: AuthorizeResponse = generate_and_store_auth_code(username=form_data.username,
+                                                                          state=form_data.state,
+                                                                          code_challenge=form_data.code_challenge)
+    if authorize_response is None: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                                       detail="Authorization code generation failed.")
+    configured_redirect_url: str = configure_redirect_uri(base_uri=form_data.client_redirect_uri, 
+                                                          query_parameters={
+                                                              "code": authorize_response.code,
+                                                              "state": authorize_response.state
+                                                          })
+    return RedirectResponse(url=configured_redirect_url)
+
 @router.post("/token", status_code=status.HTTP_200_OK, response_model=TokenResponse)
 async def get_access_token(form_data: TokenForm = Depends()):
     """
