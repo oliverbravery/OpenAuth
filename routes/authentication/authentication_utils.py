@@ -318,7 +318,20 @@ def valid_client_credentials(client_id: str, client_secret: str) -> bool:
     if not client: return False
     return client.client_secret == client_secret
 
+def valid_client_scopes(client_id: str, scopes: list[str]) -> bool:
+    """
+    Check that the client has the requested scopes.
 
+    Args:
+        client_id (str): Client id of the application.
+        scopes (list[str]): List of scopes requested by the client.
+
+    Returns:
+        bool: True if the client scopes are valid, False otherwise.
+    """
+    client: Client = db_manager.clients_interface.get_client(client_id=client_id)
+    if not client: return False
+    return all(scope in client.scopes for scope in scopes)
 
 class BearerTokenAuth:
     """
