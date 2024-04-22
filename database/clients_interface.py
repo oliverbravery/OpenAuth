@@ -18,3 +18,15 @@ class ClientsInterface(DBGenericInterface):
         Gets the client with the specified client_id from the clients collection.
         """
         return self.get_generic(search_params={"client_id": client_id}, object_class=Client)
+    
+    def add_client(self, client: Client) -> int:
+        """
+        Adds a client to the database.
+
+        Args:
+            client (Client): The Client object to add to the database.
+
+        Returns:
+            int: 0 if the client was added successfully, -1 otherwise.
+        """
+        return self.add_generic(object=client)
