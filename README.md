@@ -17,6 +17,11 @@ pip install -r requirements.txt
 ```bash
 cp .env.template .env
 ```
+For generating auth client id and secret, use these commands respectively:
+```bash
+openssl rand -hex 32 # For client secret
+openssl rand -hex 16 # For client id
+```
 5. To run the API server, use the following command:
 ```bash
 uvicorn app.main:app
