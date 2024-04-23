@@ -273,7 +273,7 @@ def generate_and_store_auth_code(state: str, username: str, code_challenge: str)
     response: int = db_manager.authorization_interface.update_authorization(authorization=user_authorization)
     if response == -1: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Authorization failed.")
-    return AuthorizeResponse(authorization_code=authorization_code, csrf_state=csrf_state)
+    return AuthorizeResponse(authorization_code=authorization_code, state=csrf_state)
 
 def get_client_concent_details(client_id: str, scopes: list[str]) -> ConcentDetails:
     """
