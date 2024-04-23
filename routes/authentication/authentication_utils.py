@@ -184,7 +184,9 @@ def generate_and_store_tokens(authorization: Authorization, user_account: Accoun
 def get_tokens_with_authorization_code(auth_code: str, code_verifier: str, client_id: str, client_secret: str) -> TokenResponse:
     """
     Get access and refresh tokens and store the refresh token in the database. 
-    Also, remove the authorization code and code challenge from the database after use.
+    Remove the authorization code and code challenge from the database after use.
+    
+    NOTE: This function also checks that the code challenge is valid, using the code verifier.
 
     Args:
         auth_code (str): Encrypted authenticaion code to be used to get the tokens.
