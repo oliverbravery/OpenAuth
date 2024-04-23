@@ -64,10 +64,12 @@ async def login_submit(request: Request):
                                                        "concent_details": concent_details})
 
 @router.post("/consent", response_class=HTMLResponse)
-async def consent_submit(form_data: ConcentForm = Depends()):
+async def consent_submit(request: Request):
     """
     Generate and store an authorization code, redirecting to redirect_uri with code and CSRF state.
     """
+    fetched_form_data: FormData = await request.form()
+    form_data: ConcentForm = form_to_object(form_data=fetched_form_data, object_class=ConcentForm)
     if form_data.consented != 'true':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="User did not consent to the scopes requested.")
