@@ -65,7 +65,7 @@ class AuthorizationRequest(BaseModel):
         return {
             "client_id": self.client_id,
             "client_secret": self.client_secret,
-            "response_type": self.response_type.value,
+            "response_type": self.response_type,
             "state": self.state,
             "code_challenge": self.code_challenge,
             "scope": " ".join(self.scope)
