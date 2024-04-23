@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi.param_functions import Form
 from pydantic import BaseModel, field_validator
 from enum import Enum
@@ -128,7 +129,7 @@ class TokenRequest(BaseModel):
     client_secret: str
     code: str
     code_verifier: str
-    refresh_token: str
+    refresh_token: Optional[str]
     
     def model_dump(self) -> dict:
         return {
