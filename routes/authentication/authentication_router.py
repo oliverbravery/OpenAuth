@@ -2,6 +2,7 @@ from fastapi import APIRouter, status, Depends, HTTPException
 from routes.authentication.authentication_utils import *
 from routes.authentication.models import AuthorizationRequest, AuthorizeResponse, TokenForm, GrantType, TokenResponse, LoginForm, ConcentForm, Endpoints
 from starlette.responses import RedirectResponse
+from starlette.formparsers import FormData
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -43,10 +44,12 @@ async def login_form(request: Request, request_data: AuthorizationRequest = Depe
                                                      "recaptcha_site_key": recaptcha_site_key})
 
 @router.post("/login", response_class=HTMLResponse)
-async def login_submit(form_data: LoginForm = Depends()): 
+async def login_submit(request: Request): 
     """
     Validate the user credentials and redirect to the consent page if the user is valid.
     """
+    fetched_form_data: FormData = await request.form()
+    form_data: LoginForm = form_to_object(form_data=fetched_form_data, object_class=LoginForm)
     if not verify_captcha_completed(captcha_response=form_data.g_recaptcha_response):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Captcha verification failed.")
