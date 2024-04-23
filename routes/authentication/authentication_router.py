@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, Depends, HTTPException
 from routes.authentication.authentication_utils import *
-from routes.authentication.models import AuthorizationRequest, AuthorizeResponse, TokenForm, GrantType, TokenResponse, LoginForm, ConcentForm, Endpoints
+from routes.authentication.models import AuthorizationRequest, AuthorizeResponse, TokenRequest, GrantType, TokenResponse, LoginForm, ConcentForm, Endpoints
 from starlette.responses import RedirectResponse
 from starlette.formparsers import FormData
 from fastapi.responses import HTMLResponse
@@ -86,7 +86,7 @@ async def consent_submit(request: Request):
     return RedirectResponse(url=configured_redirect_url)
 
 @router.post("/token", status_code=status.HTTP_200_OK, response_model=TokenResponse)
-async def get_access_token(form_data: TokenForm = Depends()):
+async def get_access_token(form_data: TokenRequest = Depends()):
     """
     Get access token using the provided grant type.
     Complies with OAuth2.0 Authorization Code Flow with Proof Key for Code Exchange (PKCE).
@@ -94,7 +94,6 @@ async def get_access_token(form_data: TokenForm = Depends()):
     Args:
         form_data (TokenForm): TokenForm object containing the OAuth2.0 /token request parameters.
     """
-    # TODO: Check that the parameters should be passed in the query or in the query
     token_response: TokenResponse = None
     match form_data.grant_type:
         case GrantType.AUTHORIZATION_CODE:
