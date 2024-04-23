@@ -80,7 +80,7 @@ async def consent_submit(request: Request):
                                                     detail="Authorization code generation failed.")
     configured_redirect_url: str = configure_redirect_uri(base_uri=form_data.client_redirect_uri, 
                                                         query_parameters={
-                                                            "code": authorize_response.code,
+                                                            "code": authorize_response.authorization_code,
                                                             "state": authorize_response.state
                                                         })
     return RedirectResponse(url=configured_redirect_url)
