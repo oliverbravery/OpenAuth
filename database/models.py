@@ -51,7 +51,7 @@ class Client(BaseModel):
         description (str): A description of the application and why it needs access to certain scopes.
         redirect_uri (str): The URI to which the user is redirected after granting or denying access to the application.
         developers (List[ClientAdmin]): The list of developers that have access to the client.
-        scopes (List[str]): The list of scopes belonging to the client that can be requested by the application.
+        scopes (dict[str,str]): The scopes of the client mapped to a description of the scope.
     """
     client_id: str
     client_secret: str
@@ -59,7 +59,7 @@ class Client(BaseModel):
     description: str
     redirect_uri: str
     developers: List[ClientDeveloper] = []
-    scopes: List[str] = []
+    scopes: dict[str, str] = {}
     
 class Profile(BaseModel):
     """
