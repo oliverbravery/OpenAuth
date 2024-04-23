@@ -2,6 +2,7 @@ from fastapi import Depends, APIRouter, status, HTTPException
 from routes.account.models import UserRegistrationForm
 from database.models import Account
 from routes.account.account_utils import *
+from routes.authentication.password_manager import PasswordManager
 
 router = APIRouter(
     prefix="/account",
@@ -16,11 +17,12 @@ async def register_account(form_data: UserRegistrationForm = Depends()):
     Args:
         form_data (UserRegistrationForm): The form data for the new account.
     """
+    hashed_password: str = PasswordManager.get_password_hash(form_data.password)
     new_account: Account = Account(
         username=form_data.username,
         display_name=form_data.display_name,
         email=form_data.email,
-        hashed_password=form_data.password,
+        hashed_password=hashed_password,
         hashed_totp_pin=None,
         profiles=[]
     )
