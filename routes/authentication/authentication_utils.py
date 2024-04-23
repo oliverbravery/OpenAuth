@@ -74,7 +74,7 @@ def validate_user_credentials(username: str, password: str) -> int:
                                            hashed_password=account.hashed_password): return -1
     return 0
 
-def generate_authorization_code(username: str) -> str:
+def generate_authorization_code(username: str) -> tuple[str, str]:
     """
     Generate an encrypted authorization code with a username.
         
@@ -82,13 +82,13 @@ def generate_authorization_code(username: str) -> str:
         username (str): The username of the user to be authorized.
 
     Returns:
-        str: The generated URL safe authorization code.
+        tuple[str, str]: The generated URL safe encrypted authorization code and the plaintext authorization code (encrypted auth code, auth_code).
     """
     auth_code: str = token_urlsafe(32)
     combined_code: str = f"{username}:{auth_code}"
     encrypted_code: bytes = fernet.encrypt(combined_code.encode())
     url_safe: str = urlsafe_b64encode(encrypted_code).decode()
-    return url_safe
+    return url_safe, auth_code
 
 def decrypt_authorization_code(auth_code: str) -> tuple[str, str]:
     """
@@ -260,18 +260,18 @@ def generate_and_store_auth_code(state: str, username: str, code_challenge: str)
     Returns:
         AuthorizeResponse: The response containing the authorization code and CSRF state.
     """
-    authorization_code: str = generate_authorization_code(username=username)
+    encrypted_auth_code, authorization_code = generate_authorization_code(username=username)
     csrf_state: str = state
     user_authorization: Authorization = Authorization(
         username=username,
-        authorization_code=authorization_code,
+        auth_code=authorization_code,
         code_challenge=code_challenge,
         hashed_refresh_token=None
     )
     response: int = db_manager.authorization_interface.update_authorization(authorization=user_authorization)
     if response == -1: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Authorization failed.")
-    return AuthorizeResponse(authorization_code=authorization_code, state=csrf_state)
+    return AuthorizeResponse(authorization_code=encrypted_auth_code, state=csrf_state)
 
 def get_client_concent_details(client_id: str, scopes: list[str]) -> ConcentDetails:
     """
