@@ -83,7 +83,7 @@ async def consent_submit(request: Request):
                                                             "code": authorize_response.authorization_code,
                                                             "state": authorize_response.state
                                                         })
-    return RedirectResponse(url=configured_redirect_url)
+    return RedirectResponse(url=configured_redirect_url, status_code=status.HTTP_302_FOUND)
 
 @router.post("/token", status_code=status.HTTP_200_OK, response_model=TokenResponse)
 async def get_access_token(form_data: TokenRequest = Depends()):
