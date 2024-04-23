@@ -93,6 +93,7 @@ class ConcentForm(AuthorizationRequest):
     """
     client_redirect_uri: str
     consented: str
+    username: str
 
 class ConcentDetails(BaseModel):
     """
