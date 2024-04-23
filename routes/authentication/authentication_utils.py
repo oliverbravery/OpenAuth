@@ -288,11 +288,9 @@ def get_client_concent_details(client_id: str, scopes: list[str]) -> ConcentDeta
     """
     client: Client = db_manager.clients_interface.get_client(client_id=client_id)
     if not client: return None
-    scopes_descriptions: dict[str, str] = {scope:None for scope in scopes}
-    # TODO: Implement logic to get descriptions of the scopes from the database
-    return ConcentDetails(client_name=client.name, 
-                          client_description=client.description, 
-                          scopes_descriptions=scopes_descriptions,
+    return ConcentDetails(name=client.name, 
+                          description=client.description, 
+                          scopes_description=client.scopes,
                           client_redirect_uri=client.redirect_uri)
 
 def configure_redirect_uri(base_uri: str, query_parameters: dict[str, str]) -> str:
@@ -339,7 +337,8 @@ def valid_client_scopes(client_id: str, scopes: list[str]) -> bool:
     """
     client: Client = db_manager.clients_interface.get_client(client_id=client_id)
     if not client: return False
-    return all(scope in client.scopes for scope in scopes)
+    client_scopes: list[str] = list(client.scopes.keys())
+    return all(scope in client_scopes for scope in scopes)
 
 def verify_captcha_completed(captcha_response: str) -> bool:
     """
