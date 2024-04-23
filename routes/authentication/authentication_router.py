@@ -27,7 +27,7 @@ async def authorize_endpoint(request_data: AuthorizationRequest = Depends()):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid client credentials.")
     if not valid_client_scopes(client_id=request_data.client_id, 
-                                   scopes=request_data.scope):
+                                   scopes=request_data.get_scopes_as_list()):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                             detail="Invalid client scopes.")
     configured_redirect_url: str = configure_redirect_uri(base_uri=Endpoints.LOGIN.value, 
