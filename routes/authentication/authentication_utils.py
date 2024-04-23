@@ -87,9 +87,8 @@ def generate_authorization_code(username: str) -> str:
     auth_code: str = token_urlsafe(32)
     combined_code: str = f"{username}:{auth_code}"
     encrypted_code: bytes = fernet.encrypt(combined_code.encode())
-    encrypted_code_urlsafe: bytes = urlsafe_b64encode(encrypted_code)
-    encrypted_code_str: str = encrypted_code_urlsafe.decode()
-    return  encrypted_code_str
+    url_safe: str = urlsafe_b64encode(encrypted_code).decode()
+    return url_safe
 
 def decrypt_authorization_code(auth_code: str) -> tuple[str, str]:
     """
@@ -101,11 +100,8 @@ def decrypt_authorization_code(auth_code: str) -> tuple[str, str]:
     Returns:
         tuple[str, str]: The username and the authorization code as a tuple (username, auth_code).
     """
-    encrypted_code_urlsafe: bytes = auth_code.encode()
-    encrypted_code: bytes = urlsafe_b64decode(encrypted_code_urlsafe)
-    combined_code: bytes = fernet.decrypt(encrypted_code)
-    combined_code_str: str = combined_code.decode()
-    return combined_code_str.split(":")[0], combined_code_str[len(combined_code_str.split(":")[0])+1:]
+    decrypted_combined_code: str = fernet.decrypt(urlsafe_b64decode(auth_code.encode())).decode()
+    return decrypted_combined_code.split(":")[0], decrypted_combined_code[len(decrypted_combined_code.split(":")[0])+1:]
 
 def verify_authorization_code(auth_code: str, username: str) -> bool:
     """
