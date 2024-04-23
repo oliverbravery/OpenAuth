@@ -57,19 +57,10 @@ async def login_submit(request: Request):
                                  password=form_data.password) == -1:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid credentials.")
-    configured_redirect_url: str = configure_redirect_uri(base_uri=Endpoints.CONSENT.value, 
-                                                          query_parameters=form_data.model_dump())
-    return RedirectResponse(url=configured_redirect_url)
-
-@router.get("/consent", response_class=HTMLResponse)
-async def consent_form(request: Request, request_data: LoginForm = Depends()):
-    """
-    Display the consent form to the user, fetching and passing the concent details for the client.
-    """
-    concent_details: ConcentDetails = get_client_concent_details(client_id=request_data.client_id, 
-                                                                 scopes=request_data.scope)
+    concent_details: ConcentDetails = get_client_concent_details(client_id=form_data.client_id, 
+                                                                 scopes=form_data.scope)
     return templates.TemplateResponse("consent.html", {"request": request,
-                                                       "request_data": request_data, 
+                                                       "request_data": form_data, 
                                                        "concent_details": concent_details})
 
 @router.post("/consent", response_class=HTMLResponse)
