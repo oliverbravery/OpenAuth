@@ -41,4 +41,4 @@ class AuthorizationInterface(DBGenericInterface):
         Returns:
             int: 0 if the authorization was updated successfully, -1 otherwise.
         """
-        return self.update_generic(search_params={"username": authorization.username}, object=authorization)
+        return self.update_generic(search_params={"username": authorization.username}, update_params={"$set": authorization.model_dump()})
