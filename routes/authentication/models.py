@@ -17,7 +17,7 @@ class GrantType(Enum):
     AUTHORIZATION_CODE = "authorization_code"
     REFRESH_TOKEN = "refresh_token"
     
-class ResponseType(Enum):
+class ResponseType(str, Enum):
     """
     Enum class for the response types.
     """
@@ -79,7 +79,7 @@ class LoginForm(AuthorizationRequest):
     username: str = Form()
     password: str = Form()
     totp_pin: str = Form()
-    g_recaptcha_response: str = Form()
+    g_recaptcha_response: str = Form(alias="g-recaptcha-response")
     
 class ConcentForm(AuthorizationRequest):
     """
