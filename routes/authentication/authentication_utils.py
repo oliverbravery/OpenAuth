@@ -13,6 +13,8 @@ from fastapi import HTTPException, status
 from starlette.requests import Request
 import requests
 from requests import Response
+from starlette.formparsers import FormData
+from pydantic import BaseModel
 
 fernet: Fernet = Fernet(os.getenv("AUTH_CODE_SECRET"))
 
@@ -356,6 +358,22 @@ def verify_captcha_completed(captcha_response: str) -> bool:
     if response.status_code != 200: return False
     if response.json()["success"]: return True
     return False
+
+def form_to_object(form_data: FormData, object_class: BaseModel) -> object:
+    """
+    Convert form data to a Pydantic object.
+
+    Args:
+        form_data (FormData): The form data to be converted.
+        object_class (BaseModel): The Pydantic object class to convert the form data to.
+
+    Returns:
+        object: The Pydantic object with the form data.
+    """
+    form_data_dict: dict = {}
+    for key, value in form_data.items():
+        form_data_dict[key] = value
+    return object_class.model_construct(**form_data_dict)
 
 class BearerTokenAuth:
     """
