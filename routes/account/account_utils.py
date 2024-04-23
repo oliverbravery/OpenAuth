@@ -1,3 +1,6 @@
+from base64 import urlsafe_b64encode
+import hashlib
+from secrets import token_urlsafe
 from main import db_manager
 from database.models import Account, Authorization
 
@@ -32,3 +35,14 @@ def register_account_in_db_collections(new_account: Account) -> int:
         response: int = db_manager.accounts_interface.delete_account(username=new_account.username)
         return -1
     return 0
+
+def generate_code_challenge_and_verifier() -> tuple[str, str]:
+    """
+    Generate a code challenge and code verifier for PKCE.
+
+    Returns:
+        tuple[str, str]: The code challenge and code verifier as a tuple (code_challenge, code_verifier).
+    """
+    code_verifier: str = token_urlsafe(256)
+    code_challenge: str = urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).decode()
+    return code_challenge, code_verifier
