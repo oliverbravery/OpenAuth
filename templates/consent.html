@@ -16,7 +16,7 @@
                         <li>{{key}} - {{value}}</li>
                     {% endfor %}
                 </ul>
-                <form method="post" action="/authentication/concent">
+                <form method="post" action="/authentication/consent">
                     <input type="hidden" name="client_id" value="{{ request_data.client_id }}">
                     <input type="hidden" name="client_secret" value="{{ request_data.client_secret }}">
                     <input type="hidden" name="scope" value="{{ request_data.scope }}">
