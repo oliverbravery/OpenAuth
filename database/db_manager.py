@@ -54,5 +54,8 @@ class DBManager:
                                     name="Authentication Service", 
                                     description="Client for the authentication service", 
                                     redirect_uri=auth_client_redirect_uri,
-                                    scopes=["read:profile", "write:profile"])
+                                    scopes={
+                                        "read:profile": "Read user profile information",
+                                        "write:profile": "Write user profile information",
+                                    })
         self.clients_interface.add_client(client=auth_client)
