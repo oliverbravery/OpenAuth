@@ -49,7 +49,7 @@ class DBManager:
         AUTH_SERVICE_PORT: str = os.getenv("AUTH_SERVICE_PORT")
         if AUTH_SERVICE_HOST is None or AUTH_SERVICE_PORT is None:
             raise ValueError("AUTH_SERVICE_HOST and AUTH_SERVICE_PORT must be set to create authentication client.")
-        auth_client_redirect_uri: str = f"http://{AUTH_SERVICE_HOST}:{AUTH_SERVICE_PORT}/login/callback"
+        auth_client_redirect_uri: str = f"http://{AUTH_SERVICE_HOST}:{AUTH_SERVICE_PORT}/account/login/callback"
         auth_client: Client = Client(client_id=AUTH_CLIENT_ID, client_secret=AUTH_CLIENT_SECRET, 
                                     name="Authentication Service", 
                                     description="Client for the authentication service", 
