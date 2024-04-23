@@ -17,7 +17,7 @@ class PasswordManager:
         Returns:
             bool: True if the plaintext password matches the hashed password, False otherwise.
         """
-        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)
+        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
     @staticmethod
     def get_password_hash(password: str) -> str:
@@ -30,4 +30,4 @@ class PasswordManager:
         Returns:
             str: Salted and hashed password.
         """
-        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
