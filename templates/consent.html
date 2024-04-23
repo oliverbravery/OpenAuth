@@ -19,6 +19,7 @@
                 <form method="post" action="/authentication/consent">
                     <input type="hidden" name="client_id" value="{{ request_data.client_id }}">
                     <input type="hidden" name="client_secret" value="{{ request_data.client_secret }}">
+                    <input type="hidden" name="username" value="{{ request_data.username }}">
                     <input type="hidden" name="scope" value="{{ request_data.scope }}">
                     <input type="hidden" name="response_type" value="{{ request_data.response_type }}">
                     <input type="hidden" name="state" value="{{ request_data.state }}">
