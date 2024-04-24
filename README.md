@@ -22,6 +22,11 @@ For generating auth client id and secret, use these commands respectively:
 openssl rand -hex 32 # For client secret
 openssl rand -hex 16 # For client id
 ```
+For signing JWT tokens we use the RS256 algorithm. To generate a private and public key pair, use the following commands:
+```bash
+openssl genrsa -out environment/private.pem 2048
+openssl rsa -in environment/private.pem -outform PEM -pubout -out environment/public.pem
+```
 5. To run the API server, use the following command:
 ```bash
 uvicorn app.main:app
