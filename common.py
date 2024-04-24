@@ -1,4 +1,7 @@
 from database.db_manager import DBManager
+from cryptography.fernet import Fernet
+from utils.token_manager import TokenManager
+from utils.database_utils import get_connection_string
 from dotenv import load_dotenv
 import os
 
@@ -9,19 +12,25 @@ MONGO_HOST: str = os.getenv("MONGO_HOST")
 MONGO_ROOT_USERNAME: str = os.getenv("MONGO_INITDB_ROOT_USERNAME")
 MONGO_ROOT_PASSWORD: str = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
 MONGO_DATABASE_NAME: str = os.getenv("DMONGO_DATABASE_NAME")
+RECAPTCHA_SECRET_KEY: str = os.getenv("RECAPTCHA_SECRET_KEY")
+AUTH_CODE_SECRET: str = os.getenv("AUTH_CODE_SECRET")
+ACCESS_TOKEN_EXPIRE_MINUTES: str = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+REFRESH_TOKEN_EXPIRE_MINUTES: str = os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES")
+JWT_PRIVATE_PEM_PATH: str = os.getenv("JWT_PRIVATE_PEM_PATH")
+JWT_PUBLIC_PEM_PATH: str = os.getenv("JWT_PUBLIC_PEM_PATH")
+TOKEN_ALGORITHM: str = os.getenv("TOKEN_ALGORITHM")
 
-fernet: Fernet = Fernet(os.getenv("AUTH_CODE_SECRET"))
+fernet: Fernet = Fernet(AUTH_CODE_SECRET)
 
-recaptcha_secret_key: str = os.getenv("RECAPTCHA_SECRET_KEY")
-if not recaptcha_secret_key: raise ValueError("RECAPTCHA_SECRET_KEY not set in environment variables.")
-google_verify_url: str = f"https://www.google.com/recaptcha/api/siteverify?secret={recaptcha_secret_key}&response="
+if not RECAPTCHA_SECRET_KEY: raise ValueError("RECAPTCHA_SECRET_KEY not set in environment variables.")
+google_verify_url: str = f"https://www.google.com/recaptcha/api/siteverify?secret={RECAPTCHA_SECRET_KEY}&response="
 
 token_manager: TokenManager = TokenManager(
-    access_token_expire_time=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")),
-    refresh_token_expire_time=int(os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES")),
-    private_key_path=str(os.getenv("JWT_PRIVATE_PEM_PATH")),
-    public_key_path=str(os.getenv("JWT_PUBLIC_PEM_PATH")),
-    token_algorithm=str(os.getenv("TOKEN_ALGORITHM"))
+    access_token_expire_time=int(ACCESS_TOKEN_EXPIRE_MINUTES),
+    refresh_token_expire_time=int(REFRESH_TOKEN_EXPIRE_MINUTES),
+    private_key_path=str(JWT_PRIVATE_PEM_PATH),
+    public_key_path=str(JWT_PUBLIC_PEM_PATH),
+    token_algorithm=str(TOKEN_ALGORITHM)
 )
 
 db_manager: DBManager = DBManager(
