@@ -11,8 +11,8 @@ import hashlib
 import bcrypt
 from fastapi import HTTPException, status
 from starlette.requests import Request
-import requests
-from requests import Response
+import httpx
+from httpx import Response
 from starlette.formparsers import FormData
 from pydantic import BaseModel
 
@@ -338,7 +338,7 @@ def valid_client_scopes(client_id: str, scopes: list[str]) -> bool:
     client_scopes: list[str] = list(client.scopes.keys())
     return all(scope in client_scopes for scope in scopes)
 
-def verify_captcha_completed(captcha_response: str) -> bool:
+async def verify_captcha_completed(captcha_response: str) -> bool:
     """
     Verify that the captcha was completed.
 
@@ -350,10 +350,14 @@ def verify_captcha_completed(captcha_response: str) -> bool:
     """
     
     url: str = google_verify_url + captcha_response
-    response: Response = requests.request("GET",
-                                          url)
-    if response.status_code != 200: return False
-    if response.json()["success"]: return True
+    try:
+        async with httpx.AsyncClient() as client:
+            captcha_request: Response = await client.get(url)
+            captcha_request.raise_for_status()  # Raise an exception for non-2xx status codes
+            if captcha_response.json()["success"]: return True
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Failed to verify captcha response.")
     return False
 
 def form_to_object(form_data: FormData, object_class: BaseModel) -> object:
