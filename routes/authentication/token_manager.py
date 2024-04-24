@@ -1,7 +1,8 @@
 from datetime import timedelta
 import datetime
 from jose import jwt
-from rsa import pem
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from routes.authentication.models import TokenType, AccessToken, BaseToken, RefreshToken, PEMMarker
 from database.models import Account, Profile
 
@@ -14,7 +15,6 @@ class TokenManager:
     refresh_token_expire_time: int
     token_algorithm: str
     private_key: bytes # PEM encoded private key
-    public_key: bytes # PEM encoded public key
     
     def __init__(self, access_token_expire_time: int, refresh_token_expire_time: int, 
                  private_key_path: str, public_key_path: str, token_algorithm: str = "RS256") -> None:
@@ -30,25 +30,31 @@ class TokenManager:
         """
         self.access_token_expire_time = access_token_expire_time
         self.refresh_token_expire_time = refresh_token_expire_time
-        self.public_key = self.__load_pem_key(key_path=public_key_path)
         self.private_key = self.__load_pem_key(key_path=private_key_path)
         self.token_algorithm = token_algorithm
         
-    def __load_pem_key(self, key_path: str, pem_marker: PEMMarker) -> bytes:
+    def __load_pem_key(self, key_path: str) -> str:
         """
         Loads the PEM encoded key from the provided path.
 
         Args:
             key_path (str): The path to the key file.
-            pem_marker (PEMMarker): The PEM marker for the key.
 
         Returns:
-            bytes: The PEM encoded key.
+            str: The PEM encoded key.
         """
         with open(key_path, "rb") as key_file:
-            key: bytes = pem.load_pem(contents=key_file, pem_marker=pem_marker.value)
-            return key
-    
+            private_key = load_pem_private_key(
+                key_file.read(),
+                password=None,  # Provide a password if the key is encrypted
+            )
+            private_key_str = private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=serialization.NoEncryption(),
+            ).decode("utf-8")
+            return private_key_str
+            
     def get_token_expire_time(self, token_type: TokenType) -> int:
         """
         Gets the expire time for the token based on the token type.
