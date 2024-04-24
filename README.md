@@ -27,9 +27,11 @@ For signing JWT tokens we use the RS256 algorithm. To generate a private and pub
 openssl genrsa -out environment/private.pem 2048
 openssl rsa -in environment/private.pem -outform PEM -pubout -out environment/public.pem
 ```
-For encrypting the username with the authentication code a 256-bit hex key is used. To generate the key, use the following command:
+For encrypting the username with the authentication code (AUTH_CODE_SECRET). To generate the key, use the following command:
 ```bash
-openssl rand -hex 32
+python 
+from cryptography.fernet import Fernet
+Fernet.generate_key()
 ```
 5. To run the API server, use the following command:
 ```bash
