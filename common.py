@@ -21,6 +21,8 @@ JWT_PUBLIC_PEM_PATH: str = os.getenv("JWT_PUBLIC_PEM_PATH")
 TOKEN_ALGORITHM: str = os.getenv("TOKEN_ALGORITHM")
 AUTH_CLIENT_ID: str = os.getenv("AUTH_CLIENT_ID")
 AUTH_CLIENT_SECRET: str = os.getenv("AUTH_CLIENT_SECRET")
+AUTH_SERVICE_HOST: str = os.getenv("AUTH_SERVICE_HOST")
+AUTH_SERVICE_PORT: str = os.getenv("AUTH_SERVICE_PORT")
 
 fernet: Fernet = Fernet(AUTH_CODE_SECRET)
 
