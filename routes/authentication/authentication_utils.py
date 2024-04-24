@@ -25,7 +25,8 @@ google_verify_url: str = f"https://www.google.com/recaptcha/api/siteverify?secre
 token_manager: TokenManager = TokenManager(
     access_token_expire_time=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")),
     refresh_token_expire_time=int(os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES")),
-    secret_key=str(os.getenv("TOKEN_SIGNING_KEY")),
+    private_key_path=str(os.getenv("JWT_PRIVATE_PEM_PATH")),
+    public_key_path=str(os.getenv("JWT_PUBLIC_PEM_PATH")),
     token_algorithm=str(os.getenv("TOKEN_ALGORITHM"))
 )
 
