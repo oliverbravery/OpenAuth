@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 class DBCollection(Enum):
     """
@@ -38,6 +38,70 @@ class ClientDeveloper(BaseModel):
     """
     username: str
     scopes: List[DeveloperScope]
+    
+class MetadataType(Enum):
+    """
+    Represents the possible types for a metadata attribute.
+    """
+    STRING = "string"
+    INTEGER = "integer"
+    FLOAT = "float"
+    BOOLEAN = "boolean"
+    DATE = "date"
+    TIME = "time"
+    DATETIME = "datetime"
+     
+class MetadataAttribute(BaseModel):
+    """
+    Represents a metadata attribute for a client.
+    
+    Args:
+        name (str): The name of the metadata attribute.
+        description (str): The description of the metadata attribute.
+        type (MetadataType): The type of the metadata attribute.
+    """
+    name: str
+    description: str
+    type: MetadataType
+    
+class ScopeAccessType(str, Enum):
+    """
+    Represents all attribute access types.
+    
+    An attribute can be read, written, or both. It is used to determine what the client can do with the attribute.
+    """
+    READ = "read"
+    WRITE = "write"
+    READ_WRITE = "read_write"
+    
+class ScopeAttribute(BaseModel):
+    """
+    Represents an attribute in a scope and what the client can do with it.
+    
+    Args:
+        name (str): The name of the attribute.
+        access_type (ScopeAccessType): The access type of the attribute.
+    """
+    name: str
+    access_type: ScopeAccessType
+    
+class Scope(BaseModel):
+    """
+    Represents a scope for a client.
+    
+    A scope is a permission that the client can request to allow it to access certain attributes of the user's profile.
+    
+    Args:
+        name (str): The 'name' of the scope.
+        description (str): A description of the scope and what it allows the client to do.
+        shareable (bool): Whether other clients can request access to this scope.
+        
+    """
+    name: str
+    description: str
+    shareable: bool
+    attributes: List[ScopeAttribute]
+    
 
 class Client(BaseModel):
     """
@@ -51,7 +115,9 @@ class Client(BaseModel):
         description (str): A description of the application and why it needs access to certain scopes.
         redirect_uri (str): The URI to which the user is redirected after granting or denying access to the application.
         developers (List[ClientAdmin]): The list of developers that have access to the client.
-        scopes (dict[str,str]): The scopes of the client mapped to a description of the scope.
+        scopes (list[Scope]): The scopes of the client.
+        profile_metadata_attributes (List[MetadataAttribute]): The metadata attributes that the client can store in the user's profile.
+        profile_defaults (dict[str, any]): Any default values that the client wants to store in the user's profile.
     """
     client_id: str
     client_secret: str
@@ -59,20 +125,47 @@ class Client(BaseModel):
     description: str
     redirect_uri: str
     developers: List[ClientDeveloper] = []
-    scopes: dict[str, str] = {}
+    scopes: list[Scope] = []
+    profile_metadata_attributes: list[MetadataAttribute] = []
+    profile_defaults: dict[str, any] = {}
+    
+    def get_profile_default(self, key: str) -> any:
+        """
+        Get the default value for the given key.
+
+        Args:
+            key (str): The key of the default value.
+
+        Returns:
+            any: The default value for the given key. None if the key does not exist.
+        """
+        return self.profile_defaults.get(key, None)
+    
+class ProfileScope(BaseModel):
+    """
+    Represents a scope in a profile for an app.
+    
+    Defines for a specific application what scopes the user has granted access to.
+    
+    Args:
+        client_id (str): The client the scope is associated with.
+        scope (str): The scope that the application is allowed to access.
+    """
+    client_id: str
+    scope: str
     
 class Profile(BaseModel):
     """
-    Represents a profile for an app stored in the user's account.
+    Represents a profile for a client stored in the user's account.
 
     Args:
         client_id (str): The client_id of the application associated with the profile.
-        role (str): The role of the user according to the application.
-        scopes (List[str]): The scopes that the application is allowed to access.
+        scopes (List[ProfileScope]): The scopes that the application is allowed to access.
+        metadata (Dict[str, any]): Additional attributes that the application has stored in the user's profile. Attributes are defined by the client. (Attribute name: Attribute value)
     """
     client_id: str
-    role: str
-    scopes: List[str] = []
+    scopes: List[ProfileScope] = []
+    metadata: Dict[str, any] = {}
     
 class Account(BaseModel):
     """
@@ -105,8 +198,10 @@ class Account(BaseModel):
         Returns:
             Optional[Profile]: The profile of the user for the given application. None if the profile does not exist.
         """
-        profile_search: list[Profile] = [profile for profile in self.profiles if profile.client_id == client_id]
-        return profile_search[0] if len(profile_search)>0 else None
+        for profile in self.profiles:
+            if profile.client_id == client_id:
+                return profile
+        return None
     
 class Authorization(BaseModel):
     """
