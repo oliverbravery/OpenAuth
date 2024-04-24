@@ -10,6 +10,13 @@ class TokenType(Enum):
     """
     ACCESS = "access"
     REFRESH = "refresh"
+    
+class PEMMarker(str, Enum):
+    """
+    Enum class for the PEM markers.
+    """ 
+    RSA_PRIVATE = "PRIVATE KEY"
+    RSA_PUBLIC = "PUBLIC KEY"
 
 class GrantType(str, Enum):
     """

@@ -1,7 +1,8 @@
 from datetime import timedelta
 import datetime
 from jose import jwt
-from routes.authentication.models import TokenType, AccessToken, BaseToken, RefreshToken
+from rsa import pem
+from routes.authentication.models import TokenType, AccessToken, BaseToken, RefreshToken, PEMMarker
 from database.models import Account, Profile
 
 class TokenManager:
@@ -12,24 +13,42 @@ class TokenManager:
     access_token_expire_time: int
     refresh_token_expire_time: int
     token_algorithm: str
-    secret_key: str
+    private_key: bytes # PEM encoded private key
+    public_key: bytes # PEM encoded public key
     
     def __init__(self, access_token_expire_time: int, refresh_token_expire_time: int, 
-                 secret_key: str, token_algorithm: str = "RS256") -> None:
+                 private_key_path: str, public_key_path: str, token_algorithm: str = "RS256") -> None:
         """
         Initializes the TokenManager object.
 
         Args:
             access_token_expire_time (int): Time in minutes for the access token to expire.
             refresh_token_expire_time (int): Time in minutes for the refresh token to expire.
-            secret_key (str): Secret key to be used for encoding the JWT token.
+            private_key_path (str): The path to the private key file.
+            public_key_path (str): The path to the public key file.
             token_algorithm (str, optional): Algorithm to be used for encoding the JWT token. Defaults to "RS256".
         """
         self.access_token_expire_time = access_token_expire_time
         self.refresh_token_expire_time = refresh_token_expire_time
-        self.secret_key = secret_key
+        self.public_key = self.__load_pem_key(key_path=public_key_path)
+        self.private_key = self.__load_pem_key(key_path=private_key_path)
         self.token_algorithm = token_algorithm
         
+    def __load_pem_key(self, key_path: str, pem_marker: PEMMarker) -> bytes:
+        """
+        Loads the PEM encoded key from the provided path.
+
+        Args:
+            key_path (str): The path to the key file.
+            pem_marker (PEMMarker): The PEM marker for the key.
+
+        Returns:
+            bytes: The PEM encoded key.
+        """
+        with open(key_path, "rb") as key_file:
+            key: bytes = pem.load_pem(contents=key_file, pem_marker=pem_marker.value)
+            return key
+    
     def get_token_expire_time(self, token_type: TokenType) -> int:
         """
         Gets the expire time for the token based on the token type.
@@ -71,7 +90,8 @@ class TokenManager:
             str: The signed string interpretation of the JWT token.
         """
         to_encode: dict = token.model_dump()
-        encoded_jwt: str = jwt.encode(to_encode, self.secret_key, algorithm=self.token_algorithm)
+        #TODO: RS256 needs PEM encoded private key to sign the token. This is asymetric so need to generate PEM public and private key. Sign with private, give public to clients to verify that tokens are legit.
+        encoded_jwt: str = jwt.encode(to_encode, self.private_key, algorithm=self.token_algorithm)
         return encoded_jwt
     
     def decode_jwt_token(self, token: str, token_type: TokenType) -> BaseToken:
@@ -93,7 +113,7 @@ class TokenManager:
             case TokenType.REFRESH:
                 token_class = RefreshToken
         try:
-            decoded_jwt_token: dict[str, any] = jwt.decode(token, self.secret_key, algorithms=[self.token_algorithm])
+            decoded_jwt_token: dict[str, any] = jwt.decode(token, self.public_key, algorithms=[self.token_algorithm])
         except jwt.JWTError:
             return None
         return token_class(**decoded_jwt_token)
