@@ -1,5 +1,5 @@
 from main import db_manager
-from database.models import Account, Authorization, Client
+from database.models import Account, Authorization, Client, Profile
 from routes.authentication.password_manager import PasswordManager
 from routes.authentication.token_manager import TokenManager
 from routes.authentication.models import TokenType, TokenResponse, RefreshToken, AccessToken, AuthorizeResponse, ConcentDetails
@@ -166,6 +166,8 @@ def generate_and_store_tokens(authorization: Authorization, user_account: Accoun
     refresh_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.REFRESH,
                                                                    account=user_account,
                                                                    client_id=client_id)
+    # TODO: access token not generating as there is no profile in the account object for the client id. 
+    # TODO: Need to, after consent screen, add the profile to the account object if it's not already there.
     if not access_token or not refresh_token: return None
     authorization.hashed_refresh_token = hash_string(plaintext=refresh_token)
     response: int = db_manager.authorization_interface.update_authorization(authorization)
@@ -178,6 +180,16 @@ def generate_and_store_tokens(authorization: Authorization, user_account: Accoun
     )
     return token_response
 
+def create_profile_if_not_exists(client_id: str, username: str) -> int:
+    client: Client = db_manager.clients_interface.get_client(client_id=client_id)
+    if not client: return -1
+    # go through the client defaults and construct the client's profile based on them
+    new_profile: Profile = Profile(
+        client_id=client_id,
+        role=client.get_profile_default(key="role"),
+        scopes=[],
+        metadata=
+        )
 def get_tokens_with_authorization_code(auth_code: str, code_verifier: str, client_id: str, client_secret: str) -> TokenResponse:
     """
     Get access and refresh tokens and store the refresh token in the database. 

@@ -73,6 +73,9 @@ async def consent_submit(request: Request):
     if form_data.consented != 'true':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="User did not consent to the scopes requested.")
+    if create_profile_if_not_exists(client_id=form_data.client_id, username=form_data.username) == -1:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Profile creation failed.")
     authorize_response: AuthorizeResponse = generate_and_store_auth_code(username=form_data.username,
                                                                         state=form_data.state,
                                                                         code_challenge=form_data.code_challenge)
