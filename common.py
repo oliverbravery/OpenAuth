@@ -1,20 +1,14 @@
-from main import db_manager
-from database.models import Account, Authorization, Client, Profile
-from routes.authentication.password_manager import PasswordManager
-from routes.authentication.token_manager import TokenManager
-from routes.authentication.models import TokenType, TokenResponse, RefreshToken, AccessToken, AuthorizeResponse, ConcentDetails
-from secrets import token_urlsafe
+from database.db_manager import DBManager
+from dotenv import load_dotenv
 import os
-from cryptography.fernet import Fernet
-from base64 import urlsafe_b64encode, urlsafe_b64decode
-import hashlib
-import bcrypt
-from fastapi import HTTPException, status
-from starlette.requests import Request
-import httpx
-from httpx import Response
-from starlette.formparsers import FormData
-from pydantic import BaseModel
+
+load_dotenv(override=True)
+
+MONGO_PORT: int = os.getenv("MONGO_PORT")
+MONGO_HOST: str = os.getenv("MONGO_HOST")
+MONGO_ROOT_USERNAME: str = os.getenv("MONGO_INITDB_ROOT_USERNAME")
+MONGO_ROOT_PASSWORD: str = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
+MONGO_DATABASE_NAME: str = os.getenv("DMONGO_DATABASE_NAME")
 
 fernet: Fernet = Fernet(os.getenv("AUTH_CODE_SECRET"))
 
@@ -29,4 +23,11 @@ token_manager: TokenManager = TokenManager(
     public_key_path=str(os.getenv("JWT_PUBLIC_PEM_PATH")),
     token_algorithm=str(os.getenv("TOKEN_ALGORITHM"))
 )
-        
+
+db_manager: DBManager = DBManager(
+    connection_string=get_connection_string(
+        port=MONGO_PORT, 
+        host=MONGO_HOST, 
+        username=MONGO_ROOT_USERNAME, 
+        password=MONGO_ROOT_PASSWORD), 
+    db_name=MONGO_DATABASE_NAME)

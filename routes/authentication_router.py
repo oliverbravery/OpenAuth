@@ -111,7 +111,7 @@ async def get_access_token(form_data: TokenRequest = Depends()):
         case GrantType.REFRESH_TOKEN:
             if form_data.refresh_token is None: raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                         detail="Refresh token is required for this grant type.")
-            token_response = get_tokens_with_refresh_token(
+            token_response = refresh_and_update_tokens(
                 refresh_token=form_data.refresh_token)
             if not token_response: raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                         detail="Invalid refresh token.")

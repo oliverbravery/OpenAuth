@@ -80,3 +80,25 @@ docker-compose down
 docker volume rm auth_service_mongodb_data
 docker-compose up -d --build auth_service_api
 ```
+
+# Project Structure
+The project structure is as follows:
+
+
+- `/` - The root directory of the project.
+
+    - `/database` - contains all generic database interactions (i.e. "_get_user_").
+
+    - `/models` - contains all the Pydantic models used throughout the project (i.e. "_Account_").
+        
+    - `/validators` - contains all validation related functions (i.e. "_check_user_exists_" and "_verify_captcha_completed_").
+
+    - `/environment` - contains any non-committed environment files (i.e. private key PEM files).
+
+    - `/routes` - contains all the API endpoints in their own files based on their route (i.e. "_/account.register_" would be in "_account.py_").
+
+    - `/services` - contains all the business logic for the API endpoints (i.e. "_register_user_").
+
+    - `/utils` - contains all the utility functions used throughout the project that don't rely on the database (i.e. "_hash_password_").
+
+    - `/templates` - contains all the HTML templates for rendered responses.
