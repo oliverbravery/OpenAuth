@@ -1,3 +1,9 @@
+from models.account_models import Account, AccountRole, Profile
+from common import db_manager
+from models.auth_models import Authorization
+from models.client_models import Client
+from models.util_models import ConcentDetails
+
 def register_account_in_db_collections(new_account: Account) -> int:
     """
     Register a new account in the database collections.

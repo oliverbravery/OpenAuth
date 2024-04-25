@@ -1,3 +1,16 @@
+from fastapi import HTTPException, Request, status
+from models.account_models import Account
+from models.auth_models import Authorization
+from models.response_models import AuthorizeResponse, TokenResponse
+from models.token_models import AccessToken, RefreshToken, TokenType
+from utils import token_manager
+from utils.auth_utils import decrypt_authorization_code, generate_authorization_code
+from utils.hash_utils import hash_string, verify_hash
+from common import db_manager
+from validators.auth_validators import verify_authorization_code, verify_code_challenge
+from validators.client_validators import validate_client_credentials
+
+
 def generate_and_store_tokens(authorization: Authorization, user_account: Account, client_id: str) -> TokenResponse:
     """
     Generate access and refresh tokens and store the refresh token hash in the database.
