@@ -1,6 +1,7 @@
 from database.db_generic_interface import DBGenericInterface
 from pymongo.database import Database
-from database.models import DBCollection, Authorization
+from models.util_models import DBCollection
+from models.auth_models import Authorization
 
 class AuthorizationInterface(DBGenericInterface):
     """

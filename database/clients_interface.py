@@ -1,6 +1,7 @@
 from database.db_generic_interface import DBGenericInterface
 from pymongo.database import Database
-from database.models import DBCollection, Client
+from models.util_models import DBCollection
+from models.client_models import Client
 
 class ClientsInterface(DBGenericInterface):
     """
