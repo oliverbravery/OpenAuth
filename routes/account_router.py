@@ -1,24 +1,21 @@
+from secrets import token_urlsafe
 from fastapi import Depends, APIRouter, status, HTTPException, Request, Response
-from routes.account.models import UserRegistrationForm
-from database.models import Account
-from routes.account.account_utils import *
-from routes.authentication.password_manager import PasswordManager
-from fastapi.templating import Jinja2Templates
-from routes.authentication.models import AuthorizationRequest, TokenRequest, GrantType
-from routes.authentication.authentication_utils import configure_redirect_uri
 import httpx
 from starlette.templating import _TemplateResponse
-import os
+from common import AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, RECAPTCHA_SITE_KEY, templates
+from models.account_models import Account
+from models.form_models import UserRegistrationForm
+from models.request_models import AuthorizationRequest, GrantType, TokenRequest
+from services.account_services import register_account_in_db_collections
+from utils.auth_utils import generate_code_challenge_and_verifier
+from utils.password_manager import PasswordManager
+from utils.web_utils import configure_redirect_uri
+from validators.user_validators import check_user_exists
 
 router = APIRouter(
     prefix="/account",
     tags=["Accounts"]
 )
-templates = Jinja2Templates(directory="templates")
-
-AUTH_CLIENT_ID: str = os.getenv('AUTH_CLIENT_ID')
-AUTH_CLIENT_SECRET: str = os.getenv('AUTH_CLIENT_SECRET')
-RECAPTCHA_SITE_KEY: str = os.getenv('RECAPTCHA_SITE_KEY')
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register_account(form_data: UserRegistrationForm = Depends()):
@@ -90,7 +87,7 @@ async def login_account_callback(request: Request, response: Response, code: str
         async with httpx.AsyncClient() as client:
             token_response = await client.post(configured_token_url)
             print(f"DEBUG: {token_response.json()}")
-            token_response.raise_for_status()  # Raise an exception for non-2xx status codes
+            token_response.raise_for_status()
             token_data = token_response.json()
             return token_data
     except Exception:

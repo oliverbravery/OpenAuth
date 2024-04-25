@@ -1,19 +1,22 @@
-from fastapi import APIRouter, status, Depends, HTTPException
-from routes.authentication.authentication_utils import *
-from routes.authentication.models import AuthorizationRequest, AuthorizeResponse, TokenRequest, GrantType, TokenResponse, LoginForm, ConcentForm, Endpoints
-from starlette.responses import RedirectResponse
-from starlette.formparsers import FormData
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.datastructures import FormData
+from fastapi.responses import HTMLResponse, RedirectResponse
+from models.form_models import ConcentForm, LoginForm
+from models.response_models import AuthorizeResponse, TokenResponse
+from models.util_models import ConcentDetails, Endpoints
+from services.account_services import create_profile_if_not_exists, get_client_concent_details
+from services.auth_services import generate_and_store_auth_code, get_tokens_with_authorization_code, refresh_and_update_tokens
+from utils.web_utils import configure_redirect_uri, form_to_object
+from validators.client_validators import validate_client_credentials, valid_client_scopes
+from models.request_models import AuthorizationRequest, GrantType, TokenRequest
+from common import templates, RECAPTCHA_SITE_KEY
+from validators.user_validators import validate_user_credentials
+from validators.web_validators import verify_captcha_completed
 
 router = APIRouter(
     prefix="/authentication",
     tags=["Authentication"]
 )
-
-templates = Jinja2Templates(directory="templates")
-
-recaptcha_site_key: str = os.getenv('RECAPTCHA_SITE_KEY')
 
 @router.get("/authorize", status_code=status.HTTP_200_OK)
 async def authorize_endpoint(request_data: AuthorizationRequest = Depends()):
@@ -22,7 +25,7 @@ async def authorize_endpoint(request_data: AuthorizationRequest = Depends()):
     Redirects to login page if the client is valid.
     Conforms to OAuth2.0 Authorization Code Flow with Proof Key for Code Exchange (PKCE).
     """
-    if not valid_client_credentials(client_id=request_data.client_id, 
+    if not validate_client_credentials(client_id=request_data.client_id, 
                                     client_secret=request_data.client_secret):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid client credentials.")
@@ -41,7 +44,7 @@ async def login_form(request: Request, request_data: AuthorizationRequest = Depe
     """
     return templates.TemplateResponse("login.html", {"request": request,
                                                      "request_data": request_data,
-                                                     "recaptcha_site_key": recaptcha_site_key})
+                                                     "recaptcha_site_key": RECAPTCHA_SITE_KEY})
 
 @router.post("/login", response_class=HTMLResponse)
 async def login_submit(request: Request): 
