@@ -1,3 +1,4 @@
+from fastapi.templating import Jinja2Templates
 from database.db_manager import DBManager
 from cryptography.fernet import Fernet
 from utils.token_manager import TokenManager
@@ -23,11 +24,14 @@ AUTH_CLIENT_ID: str = os.getenv("AUTH_CLIENT_ID")
 AUTH_CLIENT_SECRET: str = os.getenv("AUTH_CLIENT_SECRET")
 AUTH_SERVICE_HOST: str = os.getenv("AUTH_SERVICE_HOST")
 AUTH_SERVICE_PORT: str = os.getenv("AUTH_SERVICE_PORT")
+RECAPTCHA_SITE_KEY: str = os.getenv("RECAPTCHA_SITE_KEY")
 
 fernet: Fernet = Fernet(AUTH_CODE_SECRET)
 
 if not RECAPTCHA_SECRET_KEY: raise ValueError("RECAPTCHA_SECRET_KEY not set in environment variables.")
 google_verify_url: str = f"https://www.google.com/recaptcha/api/siteverify?secret={RECAPTCHA_SECRET_KEY}&response="
+
+templates: Jinja2Templates = Jinja2Templates(directory="templates")
 
 token_manager: TokenManager = TokenManager(
     access_token_expire_time=int(ACCESS_TOKEN_EXPIRE_MINUTES),
