@@ -3,8 +3,9 @@ import datetime
 from jose import jwt
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
-from routes.authentication.models import TokenType, AccessToken, BaseToken, RefreshToken
-from database.models import Account, Profile
+
+from models.account_models import Account, Profile
+from models.token_models import AccessToken, BaseToken, RefreshToken, TokenType
 
 class TokenManager:
     """

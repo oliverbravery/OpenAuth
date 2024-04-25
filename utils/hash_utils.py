@@ -1,3 +1,8 @@
+from base64 import urlsafe_b64decode, urlsafe_b64encode
+
+import bcrypt
+
+
 def verify_hash(plaintext: str, urlsafe_hash: str) -> bool:
     """
     Verifies a plaintext string against a URL safe hash.

@@ -1,3 +1,8 @@
+from base64 import urlsafe_b64decode, urlsafe_b64encode
+import hashlib
+from secrets import token_urlsafe
+from common import fernet
+
 def generate_code_challenge_and_verifier() -> tuple[str, str]:
     """
     Generate a code challenge and code verifier for PKCE.

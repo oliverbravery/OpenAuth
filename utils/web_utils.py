@@ -1,3 +1,7 @@
+from fastapi.datastructures import FormData
+from pydantic import BaseModel
+
+
 def configure_redirect_uri(base_uri: str, query_parameters: dict[str, str]) -> str:
     """
     Configure the redirect uri with the query parameters.
