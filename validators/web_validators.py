@@ -1,3 +1,7 @@
+from fastapi import HTTPException, Response, status
+import httpx
+from common import google_verify_url
+
 async def verify_captcha_completed(captcha_response: str) -> bool:
     """
     Verify that the captcha was completed.
@@ -13,7 +17,7 @@ async def verify_captcha_completed(captcha_response: str) -> bool:
     try:
         async with httpx.AsyncClient() as client:
             captcha_request: Response = await client.get(url)
-            captcha_request.raise_for_status()  # Raise an exception for non-2xx status codes
+            captcha_request.raise_for_status()
             if captcha_response.json()["success"]: return True
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

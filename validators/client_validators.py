@@ -1,3 +1,6 @@
+from models.client_models import Client
+from common import db_manager
+
 def validate_client_credentials(client_id: str, client_secret: str) -> bool:
     """
     Validate the client credentials.

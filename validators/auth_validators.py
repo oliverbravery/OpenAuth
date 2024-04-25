@@ -1,3 +1,8 @@
+from base64 import urlsafe_b64encode
+import hashlib
+from models.auth_models import Authorization
+from common import db_manager
+
 def verify_authorization_code(auth_code: str, username: str) -> bool:
     """
     Verify an authorization code.

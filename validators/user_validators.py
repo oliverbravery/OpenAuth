@@ -1,4 +1,7 @@
-from main import db_manager
+from fastapi import HTTPException, status
+from common import db_manager
+from models.account_models import Account, AccountRole
+from utils.password_manager import PasswordManager
 
 def check_user_exists(username: str) -> bool:
     """
