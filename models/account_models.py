@@ -1,3 +1,9 @@
+from enum import Enum
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel
+
+
 class AccountRole(str, Enum):
     """
     Enum class for representing the different roles an account can have

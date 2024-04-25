@@ -1,3 +1,6 @@
+from pydantic import BaseModel
+
+
 class AuthorizeResponse(BaseModel):
     """
     A class used to represent the response data when authorizing a user following the OAuth2.0 protocol.

@@ -1,5 +1,7 @@
 from fastapi.param_functions import Form
 
+from models.request_models import AuthorizationRequest
+
 class UserRegistrationForm:
     """
     A class used to represent a new account form. 

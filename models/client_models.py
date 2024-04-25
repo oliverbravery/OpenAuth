@@ -1,3 +1,9 @@
+from enum import Enum
+from typing import List
+
+from pydantic import BaseModel
+
+
 class DeveloperScope(str, Enum):
     """
     Enum class for the different developer scopes
