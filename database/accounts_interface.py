@@ -1,7 +1,7 @@
 from database.db_generic_interface import DBGenericInterface
 from pymongo.database import Database
 from models.util_models import DBCollection
-from models.account_models import Account
+from models.account_models import Account, Profile
 
 class AccountsInterface(DBGenericInterface):
     """
@@ -61,3 +61,18 @@ class AccountsInterface(DBGenericInterface):
             int: 0 if the account was deleted successfully, -1 otherwise.
         """
         return self.remove_generic(search_params={"username": username})
+    
+    def add_profile_to_account(self, username: str, profile: Profile) -> int:
+        """
+        Adds a profile to an account. 
+        
+        NOTE: Ensure that the profile does not already exist in the account before using this method.
+
+        Args:
+            username (str): The username of the account to add the profile to.
+            profile (Profile): The profile to add to the account.
+
+        Returns:
+            int: 0 if the profile was added successfully, -1 otherwise.
+        """
+        return self.update_generic(search_params={"username": username}, update_params={"$push": {"profiles": profile.model_dump()}})
