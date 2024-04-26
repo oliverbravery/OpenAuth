@@ -3,7 +3,7 @@ from models.account_models import Account
 from models.auth_models import Authorization
 from models.client_models import Client
 from models.response_models import AuthorizeResponse, TokenResponse
-from models.scope_models import ProfileScope
+from models.scope_models import ClientScope, ProfileScope
 from models.token_models import AccessToken, RefreshToken, TokenType
 from models.util_models import ConsentDetails
 from utils.auth_utils import decrypt_authorization_code, generate_authorization_code
@@ -212,6 +212,29 @@ class BearerTokenAuth:
                                             detail="Issue fetching account information")
         return account
     
+def get_client_scopes_from_profile_scopes(profile_scopes: list[ProfileScope]) -> list[ClientScope]:
+    """
+    Converts a list of profile scopes to a list of client scopes.
+
+    Args:
+        profile_scopes (list[ProfileScope]): The list of profile scopes to be converted.
+
+    Returns:
+        list[ClientScope]: The list of client scopes. None if the profile scopes are invalid.
+    """
+    client_scope_list: list[ClientScope] = []
+    client_to_scope: dict[str, list[ProfileScope]] = {scope.client_id: [] for scope in profile_scopes}
+    for scope in profile_scopes:
+        client_to_scope[scope.client_id].append(scope)
+    for client_id, scope_list in client_to_scope.items():
+        client: Client = db_manager.clients_interface.get_client(client_id=client_id)
+        if not client: return None
+        for c_scope in client.scopes:
+            if c_scope.name in [scope.scope for scope in scope_list]:
+                client_scope_list.append(c_scope)
+    if len(client_scope_list) != len(profile_scopes): return None
+    return client_scope_list
+    
 def get_consent_details(client_id: str, requested_scopes: list[ProfileScope]) -> ConsentDetails:
     """
     Fetch and configure the consent details for the consent form.
@@ -227,8 +250,10 @@ def get_consent_details(client_id: str, requested_scopes: list[ProfileScope]) ->
     """
     client: Client = db_manager.clients_interface.get_client(client_id=client_id)
     if not client: return None
+    requested_scopes_as_client_scopes: list[ClientScope] = get_client_scopes_from_profile_scopes()
+    if not requested_scopes_as_client_scopes: return None
     consent_details: ConsentDetails = ConsentDetails(name=client.name, 
                                                      description=client.description, 
-                                                     requested_scopes=requested_scopes, 
+                                                     requested_scopes=requested_scopes_as_client_scopes, 
                                                      client_redirect_uri=client.redirect_uri)
     return consent_details
