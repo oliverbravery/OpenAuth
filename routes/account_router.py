@@ -53,7 +53,7 @@ async def login_account(request: Request, response: Response):
         response_type="code",
         state=state,
         code_challenge=code_challenge,
-        scope="read:profile write:profile",
+        scope=f"{AUTH_CLIENT_ID}.read:profile {AUTH_CLIENT_ID}.write:profile",
     )
     configured_response: _TemplateResponse = templates.TemplateResponse("login.html", {"recaptcha_site_key": RECAPTCHA_SITE_KEY,
                                                      "request": request,
