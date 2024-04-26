@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Dict, Any
 
 from pydantic import BaseModel
 
@@ -113,7 +113,7 @@ class Client(BaseModel):
     developers: List[ClientDeveloper] = []
     scopes: list[ClientScope] = []
     profile_metadata_attributes: list[MetadataAttribute] = []
-    profile_defaults: dict[str, any] = {}
+    profile_defaults: Dict[str, Any] = {}
     
     def get_profile_default(self, key: str) -> any:
         """

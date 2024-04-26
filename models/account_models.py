@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -35,7 +35,7 @@ class Profile(BaseModel):
     """
     client_id: str
     scopes: List[ProfileScope] = []
-    metadata: Dict[str, any] = {}
+    metadata: Dict[str, Any] = {}
     
 class Account(BaseModel):
     """
