@@ -81,7 +81,7 @@ def get_client_concent_details(client_id: str, scopes: list[str]) -> ConcentDeta
     if not client: return None
     return ConcentDetails(name=client.name, 
                           description=client.description, 
-                          scopes_description=client.scopes,
+                          requested_scopes=client.scopes,
                           client_redirect_uri=client.redirect_uri)
     
 def enroll_account_as_developer(account: Account) -> int:
