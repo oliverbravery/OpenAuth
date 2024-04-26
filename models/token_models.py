@@ -54,11 +54,11 @@ class AccessToken(BaseToken):
         aud (list[str]): The audience of the token. Usually the client_id of the application.
         exp (datetime): The expiration time of the token. Recommended to allow for clock skew.
         iat (datetime): The time the token was issued. Used to determine if the token is expired.
-        scope (list[str]): The list of scopes allowed by the token.
+        scope (str): The list of scopes allowed by the token. Should be a space-separated string.
         iss (str, optional): The issuer of the token. Defaults to "auth-service".
         typ (str, optional): The type of the token. Defaults to "JWT".
     """
-    scope: list[str]
+    scope: str
         
     def model_dump(self) -> dict:
         """
