@@ -61,7 +61,7 @@ async def login_submit(request: Request):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid credentials.")
     concent_details: ConcentDetails = get_client_concent_details(client_id=form_data.client_id, 
-                                                                 scopes=form_data.scope)
+                                                                 scopes=form_data.get_scopes_as_list())
     return templates.TemplateResponse("consent.html", {"request": request,
                                                        "request_data": form_data, 
                                                        "concent_details": concent_details})
