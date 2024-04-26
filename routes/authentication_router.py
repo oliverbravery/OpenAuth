@@ -5,7 +5,7 @@ from models.form_models import ConsentForm, LoginForm
 from models.response_models import AuthorizeResponse, TokenResponse
 from models.scope_models import ProfileScope
 from models.util_models import ConsentDetails, Endpoints
-from services.account_services import create_profile_if_not_exists, get_client_consent_details
+from services.account_services import create_profile_if_not_exists
 from services.auth_services import generate_and_store_auth_code, get_consent_details, get_tokens_with_authorization_code, refresh_and_update_tokens
 from utils.scope_utils import scopes_to_profile_scopes, str_to_list_of_profile_scopes
 from utils.web_utils import configure_redirect_uri, form_to_object
