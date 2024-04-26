@@ -54,6 +54,8 @@ def generate_client_profile(client_id: str, scopes: str) -> Profile:
 def create_profile_if_not_exists(client_id: str, username: str, accecpted_scopes: str) -> int:
     """
     Creates a profile if it does not already exist.
+    
+    NOTE: If the profile already exists, the accepted scopes are updated regardless.
 
     Args:
         client_id (str): Client id of the application.
@@ -63,32 +65,14 @@ def create_profile_if_not_exists(client_id: str, username: str, accecpted_scopes
     Returns:
         int: 0 if the profile was created successfully, -1 if the profile could not be created.
     """
-    if check_profile_exists(username=username, client_id=client_id): return 0
+    if check_profile_exists(username=username, client_id=client_id): 
+        response: int = db_manager.accounts_interface.update_profile_scopes(username=username, 
+                                                                            client_id=client_id, 
+                                                                            scopes=accecpted_scopes)
+        return response
     new_profile: Profile = generate_client_profile(client_id=client_id, scopes=accecpted_scopes)
     if not new_profile: return -1
     return db_manager.accounts_interface.add_profile_to_account(username=username, profile=new_profile)
-    
-def get_client_consent_details(client_id: str, scopes: list[str]) -> ConsentDetails:
-    """
-    Fetches the details from the client required for the consent form.
-
-    Args:
-        client_id (str): The client id of the application.
-        scopes (list[str]): The scopes requested by the client.
-
-    Returns:
-        ConsentDetails: A model containing the details required for the consent form.
-    """
-    client: Client = db_manager.clients_interface.get_client(client_id=client_id)
-    if not client: return None
-    requested_client_scopes: list[ClientScope] = convert_names_to_scopes(scope_names=scopes, 
-                                                                         client=client)
-    if not requested_client_scopes: return None
-    consent_details: ConsentDetails = ConsentDetails(name=client.name, 
-                                                     description=client.description, 
-                                                     requested_scopes=requested_client_scopes, 
-                                                     client_redirect_uri=client.redirect_uri)
-    return consent_details
     
 def enroll_account_as_developer(account: Account) -> int:
     """
