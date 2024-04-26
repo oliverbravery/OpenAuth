@@ -1,8 +1,11 @@
 from fastapi import HTTPException, Request, status
 from models.account_models import Account
 from models.auth_models import Authorization
+from models.client_models import Client
 from models.response_models import AuthorizeResponse, TokenResponse
+from models.scope_models import ProfileScope
 from models.token_models import AccessToken, RefreshToken, TokenType
+from models.util_models import ConsentDetails
 from utils.auth_utils import decrypt_authorization_code, generate_authorization_code
 from utils.hash_utils import hash_string, verify_hash
 from common import db_manager, token_manager
@@ -208,3 +211,24 @@ class BearerTokenAuth:
         if not account: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                             detail="Issue fetching account information")
         return account
+    
+def get_consent_details(client_id: str, requested_scopes: list[ProfileScope]) -> ConsentDetails:
+    """
+    Fetch and configure the consent details for the consent form.
+    
+    NOTE: Assumes the requested scopes are valid.
+
+    Args:
+        client_id (str): The client id of the application requesting the consent.
+        requested_scopes (list[ProfileScope]): The scopes requested by the client.
+
+    Returns:
+        ConsentDetails: A model containing the details required for the consent form.
+    """
+    client: Client = db_manager.clients_interface.get_client(client_id=client_id)
+    if not client: return None
+    consent_details: ConsentDetails = ConsentDetails(name=client.name, 
+                                                     description=client.description, 
+                                                     requested_scopes=requested_scopes, 
+                                                     client_redirect_uri=client.redirect_uri)
+    return consent_details
