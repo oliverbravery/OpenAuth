@@ -13,7 +13,7 @@ def valid_request_scopes(scopes: list[ProfileScope]) -> bool:
     Returns:
         bool: True if the requested scopes are valid, False otherwise.
     """
-    client_to_scope: dict[str, list[ProfileScope]] = {}
+    client_to_scope: dict[str, list[ProfileScope]] = {scope.client_id: [] for scope in scopes}
     for scope in scopes:
         client_to_scope[scope.client_id].append(scope)
     for client_id, scope_list in client_to_scope.items():
