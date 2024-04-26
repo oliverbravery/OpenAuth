@@ -58,6 +58,21 @@ def scopes_to_profile_scopes(scope_name_list: list[str]) -> list[ProfileScope]:
     """
     return [str_to_profile_scope(scope=scope_name) for scope_name in scope_name_list]
 
+def str_to_list_of_profile_scopes(scopes_str_list: str) -> list[ProfileScope]:
+    """
+    Converts a space seperated list as a string to a list of profile scopes.
+    
+    NOTE: Assumes that the scopes are valid.
+
+    Args:
+        scopes_str_list (str): The space separated list of scope names.
+
+    Returns:
+        list[ProfileScope]: The list of profile scopes.
+    """
+    seperated_scopes: list[str] = scopes_str_list.split(" ")
+    return scopes_to_profile_scopes(scope_name_list=seperated_scopes)
+
 def profile_scope_list_to_str(profile_scopes: list[ProfileScope]) -> str:
     """
     Converts a list of profile scopes to a combined scope string (space separated)
