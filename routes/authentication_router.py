@@ -62,7 +62,6 @@ async def login_submit(request: Request):
                             detail="Invalid credentials.")
     consent_details: ConsentDetails = get_client_consent_details(client_id=form_data.client_id, 
                                                                  scopes=form_data.get_scopes_as_list())
-    print(f"DEBUG: {consent_details}")
     return templates.TemplateResponse("consent.html", {"request": request,
                                                        "request_data": form_data, 
                                                        "consent_details": consent_details})
