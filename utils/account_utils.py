@@ -20,29 +20,52 @@ def generate_default_metadata(profile_metadata_attributes: list[MetadataAttribut
             new_metadata[key] = value
     return new_metadata
 
-def scopes_to_profile_scopes(scope_name_list: list[str], client_id: str) -> list[ProfileScope]:
+def profile_scope_to_str(scope: ProfileScope) -> str:
     """
-    Converts a list of scope names to a list of profile scopes.
+    Get the profile scope as a string. Combines the client_id and the scope as a string (client_id.scope).
     
-    NOTE: Assumes that the scopes are valid and belong to the given client.
+    Returns:
+        str: The scope as a string.
+    """
+    return f"{scope.client_id}.{scope.scope}"
+
+def str_to_profile_scope(scope: str) -> ProfileScope:
+    """
+    Converts a combined scope string (client_id.scope) to a ProfileScope object.
+
+    Args:
+        scope (str): The combined scope string.
+
+    Returns:
+        ProfileScope: The ProfileScope object. None if the scope is invalid format.
+    """
+    split_scope: list[str] = scope.split(".")
+    if split_scope and len(split_scope) == 2:
+        return ProfileScope(client_id=split_scope[0], scope=split_scope[1])
+    return None
+
+def scopes_to_profile_scopes(scope_name_list: list[str]) -> list[ProfileScope]:
+    """
+    Converts a list of scopes as strings to a list of profile scopes.
+    
+    NOTE: Assumes that the scopes are valid.
 
     Args:
         scope_name_list (list[str]): The list of scope names.
-        client_id (str): The client_id of the application the scopes belong to.
 
     Returns:
         list[ProfileScope]: The list of profile scopes.
     """
-    return [ProfileScope(client_id=client_id, scope=scope_name) for scope_name in scope_name_list]
+    return [str_to_profile_scope(scope=scope_name) for scope_name in scope_name_list]
 
 def profile_scope_list_to_str(profile_scopes: list[ProfileScope]) -> str:
     """
-    Converts a list of profile scopes to a combined scope string.
+    Converts a list of profile scopes to a combined scope string (space separated)
 
     Args:
         profile_scopes (list[ProfileScope]): The list of profile scopes.
 
     Returns:
-        str: The combined scope string.
+        str: The combined scope string (space separated).
     """
-    return " ".join([scope.get_scope_as_str() for scope in profile_scopes])
+    return " ".join([profile_scope_to_str(scope=scope) for scope in profile_scopes])
