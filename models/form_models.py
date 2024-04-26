@@ -29,7 +29,7 @@ class LoginForm(AuthorizationRequest):
     totp_pin: str = Form()
     g_recaptcha_response: str = Form(alias="g-recaptcha-response")
     
-class ConcentForm(AuthorizationRequest):
+class ConsentForm(AuthorizationRequest):
     """
     A class used to represent the data required to get user consent following the OAuth2.0 protocol.
     It is used to parse the data from the request body when getting user consent.

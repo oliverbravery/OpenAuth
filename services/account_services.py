@@ -2,7 +2,7 @@ from models.account_models import Account, AccountRole, Profile
 from common import db_manager
 from models.auth_models import Authorization
 from models.client_models import Client, ClientScope
-from models.util_models import ConcentDetails
+from models.util_models import ConsentDetails
 from utils.account_utils import generate_default_metadata
 from utils.client_util import convert_names_to_scopes
 from validators.account_validators import check_profile_exists
@@ -67,7 +67,7 @@ def create_profile_if_not_exists(client_id: str, username: str, accecpted_scopes
     if not new_profile: return -1
     return db_manager.accounts_interface.add_profile_to_account(username=username, profile=new_profile)
     
-def get_client_concent_details(client_id: str, scopes: list[str]) -> ConcentDetails:
+def get_client_consent_details(client_id: str, scopes: list[str]) -> ConsentDetails:
     """
     Fetches the details from the client required for the consent form.
 
@@ -76,13 +76,13 @@ def get_client_concent_details(client_id: str, scopes: list[str]) -> ConcentDeta
         scopes (list[str]): The scopes requested by the client.
 
     Returns:
-        ConcentDetails: A model containing the details required for the consent form.
+        ConsentDetails: A model containing the details required for the consent form.
     """
     client: Client = db_manager.clients_interface.get_client(client_id=client_id)
     if not client: return None
     requested_client_scopes: list[ClientScope] = convert_names_to_scopes(scope_names=scopes, client=client)
     if not requested_client_scopes: return None
-    return ConcentDetails(name=client.name, 
+    return ConsentDetails(name=client.name, 
                           description=client.description, 
                           requested_scopes=requested_client_scopes,
                           client_redirect_uri=client.redirect_uri)

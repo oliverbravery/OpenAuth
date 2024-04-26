@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.datastructures import FormData
 from fastapi.responses import HTMLResponse, RedirectResponse
-from models.form_models import ConcentForm, LoginForm
+from models.form_models import ConsentForm, LoginForm
 from models.response_models import AuthorizeResponse, TokenResponse
-from models.util_models import ConcentDetails, Endpoints
-from services.account_services import create_profile_if_not_exists, get_client_concent_details
+from models.util_models import ConsentDetails, Endpoints
+from services.account_services import create_profile_if_not_exists, get_client_consent_details
 from services.auth_services import generate_and_store_auth_code, get_tokens_with_authorization_code, refresh_and_update_tokens
 from utils.web_utils import configure_redirect_uri, form_to_object
 from validators.client_validators import validate_client_credentials, valid_request_scopes
@@ -60,11 +60,12 @@ async def login_submit(request: Request):
                                  password=form_data.password) == -1:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid credentials.")
-    concent_details: ConcentDetails = get_client_concent_details(client_id=form_data.client_id, 
+    consent_details: ConsentDetails = get_client_consent_details(client_id=form_data.client_id, 
                                                                  scopes=form_data.get_scopes_as_list())
+    print(f"DEBUG: {consent_details}")
     return templates.TemplateResponse("consent.html", {"request": request,
                                                        "request_data": form_data, 
-                                                       "concent_details": concent_details})
+                                                       "consent_details": consent_details})
 
 @router.post("/consent", response_class=HTMLResponse)
 async def consent_submit(request: Request):
@@ -74,7 +75,7 @@ async def consent_submit(request: Request):
     Creates a profile if it does not already exist.
     """
     fetched_form_data: FormData = await request.form()
-    form_data: ConcentForm = form_to_object(form_data=fetched_form_data, object_class=ConcentForm)
+    form_data: ConsentForm = form_to_object(form_data=fetched_form_data, object_class=ConsentForm)
     if form_data.consented != 'true':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="User did not consent to the scopes requested.")
