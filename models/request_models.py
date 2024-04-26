@@ -28,15 +28,6 @@ class AuthorizationRequest(BaseModel):
     state: str
     code_challenge: str
     scope: str
-    
-    def get_scopes_as_list(self) -> list[str]:
-        """
-        Gets the scopes as a list of strings.
-        
-        Returns:
-            list[str]: The list of scopes requested.
-        """
-        return self.scope.split(" ")
         
 class GrantType(str, Enum):
     """
