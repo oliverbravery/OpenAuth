@@ -1,9 +1,10 @@
 from models.account_models import Account, AccountRole, Profile
 from common import db_manager
 from models.auth_models import Authorization
-from models.client_models import Client
+from models.client_models import Client, ClientScope
 from models.util_models import ConcentDetails
 from utils.account_utils import generate_default_metadata
+from utils.client_util import convert_names_to_scopes
 from validators.account_validators import check_profile_exists
 
 def register_account_in_db_collections(new_account: Account) -> int:
@@ -79,9 +80,11 @@ def get_client_concent_details(client_id: str, scopes: list[str]) -> ConcentDeta
     """
     client: Client = db_manager.clients_interface.get_client(client_id=client_id)
     if not client: return None
+    requested_client_scopes: list[ClientScope] = convert_names_to_scopes(scope_names=scopes, client=client)
+    if not requested_client_scopes: return None
     return ConcentDetails(name=client.name, 
                           description=client.description, 
-                          requested_scopes=client.scopes,
+                          requested_scopes=requested_client_scopes,
                           client_redirect_uri=client.redirect_uri)
     
 def enroll_account_as_developer(account: Account) -> int:
