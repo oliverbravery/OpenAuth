@@ -46,18 +46,3 @@ class Account(BaseModel):
     hashed_totp_pin: Optional[str] = None
     profiles: List[Profile] = []
     account_role: AccountRole = AccountRole.STANDARD
-    
-    def get_profile(self, client_id: str) -> Optional[Profile]:
-        """
-        Get the profile of the user for the given application.
-
-        Args:
-            client_id (str): The client_id of the application.
-
-        Returns:
-            Optional[Profile]: The profile of the user for the given application. None if the profile does not exist.
-        """
-        for profile in self.profiles:
-            if profile.client_id == client_id:
-                return profile
-        return None

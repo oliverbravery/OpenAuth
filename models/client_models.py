@@ -66,15 +66,3 @@ class Client(BaseModel):
     scopes: list[ClientScope] = []
     profile_metadata_attributes: list[MetadataAttribute] = []
     profile_defaults: Dict[str, Any] = {}
-    
-    def get_profile_default(self, key: str) -> any:
-        """
-        Get the default value for the given key.
-
-        Args:
-            key (str): The key of the default value.
-
-        Returns:
-            any: The default value for the given key. None if the key does not exist.
-        """
-        return self.profile_defaults.get(key, None)

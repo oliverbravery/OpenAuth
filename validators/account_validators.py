@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from common import db_manager
 from models.account_models import Account, AccountRole
+from utils.account_utils import get_profile_from_account
 from utils.password_manager import PasswordManager
 
 def check_user_exists(username: str) -> bool:
@@ -61,4 +62,5 @@ def check_profile_exists(username: str, client_id: str) -> bool:
     """
     account: Account = db_manager.accounts_interface.get_account(username=username)
     if not account: return False
-    return True if account.get_profile(client_id=client_id) else False
+    return True if get_profile_from_account(account=account, 
+                                            client_id=client_id) else False

@@ -5,6 +5,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from models.account_models import Account, Profile
 from models.token_models import AccessToken, BaseToken, RefreshToken, TokenType
+from utils.account_utils import get_profile_from_account
 from utils.scope_utils import profile_scope_list_to_str
 
 class TokenManager:
@@ -171,7 +172,8 @@ class TokenManager:
         token: BaseToken
         match tokenType:
             case TokenType.ACCESS:
-                profile: Profile = account.get_profile(client_id=client_id)
+                profile: Profile = get_profile_from_account(account=account,
+                                                            client_id=client_id)
                 if not profile: return None
                 token: AccessToken = AccessToken(
                     sub=account.username,

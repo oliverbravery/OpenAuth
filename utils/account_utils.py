@@ -1,3 +1,4 @@
+from models.account_models import Account, Profile
 from models.client_models import MetadataAttribute
 
 
@@ -18,3 +19,18 @@ def generate_default_metadata(profile_metadata_attributes: list[MetadataAttribut
         if key in new_metadata:
             new_metadata[key] = value
     return new_metadata
+
+def get_profile_from_account(account: Account, client_id: str) -> Profile:
+    """
+    Get a profile from an account based on client_id.
+
+    Args:
+        client_id (str): The client_id of the application.
+
+    Returns:
+        Optional[Profile]: The profile of the user for the given application. None if the profile does not exist.
+    """
+    for profile in account.profiles:
+        if profile.client_id == client_id:
+            return profile
+    return None
