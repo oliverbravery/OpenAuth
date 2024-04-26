@@ -4,7 +4,7 @@ from pymongo.database import Database
 from database.accounts_interface import AccountsInterface
 from database.authorization_interface import AuthorizationInterface
 from database.clients_interface import ClientsInterface
-from models.client_models import Client
+from models.client_models import Client, ClientScope, ScopeAccessType, ScopeAttribute
 import re
 
 class DBManager:
@@ -51,12 +51,23 @@ class DBManager:
         if AUTH_SERVICE_HOST is None or AUTH_SERVICE_PORT is None:
             raise ValueError("AUTH_SERVICE_HOST and AUTH_SERVICE_PORT must be set to create authentication client.")
         auth_client_redirect_uri: str = f"http://{AUTH_SERVICE_HOST}:{AUTH_SERVICE_PORT}/account/login/callback"
+        scopes: list[ClientScope] = [
+            ClientScope(name="read:profile", description="Read-only access to user profile information", shareable=True, 
+                        associated_attributes=[
+                            ScopeAttribute(attribute_name="username", access_type=ScopeAccessType.READ),
+                            ScopeAttribute(attribute_name="display_name", access_type=ScopeAccessType.READ),
+                            ScopeAttribute(attribute_name="email", access_type=ScopeAccessType.READ)
+                            ]),
+            ClientScope(name="write:profile", description="Write-only access to user profile information", shareable=False, 
+                        associated_attributes=[
+                            ScopeAttribute(attribute_name="username", access_type=ScopeAccessType.WRITE),
+                            ScopeAttribute(attribute_name="display_name", access_type=ScopeAccessType.WRITE),
+                            ScopeAttribute(attribute_name="email", access_type=ScopeAccessType.WRITE)
+                            ]),
+        ]
         auth_client: Client = Client(client_id=AUTH_CLIENT_ID, client_secret=AUTH_CLIENT_SECRET, 
                                     name="Authentication Service", 
                                     description="Client for the authentication service", 
                                     redirect_uri=auth_client_redirect_uri,
-                                    scopes={
-                                        "read:profile": "Read user profile information",
-                                        "write:profile": "Write user profile information",
-                                    })
+                                    scopes=scopes)
         self.clients_interface.add_client(client=auth_client)
