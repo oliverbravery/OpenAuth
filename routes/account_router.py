@@ -10,7 +10,7 @@ from services.account_services import register_account_in_db_collections
 from utils.auth_utils import generate_code_challenge_and_verifier
 from utils.password_manager import PasswordManager
 from utils.web_utils import configure_redirect_uri
-from validators.user_validators import check_user_exists
+from validators.account_validators import check_user_exists
 
 router = APIRouter(
     prefix="/account",
