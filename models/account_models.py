@@ -3,6 +3,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
+from models.scope_models import ProfileScope
+
 
 class AccountRole(str, Enum):
     """
@@ -10,19 +12,6 @@ class AccountRole(str, Enum):
     """
     STANDARD = "standard"
     DEVELOPER = "developer"
-    
-class ProfileScope(BaseModel):
-    """
-    Represents a scope in a profile for an app.
-    
-    Defines for a specific application what scopes the user has granted access to.
-    
-    Args:
-        client_id (str): The client the scope is associated with.
-        scope (str): The scope that the application is allowed to access.
-    """
-    client_id: str
-    scope: str
     
 class Profile(BaseModel):
     """
