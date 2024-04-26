@@ -38,13 +38,13 @@ class ScopeAccessType(str, Enum):
     
 class ScopeAttribute(BaseModel):
     """
-    Represents an attribute in a scope and what the client can do with it.
+    Represents an attribute of a profile (and it's metadata) and what a scope can do with it.
     
     Args:
-        name (str): The name of the attribute.
+        attribute_name (str): The name of the attribute in the profile/ profile metadata.
         access_type (ScopeAccessType): The access type of the attribute.
     """
-    name: str
+    attribute_name: str
     access_type: ScopeAccessType
     
 class ClientScope(BaseModel):
@@ -57,12 +57,12 @@ class ClientScope(BaseModel):
         name (str): The 'name' of the scope.
         description (str): A description of the scope and what it allows the client to do.
         shareable (bool): Whether other clients can request access to this scope.
-        
+        associated_attributes (List[ScopeAttribute]): The attributes (profile or profile metadata) that this scope controls.
     """
     name: str
     description: str
     shareable: bool
-    attributes: List[ScopeAttribute]
+    associated_attributes: List[ScopeAttribute]
     
 class MetadataType(Enum):
     """
