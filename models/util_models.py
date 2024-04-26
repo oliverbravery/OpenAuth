@@ -1,7 +1,7 @@
 from enum import Enum
 from pydantic import BaseModel
 
-from models.client_models import ClientScope
+from models.scope_models import ClientScope
 
 class DBCollection(Enum):
     """

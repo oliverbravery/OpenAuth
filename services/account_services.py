@@ -1,10 +1,11 @@
 from models.account_models import Account, AccountRole, Profile
 from common import db_manager
 from models.auth_models import Authorization
-from models.client_models import Client, ClientScope
+from models.client_models import Client
+from models.scope_models import ClientScope
 from models.util_models import ConsentDetails
-from utils.account_utils import generate_default_metadata, scopes_to_profile_scopes
-from utils.client_util import convert_names_to_scopes
+from utils.account_utils import generate_default_metadata
+from utils.scope_utils import convert_names_to_scopes, scopes_to_profile_scopes
 from validators.account_validators import check_profile_exists
 
 def register_account_in_db_collections(new_account: Account) -> int:

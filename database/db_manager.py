@@ -4,8 +4,10 @@ from pymongo.database import Database
 from database.accounts_interface import AccountsInterface
 from database.authorization_interface import AuthorizationInterface
 from database.clients_interface import ClientsInterface
-from models.client_models import Client, ClientScope, ScopeAccessType, ScopeAttribute
+from models.client_models import Client
 import re
+
+from models.scope_models import ClientScope, ScopeAccessType, ScopeAttribute
 
 class DBManager:
     """
