@@ -80,12 +80,14 @@ def get_client_consent_details(client_id: str, scopes: list[str]) -> ConsentDeta
     """
     client: Client = db_manager.clients_interface.get_client(client_id=client_id)
     if not client: return None
-    requested_client_scopes: list[ClientScope] = convert_names_to_scopes(scope_names=scopes, client=client)
+    requested_client_scopes: list[ClientScope] = convert_names_to_scopes(scope_names=scopes, 
+                                                                         client=client)
     if not requested_client_scopes: return None
-    return ConsentDetails(name=client.name, 
-                          description=client.description, 
-                          requested_scopes=requested_client_scopes,
-                          client_redirect_uri=client.redirect_uri)
+    consent_details: ConsentDetails = ConsentDetails(name=client.name, 
+                                                     description=client.description, 
+                                                     requested_scopes=requested_client_scopes, 
+                                                     client_redirect_uri=client.redirect_uri)
+    return consent_details
     
 def enroll_account_as_developer(account: Account) -> int:
     """
