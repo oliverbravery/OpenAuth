@@ -1,10 +1,10 @@
 from models.account_models import Account, AccountRole, Profile
 from common import db_manager
 from models.auth_models import Authorization
-from models.client_models import Client, MetadataAttribute
+from models.client_models import Client
 from models.util_models import ConcentDetails
 from utils.account_utils import generate_default_metadata
-from validators.user_validators import check_profile_exists
+from validators.account_validators import check_profile_exists
 
 def register_account_in_db_collections(new_account: Account) -> int:
     """
