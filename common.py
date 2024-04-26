@@ -48,3 +48,10 @@ db_manager: DBManager = DBManager(
         username=MONGO_ROOT_USERNAME, 
         password=MONGO_ROOT_PASSWORD), 
     db_name=MONGO_DATABASE_NAME)
+
+db_manager.create_auth_service_client(
+    AUTH_CLIENT_ID=AUTH_CLIENT_ID, 
+    AUTH_CLIENT_SECRET=AUTH_CLIENT_SECRET, 
+    AUTH_SERVICE_HOST=AUTH_SERVICE_HOST, 
+    AUTH_SERVICE_PORT=AUTH_SERVICE_PORT
+)
