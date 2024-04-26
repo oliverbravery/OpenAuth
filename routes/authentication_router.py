@@ -6,7 +6,7 @@ from models.response_models import AuthorizeResponse, TokenResponse
 from models.scope_models import ProfileScope
 from models.util_models import ConsentDetails, Endpoints
 from services.account_services import create_profile_if_not_exists, get_client_consent_details
-from services.auth_services import generate_and_store_auth_code, get_tokens_with_authorization_code, refresh_and_update_tokens
+from services.auth_services import generate_and_store_auth_code, get_consent_details, get_tokens_with_authorization_code, refresh_and_update_tokens
 from utils.scope_utils import scopes_to_profile_scopes, str_to_list_of_profile_scopes
 from utils.web_utils import configure_redirect_uri, form_to_object
 from validators.client_validators import validate_client_credentials
@@ -64,8 +64,12 @@ async def login_submit(request: Request):
                                  password=form_data.password) == -1:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid credentials.")
-    consent_details: ConsentDetails = get_client_consent_details(client_id=form_data.client_id, 
-                                                                 scopes=form_data.get_scopes_as_list())
+    requested_scopes: list[ProfileScope] = str_to_list_of_profile_scopes(scopes_str_list=form_data.scope)
+    if not valid_request_scopes(scopes=requested_scopes):
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                            detail="Invalid client scopes.")
+    consent_details: ConsentDetails = get_consent_details(client_id=form_data.client_id, 
+                                                                 requested_scopes=requested_scopes)
     return templates.TemplateResponse("consent.html", {"request": request,
                                                        "request_data": form_data, 
                                                        "consent_details": consent_details})
