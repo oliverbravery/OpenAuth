@@ -7,7 +7,7 @@ from models.util_models import ConcentDetails, Endpoints
 from services.account_services import create_profile_if_not_exists, get_client_concent_details
 from services.auth_services import generate_and_store_auth_code, get_tokens_with_authorization_code, refresh_and_update_tokens
 from utils.web_utils import configure_redirect_uri, form_to_object
-from validators.client_validators import validate_client_credentials, valid_client_scopes
+from validators.client_validators import validate_client_credentials, valid_request_scopes
 from models.request_models import AuthorizationRequest, GrantType, TokenRequest
 from common import templates, RECAPTCHA_SITE_KEY
 from validators.account_validators import validate_user_credentials
@@ -29,7 +29,7 @@ async def authorize_endpoint(request_data: AuthorizationRequest = Depends()):
                                     client_secret=request_data.client_secret):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid client credentials.")
-    if not valid_client_scopes(client_id=request_data.client_id, 
+    if not valid_request_scopes(client_id=request_data.client_id, 
                                    scopes=request_data.get_scopes_as_list()):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                             detail="Invalid client scopes.")
