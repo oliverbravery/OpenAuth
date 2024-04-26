@@ -24,30 +24,6 @@ class ProfileScope(BaseModel):
     client_id: str
     scope: str
     
-    def get_scope_as_str(self) -> str:
-        """
-        Get the scope as a string. Combines the client_id and the scope as a string (client_id.scope).
-        
-        Returns:
-            str: The scope as a string.
-        """
-        return f"{self.client_id}.{self.scope}"
-    
-    @staticmethod
-    def str_to_profile_scope(scope: str) -> "ProfileScope":
-        """
-        Converts a combined scope string (client_id.scope) to a ProfileScope object.
-
-        Args:
-            scope (str): The combined scope string.
-
-        Returns:
-            ProfileScope: The ProfileScope object.
-        """
-        split_scope: list[str] = scope.split(".")
-        if split_scope and len(split_scope) == 2:
-            return ProfileScope(client_id=split_scope[0], scope=split_scope[1])
-    
 class Profile(BaseModel):
     """
     Represents a profile for a client stored in the user's account.
