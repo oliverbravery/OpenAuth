@@ -6,6 +6,7 @@ from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
 from models.account_models import Account, Profile
 from models.token_models import AccessToken, BaseToken, RefreshToken, TokenType
+from utils.account_utils import profile_scope_list_to_str
 
 class TokenManager:
     """
@@ -175,10 +176,10 @@ class TokenManager:
                 if not profile: return None
                 token: AccessToken = AccessToken(
                     sub=account.username,
-                    aud=[account.client_id],
+                    aud=[client_id],
                     exp=exp,
                     iat=iat,
-                    scope=profile.scopes
+                    scope=profile_scope_list_to_str(profile_scopes=profile.scopes)
                 )
             case TokenType.REFRESH:
                 token: RefreshToken = RefreshToken(
