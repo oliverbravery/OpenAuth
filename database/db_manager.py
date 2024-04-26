@@ -5,7 +5,6 @@ from database.accounts_interface import AccountsInterface
 from database.authorization_interface import AuthorizationInterface
 from database.clients_interface import ClientsInterface
 from models.client_models import Client
-from common import AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, AUTH_SERVICE_HOST, AUTH_SERVICE_PORT
 import re
 
 class DBManager:
@@ -33,11 +32,17 @@ class DBManager:
         self.accounts_interface: AccountsInterface = AccountsInterface(database=self.__db) 
         self.authorization_interface: AuthorizationInterface = AuthorizationInterface(database=self.__db)
         self.clients_interface: ClientsInterface = ClientsInterface(database=self.__db)
-        self.__create_auth_service_client()
         
-    def __create_auth_service_client(self):
+    def create_auth_service_client(self, AUTH_CLIENT_ID: str, AUTH_CLIENT_SECRET: str, 
+                                     AUTH_SERVICE_HOST: str, AUTH_SERVICE_PORT: str):
         """
         Creates an authentication client for the application.
+        
+        Args: 
+            AUTH_CLIENT_ID (str): The client id of the application.
+            AUTH_CLIENT_SECRET (str): The client secret of the application.
+            AUTH_SERVICE_HOST (str): The host of the authentication service.
+            AUTH_SERVICE_PORT (str): The port of the authentication service.
         """
         if not AUTH_CLIENT_ID or not AUTH_CLIENT_SECRET:
             raise ValueError("AUTH_CLIENT_ID and AUTH_CLIENT_SECRET must be set in the environment.")
