@@ -250,7 +250,9 @@ def get_consent_details(client_id: str, requested_scopes: list[ProfileScope]) ->
     """
     client: Client = db_manager.clients_interface.get_client(client_id=client_id)
     if not client: return None
-    requested_scopes_as_client_scopes: list[ClientScope] = get_client_scopes_from_profile_scopes()
+    requested_scopes_as_client_scopes: list[ClientScope] = get_client_scopes_from_profile_scopes(
+        profile_scopes=requested_scopes
+    )
     if not requested_scopes_as_client_scopes: return None
     consent_details: ConsentDetails = ConsentDetails(name=client.name, 
                                                      description=client.description, 
