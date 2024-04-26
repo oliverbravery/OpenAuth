@@ -1,3 +1,4 @@
+from models.account_models import ProfileScope
 from models.client_models import MetadataAttribute
 
 
@@ -18,3 +19,18 @@ def generate_default_metadata(profile_metadata_attributes: list[MetadataAttribut
         if key in new_metadata:
             new_metadata[key] = value
     return new_metadata
+
+def scopes_to_profile_scopes(scope_name_list: list[str], client_id: str) -> list[ProfileScope]:
+    """
+    Converts a list of scope names to a list of profile scopes.
+    
+    NOTE: Assumes that the scopes are valid and belong to the given client.
+
+    Args:
+        scope_name_list (list[str]): The list of scope names.
+        client_id (str): The client_id of the application the scopes belong to.
+
+    Returns:
+        list[ProfileScope]: The list of profile scopes.
+    """
+    return [ProfileScope(client_id=client_id, scope=scope_name) for scope_name in scope_name_list]
