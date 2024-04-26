@@ -1,6 +1,8 @@
 from enum import Enum
 from pydantic import BaseModel
 
+from models.client_models import ClientScope
+
 class DBCollection(Enum):
     """
     Enum class for the database collections
@@ -24,10 +26,10 @@ class ConcentDetails(BaseModel):
     Args:
         name (str): The name of the client application.
         description (str): The description of the client application / the scopes requested.
-        scopes_description (dict[str, str]): The description of the scopes requested. Key is the scope name, value is the scope description.
+        requested_scopes (list[ClientScope]): The description of the scopes requested.
         client_redirect_uri (str): The redirect uri of the client application.
     """
     name: str
     description: str
-    scopes_description: dict[str, str]
+    requested_scopes: list[ClientScope]
     client_redirect_uri: str
