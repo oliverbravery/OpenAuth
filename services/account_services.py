@@ -3,7 +3,7 @@ from common import db_manager
 from models.auth_models import Authorization
 from models.client_models import Client, ClientScope
 from models.util_models import ConsentDetails
-from utils.account_utils import generate_default_metadata
+from utils.account_utils import generate_default_metadata, scopes_to_profile_scopes
 from utils.client_util import convert_names_to_scopes
 from validators.account_validators import check_profile_exists
 
@@ -45,7 +45,7 @@ def generate_client_profile(client_id: str, scopes: str) -> Profile:
     scopes_as_list: list[str] = scopes.split(" ")
     new_profile: Profile = Profile(
         client_id=client_id,
-        scopes=scopes_as_list,
+        scopes=scopes_to_profile_scopes(scope_name_list=scopes_as_list, client_id=client_id),
         metadata=default_metadata
         )
     return new_profile
