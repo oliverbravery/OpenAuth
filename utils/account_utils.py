@@ -34,3 +34,15 @@ def scopes_to_profile_scopes(scope_name_list: list[str], client_id: str) -> list
         list[ProfileScope]: The list of profile scopes.
     """
     return [ProfileScope(client_id=client_id, scope=scope_name) for scope_name in scope_name_list]
+
+def profile_scope_list_to_str(profile_scopes: list[ProfileScope]) -> str:
+    """
+    Converts a list of profile scopes to a combined scope string.
+
+    Args:
+        profile_scopes (list[ProfileScope]): The list of profile scopes.
+
+    Returns:
+        str: The combined scope string.
+    """
+    return " ".join([scope.get_scope_as_str() for scope in profile_scopes])
