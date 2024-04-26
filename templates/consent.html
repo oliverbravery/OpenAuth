@@ -19,7 +19,7 @@
                                 {% for attribute in scope.associated_attributes %}
                                 <li>
                                     <p>
-                                        attribute.attribute_name: attribute.access_type.value
+                                        {{attribute.attribute_name}}: {{attribute.access_type.value}}
                                     </p>
                                 </li>
                                 {% endfor %}
