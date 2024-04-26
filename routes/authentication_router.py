@@ -10,7 +10,7 @@ from utils.web_utils import configure_redirect_uri, form_to_object
 from validators.client_validators import validate_client_credentials, valid_client_scopes
 from models.request_models import AuthorizationRequest, GrantType, TokenRequest
 from common import templates, RECAPTCHA_SITE_KEY
-from validators.user_validators import validate_user_credentials
+from validators.account_validators import validate_user_credentials
 from validators.web_validators import verify_captcha_completed
 
 router = APIRouter(
