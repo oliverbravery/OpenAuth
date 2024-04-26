@@ -48,3 +48,17 @@ def check_account_is_developer(account: Account) -> bool:
                             detail="This account is not a developer account.")
         return False
     return True
+
+def check_profile_exists(username: str, client_id: str) -> bool:
+    """
+    Check if a profile exists in the database.
+
+    Args:
+        username (str): The username of the profile.
+
+    Returns:
+        bool: True if the profile exists, False otherwise.
+    """
+    account: Account = db_manager.accounts_interface.get_account(username=username)
+    if not account: return False
+    return True if account.get_profile(client_id=client_id) else False
