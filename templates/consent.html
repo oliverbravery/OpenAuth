@@ -1,19 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Concent</title>
+    <title>Consent</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-6">
-                <h2 class="text-center">Concent: grant *{{concent_details.name}}* permission</h2>
-                <p class="text-center">{{concent_details.description}}</p>
+                <h2 class="text-center">Consent: grant *{{consent_details.name}}* permission</h2>
+                <p class="text-center">{{consent_details.description}}</p>
                 <h3 class="text-center">Requested scopes</h3>
                 <ul>
-                    {% for key, value in concent_details.scopes_description.items() %}
-                        <li>{{key}} - {{value}}</li>
+                    {% for scope in consent_details.requested_scopes %}
+                        <li>
+                            <h4>{{scope.name}}: {{scope.description}}</h4>
+                            <ul>
+                                {% for attribute in scope.associated_attributes %}
+                                <li>
+                                    <p>
+                                        attribute.attribute_name: attribute.access_type.value
+                                    </p>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
                     {% endfor %}
                 </ul>
                 <form method="post" action="/authentication/consent">
@@ -24,7 +35,7 @@
                     <input type="hidden" name="response_type" value="{{ request_data.response_type }}">
                     <input type="hidden" name="state" value="{{ request_data.state }}">
                     <input type="hidden" name="code_challenge" value="{{ request_data.code_challenge }}">
-                    <input type="hidden" name="client_redirect_uri" value="{{ concent_details.client_redirect_uri }}">
+                    <input type="hidden" name="client_redirect_uri" value="{{ consent_details.client_redirect_uri }}">
                     <button type="submit" class="btn btn-primary" name="consented" value="true">Accept</button>
                     <button type="submit" class="btn btn-danger" name="consented" value="false">Decline</button>
                 </form>
