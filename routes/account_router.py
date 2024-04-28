@@ -86,7 +86,6 @@ async def login_account_callback(request: Request, response: Response, code: str
     try:
         async with httpx.AsyncClient() as client:
             token_response = await client.post(configured_token_url)
-            print(f"DEBUG: {token_response.json()}")
             token_response.raise_for_status()
             token_data = token_response.json()
             return token_data
