@@ -5,7 +5,7 @@ from common import db_manager
 
 def valid_request_scopes(scopes: list[ProfileScope]) -> bool:
     """
-    Check that the requested scopes are valid scopes.
+    Check that the requested scopes are valid scopes that exist.
 
     Args:
         scopes (list[ProfileScope]): List of requested scopes to validate.
