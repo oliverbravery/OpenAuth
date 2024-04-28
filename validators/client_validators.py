@@ -2,6 +2,7 @@ from models.account_models import Account, AccountRole
 from models.client_models import Client, MetadataType
 from datetime import datetime
 from common import db_manager
+from utils.hash_utils import verify_hash
 
 def validate_client_credentials(client_id: str, client_secret: str) -> bool:
     """
@@ -16,7 +17,7 @@ def validate_client_credentials(client_id: str, client_secret: str) -> bool:
     """
     client: Client = db_manager.clients_interface.get_client(client_id=client_id)
     if not client: return False
-    return client.client_secret == client_secret
+    return verify_hash(plaintext=client_secret, urlsafe_hash=client.client_secret_hash)
 
 def validate_client_developers(client: Client) -> bool:
     """

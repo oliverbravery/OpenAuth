@@ -8,6 +8,7 @@ from models.client_models import Client
 import re
 
 from models.scope_models import ClientScope, ScopeAccessType, ScopeAttribute
+from utils.hash_utils import hash_string
 
 class DBManager:
     """
@@ -67,7 +68,8 @@ class DBManager:
                             ScopeAttribute(attribute_name="email", access_type=ScopeAccessType.WRITE)
                             ]),
         ]
-        auth_client: Client = Client(client_id=AUTH_CLIENT_ID, client_secret=AUTH_CLIENT_SECRET, 
+        hashed_secret: str = hash_string(AUTH_CLIENT_SECRET)
+        auth_client: Client = Client(client_id=AUTH_CLIENT_ID, client_secret_hash=hashed_secret, 
                                     name="Authentication Service", 
                                     description="Client for the authentication service", 
                                     redirect_uri=auth_client_redirect_uri,

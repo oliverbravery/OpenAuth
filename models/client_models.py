@@ -60,7 +60,7 @@ class Client(BaseModel):
     
     Args:
         client_id (str): The unique attribute used to identify and differentiate applications.
-        client_secret (str): A long random string that is used to authenticate the application.
+        client_secret_hash (str): A long random string that is used to authenticate the application. Stored as a hash.
         name (str): The name of the application.
         description (str): A description of the application and why it needs access to certain scopes.
         redirect_uri (str): The URI to which the user is redirected after granting or denying access to the application.
@@ -70,7 +70,7 @@ class Client(BaseModel):
         profile_defaults (dict[str, any]): Any default values that the client wants to store in the user's profile.
     """
     client_id: str
-    client_secret: str
+    client_secret_hash: str
     name: str
     description: str
     redirect_uri: str
