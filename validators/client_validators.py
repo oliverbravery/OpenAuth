@@ -38,3 +38,16 @@ def validate_client_developers(client: Client) -> bool:
         for dev_scope in developer.scopes:
             if dev_scope not in client_developer_scope_names: return False
     return True
+
+def validate_metadata_attributes(client: Client) -> bool:
+    """
+    Validate that the metadata attributes have unique names.
+    
+    Args:
+        client (Client): The client to validate.
+
+    Returns:
+        bool: True if the metadata attributes are valid, False otherwise.
+    """
+    metadata_attribute_names: list[str] = [metadata_attribute.name for metadata_attribute in client.profile_metadata_attributes]
+    return len(metadata_attribute_names) == len(set(metadata_attribute_names))
