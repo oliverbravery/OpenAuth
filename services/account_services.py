@@ -85,4 +85,4 @@ def enroll_account_as_developer(account: Account) -> int:
         int: 0 if the account was successfully enrolled as a developer, -1 otherwise.
     """
     account.account_role = AccountRole.DEVELOPER
-    return db_manager.accounts_interface.update_generic(account)
+    return db_manager.accounts_interface.update_account(account=account)
