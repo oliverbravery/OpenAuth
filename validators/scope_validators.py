@@ -57,3 +57,4 @@ def validate_client_scopes(client: Client) -> bool:
         scope_attribute_names: list[str] = [scope_attribute.attribute_name for scope_attribute in scope.associated_attributes]
         if len(scope_attribute_names) != len(set(scope_attribute_names)): return False
         if not all([attribute in metadata_attribute_names for attribute in scope_attribute_names]): return False
+    return True
