@@ -31,8 +31,6 @@ def generate_and_store_tokens(authorization: Authorization, user_account: Accoun
     refresh_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.REFRESH,
                                                                    account=user_account,
                                                                    client_id=client_id)
-    # TODO: access token not generating as there is no profile in the account object for the client id. 
-    # TODO: Need to, after consent screen, add the profile to the account object if it's not already there.
     if not access_token or not refresh_token: return None
     authorization.hashed_refresh_token = hash_string(plaintext=refresh_token)
     response: int = db_manager.authorization_interface.update_authorization(authorization)
