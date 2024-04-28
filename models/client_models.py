@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import List, Dict, Any
+import datetime
 
 from pydantic import BaseModel
 
@@ -27,6 +28,21 @@ class MetadataType(Enum):
     DATE = "date"
     TIME = "time"
     DATETIME = "datetime"
+    
+    def get_pythonic_type(self) -> type:
+        """
+        Get the Pythonic type for the metadata attribute.
+        
+        Returns:
+            type: The Pythonic type for the metadata attribute.
+        """
+        if self == MetadataType.STRING: return str
+        if self == MetadataType.INTEGER: return int
+        if self == MetadataType.FLOAT: return float
+        if self == MetadataType.BOOLEAN: return bool
+        if self == MetadataType.DATE: return datetime.date
+        if self == MetadataType.TIME: return datetime.time
+        if self == MetadataType.DATETIME: return datetime.datetime
     
 class MetadataAttribute(BaseModel):
     """
