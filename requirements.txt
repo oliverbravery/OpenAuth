@@ -4,7 +4,7 @@ pymongo
 python-dotenv
 python-multipart
 bcrypt
+pyjwt
 cryptography
-python-jose[cryptography]
 Jinja2
 httpx

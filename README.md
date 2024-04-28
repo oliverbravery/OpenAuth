@@ -22,10 +22,10 @@ For generating auth client id and secret, use these commands respectively:
 openssl rand -hex 32 # For client secret
 openssl rand -hex 16 # For client id
 ```
-For signing JWT tokens we use the RS256 algorithm. To generate a private and public key pair, use the following commands:
+For signing JWT tokens we use the RS256 algorithm. Private keys need to be PKCS#8. To generate a private and public key pair, use the following commands:
 ```bash
-openssl genrsa -out environment/private.pem 2048
-openssl rsa -in environment/private.pem -outform PEM -pubout -out environment/public.pem
+openssl genpkey -out environment/private.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048
+openssl pkey -in environment/private.pem -outform PEM -pubout -out environment/public.pem
 ```
 For encrypting the username with the authentication code (AUTH_CODE_SECRET). To generate the key, use the following command:
 ```bash
