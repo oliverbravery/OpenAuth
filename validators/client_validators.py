@@ -1,5 +1,6 @@
 from models.account_models import Account, AccountRole
-from models.client_models import Client, ClientDeveloper
+from models.client_models import Client, MetadataType
+from datetime import datetime
 from common import db_manager
 
 def validate_client_credentials(client_id: str, client_secret: str) -> bool:
@@ -51,3 +52,43 @@ def validate_metadata_attributes(client: Client) -> bool:
     """
     metadata_attribute_names: list[str] = [metadata_attribute.name for metadata_attribute in client.profile_metadata_attributes]
     return len(metadata_attribute_names) == len(set(metadata_attribute_names))
+
+def validate_attribute_for_metadata_type(metadata_type: type, value: any) -> bool:
+    """
+    Validate that the value is of the correct type for the metadata attribute.
+
+    Args:
+        metadata_type (type): The type of the metadata attribute.
+        value (any): The value to validate.
+
+    Returns:
+        bool: True if the value is of the correct type, False otherwise.
+    """
+    match metadata_type:
+        case datetime.datetime:
+            try:
+                _ = datetime.fromisoformat(value)
+                return True
+            except Exception:
+                return False
+        case _:
+            return isinstance(value, metadata_type)
+
+def validate_profile_defaults(client: Client) -> bool:
+    """
+    Check that the profile defaults are valid for the metadata attributes.
+
+    Checks the profile defaults exist as metadata attributes and the specified defaults are of the correct type.
+
+    Args:
+        client (Client): The client to validate.
+
+    Returns:
+        bool: True if the profile defaults are valid, False otherwise.
+    """
+    all_mapped_attributes: dict[str, MetadataType] = {metadata_attribute.name: metadata_attribute.type for metadata_attribute in client.profile_metadata_attributes}
+    for key, value in client.profile_defaults.items():
+        if key not in all_mapped_attributes: return False
+        valid_datatype: type = all_mapped_attributes[key].get_pythonic_type()
+        if not validate_attribute_for_metadata_type(metadata_type=valid_datatype, value=value): return False
+    return True
