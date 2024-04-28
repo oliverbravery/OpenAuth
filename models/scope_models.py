@@ -33,13 +33,13 @@ class ClientScope(BaseModel):
         name (str): The 'name' of the scope.
         description (str): A description of the scope and what it allows the client to do.
         shareable (bool): Whether other clients can request access to this scope.
-        developer (bool): Whether the scope is only available to developers.
+        developer_only (bool): Whether the scope is only available to developers.
         associated_attributes (List[ScopeAttribute]): The attributes (profile or profile metadata) that this scope controls.
     """
     name: str
     description: str
     shareable: bool
-    developer: bool
+    developer_only: bool
     associated_attributes: List[ScopeAttribute]
 
 class ProfileScope(BaseModel):
