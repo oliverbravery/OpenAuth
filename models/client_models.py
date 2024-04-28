@@ -3,7 +3,7 @@ from typing import List, Dict, Any
 
 from pydantic import BaseModel
 
-from models.scope_models import ClientScope, DeveloperScope
+from models.scope_models import ClientScope
 
 class ClientDeveloper(BaseModel):
     """
@@ -11,10 +11,10 @@ class ClientDeveloper(BaseModel):
     
     Args:
         username (str): The unique username of the developer.
-        scopes (List[DeveloperScope]): The scopes that the developer has access to for the client.
+        scopes (List[str]): The scopes that the developer has access to for the client. Must be a developer only scope.
     """
     username: str
-    scopes: List[DeveloperScope]
+    scopes: List[str]
     
 class MetadataType(Enum):
     """
