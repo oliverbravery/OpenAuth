@@ -33,7 +33,7 @@ def validate_user_credentials(username: str, password: str) -> int:
                                            hashed_password=account.hashed_password): return -1
     return 0
 
-def check_account_is_developer(account: Account) -> bool:
+def verify_account_is_developer(account: Account) -> bool:
     """
     Checks if an account is a developer account.
     Raises an HTTPException if the account is not a developer account.
@@ -47,7 +47,6 @@ def check_account_is_developer(account: Account) -> bool:
     if account.account_role != AccountRole.DEVELOPER:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="This account is not a developer account.")
-        return False
     return True
 
 def check_profile_exists(username: str, client_id: str) -> bool:
