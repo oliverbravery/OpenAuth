@@ -25,8 +25,6 @@ class MetadataType(Enum):
     INTEGER = "integer"
     FLOAT = "float"
     BOOLEAN = "boolean"
-    DATE = "date"
-    TIME = "time"
     DATETIME = "datetime"
     
     def get_pythonic_type(self) -> type:
@@ -40,8 +38,6 @@ class MetadataType(Enum):
         if self == MetadataType.INTEGER: return int
         if self == MetadataType.FLOAT: return float
         if self == MetadataType.BOOLEAN: return bool
-        if self == MetadataType.DATE: return datetime.date
-        if self == MetadataType.TIME: return datetime.time
         if self == MetadataType.DATETIME: return datetime.datetime
     
 class MetadataAttribute(BaseModel):
