@@ -18,6 +18,8 @@ def get_profile_default_from_client(client: Client, key: str) -> any:
 def generate_client_credential(credential_type: ClientCredentialType) -> str:
     """
     Generate a hex client credential for a client.
+    
+    NOTE: The generated value is not checked for uniqueness against existing client credentials.
 
     Args:
         credential_type (ClientCredentialType): The type of credential to generate.
