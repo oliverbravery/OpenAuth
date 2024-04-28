@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status, Depends, HTTPException
 
 from models.account_models import Account, AccountRole
+from models.client_models import Client
 from models.form_models import ClientRegistrationForm
 from services.auth_services import BearerTokenAuth
 from services.account_services import enroll_account_as_developer
@@ -18,11 +19,11 @@ async def enroll_developer(account: Account = Depends(bearer_token_auth)):
     """
     Enroll the current account as a developer.
     """
-    verify_account_is_developer(account=account)
-    if enroll_account_as_developer(account) == -1:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-                            detail="Failed to enroll account as a developer.")
-    return "Account successfully enrolled as a developer."
+    if account.account_role != AccountRole.DEVELOPER:
+        if enroll_account_as_developer(account) == -1:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                                detail="Failed to enroll account as a developer.")
+    return "Account is enrolled as a developer."
 
 @router.post("/add-client", status_code=status.HTTP_200_OK)
 async def add_client(client_registration_form: ClientRegistrationForm, account: Account = Depends(bearer_token_auth)):
