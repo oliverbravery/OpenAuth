@@ -1,7 +1,8 @@
 from datetime import timedelta
 import datetime
 import jwt
-from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_pem_public_key
+import json
+from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_pem_public_key, Encoding, PublicFormat
 from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes, PublicKeyTypes
 from models.account_models import Account, Profile
 from models.token_models import AccessToken, BaseToken, RefreshToken, TokenType
@@ -195,3 +196,16 @@ class TokenManager:
                     iat=iat,
                 )
         return self.sign_jwt_token(token=token)
+    
+    def generate_jwks_dict(self) -> dict:
+        """
+        Generates the JWKS dictionary for the API.
+
+        Returns:
+            dict: The JWKS dictionary for the API.
+        """
+        jwk: dict = json.loads(self.public_key.public_bytes(
+            encoding=Encoding.PEM,
+            format=PublicFormat.SubjectPublicKeyInfo
+        ).decode("utf-8"))
+        return jwk
