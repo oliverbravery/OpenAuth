@@ -1,18 +1,6 @@
 from enum import Enum
 from typing import List
 from pydantic import BaseModel
-
-
-class DeveloperScope(str, Enum):
-    """
-    Enum class for the different developer scopes
-    """
-    READ_PROFILE = "read:profile"
-    WRITE_PROFILE = "write:profile"
-    DELETE_PROFILE = "delete:profile"
-    READ_CLIENT = "read:client"
-    WRITE_CLIENT = "write:client"
-    DELETE_CLIENT = "delete:client"
     
 class ScopeAccessType(str, Enum):
     """
@@ -45,11 +33,13 @@ class ClientScope(BaseModel):
         name (str): The 'name' of the scope.
         description (str): A description of the scope and what it allows the client to do.
         shareable (bool): Whether other clients can request access to this scope.
+        developer_only (bool): Whether the scope is only available to developers.
         associated_attributes (List[ScopeAttribute]): The attributes (profile or profile metadata) that this scope controls.
     """
     name: str
     description: str
     shareable: bool
+    developer_only: bool
     associated_attributes: List[ScopeAttribute]
 
 class ProfileScope(BaseModel):

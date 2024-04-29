@@ -19,6 +19,13 @@ class Endpoints(str, Enum):
     LOGIN = "/authentication/login"
     CONSENT = "/authentication/consent"
     
+class ClientCredentialType(Enum):
+    """
+    Enum class for the client credential types mapped to their byte length.
+    """
+    ID = 16
+    SECRET = 32
+    
 class ConsentDetails(BaseModel):
     """
     A class used to represent the data required to display the consent page.
