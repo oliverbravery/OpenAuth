@@ -42,7 +42,7 @@ async def add_client(client_registration_form: ClientRegistrationForm, account: 
         description=client_registration_form.client_description,
         redirect_uri=client_registration_form.client_redirect_uri,
         developers=client_registration_form.client_developers,
-        scopes=client_registration_form.client_scopes,
+        scopes=client_registration_form.scopes,
         profile_metadata_attributes=client_registration_form.client_profile_metadata_attributes,
         profile_defaults=client_registration_form.client_profile_defaults
     )
