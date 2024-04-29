@@ -64,7 +64,7 @@ class Client(BaseModel):
         name (str): The name of the application.
         description (str): A description of the application and why it needs access to certain scopes.
         redirect_uri (str): The URI to which the user is redirected after granting or denying access to the application.
-        scopes (Scopes): The scopes belonging to the client.
+        scopes (Scopes): The scopes the client can access and request from the user.
         developers (List[ClientAdmin]): The list of developers that have access to the client.
         profile_metadata_attributes (List[MetadataAttribute]): The metadata attributes that the client can store in the user's profile.
         profile_defaults (dict[str, any]): Any default values that the client wants to store in the user's profile.
