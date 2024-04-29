@@ -11,6 +11,7 @@ from utils.auth_utils import generate_code_challenge_and_verifier
 from utils.password_manager import PasswordManager
 from utils.web_utils import configure_redirect_uri
 from validators.account_validators import check_user_exists
+from common import bearer_token_auth
 
 router = APIRouter(
     prefix="/account",
@@ -92,3 +93,13 @@ async def login_account_callback(request: Request, response: Response, code: str
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to get token.")
     
+@router.get("/{username}", status_code=status.HTTP_200_OK)
+def get_account_information(username: str, account: Account = Depends(bearer_token_auth)):
+    """
+    Get account information based on the username.
+
+    Args:
+        username (str): The username of the account to get.
+        account (Account): The account making the request. Depends on the bearer token.
+    """
+    pass
