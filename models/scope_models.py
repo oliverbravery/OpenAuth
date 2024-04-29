@@ -53,4 +53,18 @@ class ProfileScope(BaseModel):
     """
     client_id: str
     scope: str
+     
+class Scopes(BaseModel):
+    """
+    Used by client to store the scopes that the client creates for it's metadata and also for the scopes it has access to.
     
+    The consent screen will require the user to approve the client to access the external scopes and account scopes.
+
+    Args:
+        client_scopes (List[ClientScope]): The scopes that the client has created for it's own metadata. These are the scopes the client can request. Scopes are used to control access to this client specific profile attributes.
+        external_scopes (List[ProfileScope]): External scopes from other clients that the client has access to. These are the scopes that the client has been granted access to by the user.
+        account_scopes (List[ScopeAttribute]): The non-profile metadata attributes that the client has access to in a user's account (i.e. email, display name, etc).
+    """
+    client_scopes: List[ClientScope]
+    external_scopes: List[ProfileScope]
+    account_scopes: List[ScopeAttribute]
