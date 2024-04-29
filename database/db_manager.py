@@ -7,7 +7,7 @@ from database.clients_interface import ClientsInterface
 from models.client_models import Client
 import re
 
-from models.scope_models import ClientScope, ScopeAccessType, ScopeAttribute, Scopes
+from models.scope_models import AccountScope, ScopeAccessType, Scopes, AccountAttribute
 from utils.hash_utils import hash_string
 
 class DBManager:
@@ -62,6 +62,15 @@ class DBManager:
                                     scopes=Scopes(
                                         client_scopes=[],
                                         external_scopes=[],
-                                        account_scopes=[]
+                                        account_scopes=[
+                                            AccountScope(
+                                                attribute=AccountAttribute.DISPLAY_NAME,
+                                                access_type=ScopeAccessType.READ
+                                            ),
+                                            AccountScope(
+                                                attribute=AccountAttribute.DISPLAY_NAME,
+                                                access_type=ScopeAccessType.WRITE
+                                            )
+                                        ]
                                     ))
         self.clients_interface.add_client(client=auth_client)
