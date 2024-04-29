@@ -3,7 +3,8 @@ from models.scope_models import ClientScope, ProfileScope
 from common import db_manager
 
 
-def valid_request_scopes(scopes: list[ProfileScope]) -> bool:
+def valid_request_scopes(scopes: list[ProfileScope], developer_only: bool = False, 
+                         shareable_only:bool=False) -> bool:
     """
     Check that the requested scopes are valid scopes that exist.
     
@@ -11,6 +12,8 @@ def valid_request_scopes(scopes: list[ProfileScope]) -> bool:
 
     Args:
         scopes (list[ProfileScope]): List of requested scopes to validate.
+        developer_only (bool, optional): If True, only developer only scopes are allowed. Defaults to False.
+        shareable_only (bool, optional): If True, only shareable scopes are allowed. Defaults to False.
 
     Returns:
         bool: True if the requested scopes are valid, False otherwise.
@@ -22,7 +25,7 @@ def valid_request_scopes(scopes: list[ProfileScope]) -> bool:
         str_scope_list: list[str] = [scope.scope for scope in scope_list]
         client: Client = db_manager.clients_interface.get_client(client_id=client_id)
         if not client: return False
-        matching_client_scopes: list[ClientScope] = [scope for scope in client.scopes if scope.name in str_scope_list and not scope.developer_only]
+        matching_client_scopes: list[ClientScope] = [scope for scope in client.scopes if scope.name in str_scope_list and scope.developer_only == developer_only and scope.shareable == shareable_only]
         if len(matching_client_scopes) != len(scope_list): return False
     return True
 
@@ -58,3 +61,20 @@ def validate_client_scopes(client: Client) -> bool:
         if len(scope_attribute_names) != len(set(scope_attribute_names)): return False
         if not all([attribute in metadata_attribute_names for attribute in scope_attribute_names]): return False
     return True
+
+def validate_external_scopes(external_scopes: list[ProfileScope], client_id: str) -> bool:
+    """
+    Validate that the external scopes are valid scopes that exist and are external to the client.
+    
+    External scopes must be sharable and not developer only.
+
+    Args:
+        external_scopes (list[ProfileScope]): List of external scopes to validate.
+        client_id (str): The client id of the client.
+
+    Returns:
+        bool: True if the external scopes are valid, False otherwise.
+    """
+    for scope in external_scopes:
+        if scope.client_id == client_id: return False
+    return valid_request_scopes(scopes=external_scopes, shareable_only=True)
