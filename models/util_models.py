@@ -2,7 +2,7 @@ from enum import Enum
 from pydantic import BaseModel
 
 from models.account_models import Account
-from models.scope_models import ClientScope, ProfileScope, Scopes
+from models.scope_models import AccountScope, ClientScope, ProfileScope, Scopes
 
 class DBCollection(Enum):
     """
@@ -43,7 +43,7 @@ class ConsentDetails(BaseModel):
     name: str
     description: str
     requested_scopes: list[ClientScope]
-    client_account_access_scopes: list[ProfileScope]
+    client_account_access_scopes: list[AccountScope]
     client_external_access_scopes: list[ClientScope]
     account_connected: bool
     client_redirect_uri: str

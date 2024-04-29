@@ -2,7 +2,12 @@ from enum import Enum
 from typing import List
 from pydantic import BaseModel
 
-from models.account_models import AccountAttribute
+class AccountAttribute(str, Enum):
+    """
+    Enum class for representing the different attributes an account has (non-profile attributes)
+    """
+    DISPLAY_NAME = "display_name"
+    EMAIL = "email"
     
 class ScopeAccessType(str, Enum):
     """
