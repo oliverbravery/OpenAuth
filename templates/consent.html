@@ -18,7 +18,7 @@
                         <ul>
                             <h3>Account Information</h3>
                                 {% for scope in consent_details.client_account_access_scopes %}
-                                <li>{{scope.attribute_name}} : {{scope.access_type.value}}</li>
+                                <li>{{scope.attribute.value}} : {{scope.access_type.value}}</li>
                                 {% endfor %}
                             <h3>Third-Party Scopes</h3>
                                 {% for scope in consent_details.client_external_access_scopes %}
