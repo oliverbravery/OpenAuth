@@ -1,10 +1,9 @@
 from fastapi import APIRouter, status, Depends, HTTPException
 
-from models.account_models import Account, AccountRole
+from models.account_models import AccountRole
 from models.client_models import Client
 from models.form_models import ClientRegistrationForm
-from models.util_models import ClientCredentialType
-from services.auth_services import BearerTokenAuth
+from models.util_models import AuthenticatedAccount, ClientCredentialType
 from services.account_services import enroll_account_as_developer
 from services.client_services import generate_unique_client_id
 from utils.client_utils import generate_client_credential
@@ -20,7 +19,7 @@ router = APIRouter(
 )
 
 @router.post("/enroll", status_code=status.HTTP_200_OK)
-async def enroll_developer(account: Account = Depends(bearer_token_auth)):
+async def enroll_developer(account: AuthenticatedAccount = Depends(bearer_token_auth)):
     """
     Enroll the current account as a developer.
     """
@@ -31,7 +30,7 @@ async def enroll_developer(account: Account = Depends(bearer_token_auth)):
     return "Account is enrolled as a developer."
 
 @router.post("/add-client", status_code=status.HTTP_200_OK)
-async def add_client(client_registration_form: ClientRegistrationForm, account: Account = Depends(bearer_token_auth)):
+async def add_client(client_registration_form: ClientRegistrationForm, account: AuthenticatedAccount = Depends(bearer_token_auth)):
     """
     Add a new client to the database.
     """

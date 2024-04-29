@@ -1,7 +1,8 @@
 from enum import Enum
 from pydantic import BaseModel
 
-from models.scope_models import ClientScope
+from models.account_models import Account
+from models.scope_models import ClientScope, ProfileScope
 
 class DBCollection(Enum):
     """
@@ -40,3 +41,15 @@ class ConsentDetails(BaseModel):
     description: str
     requested_scopes: list[ClientScope]
     client_redirect_uri: str
+    
+class AuthenticatedAccount(Account):
+    """
+    Represents an authenticated account. 
+    
+    Derived from the Account class with additional request scopes.
+
+    Args:
+        Account (Account): The account object for the authenticated account.
+        request_scopes (list[ProfileScope]): The scopes found in the verified bearer token.
+    """
+    request_scopes: list[ProfileScope]

@@ -5,10 +5,11 @@ from models.client_models import Client
 from models.response_models import AuthorizeResponse, TokenResponse
 from models.scope_models import ClientScope, ProfileScope
 from models.token_models import AccessToken, RefreshToken, TokenType
-from models.util_models import ConsentDetails
+from models.util_models import AuthenticatedAccount, ConsentDetails
 from utils.auth_utils import decrypt_authorization_code, generate_authorization_code
 from utils.hash_utils import hash_string, verify_hash
 from common import db_manager, token_manager
+from utils.scope_utils import str_to_list_of_profile_scopes
 from validators.auth_validators import verify_authorization_code, verify_code_challenge
 from validators.client_validators import validate_client_credentials
 
@@ -138,77 +139,6 @@ def generate_and_store_auth_code(state: str, username: str, code_challenge: str)
     if response == -1: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Authorization failed.")
     return AuthorizeResponse(authorization_code=encrypted_auth_code, state=csrf_state)
-
-class BearerTokenAuth:
-    """
-    A class used to authenticate a user using a Bearer token.
-    """
-    token_prefix: str
-    
-    def __init__(self, token_prefix: str = "Bearer"):
-        """
-        The constructor for the BearerTokenAuth class.
-
-        Args:
-            token_prefix (str, optional): The prefix for the Bearer token. Defaults to "Bearer".
-        """
-        self.token_prefix = token_prefix
-        
-    def abstract_token_from_header(self, auth_header: str | None) -> str:
-        """
-        Abstracts the token from the Authorization header.
-
-        Args:
-            auth_header (str | None): The Authorization header as a string.
-
-        Returns:
-            str: The token as a string. None if the token is invalid or not present.
-        """
-        if not auth_header: return None
-        split_auth_header: list[str] = auth_header.split(" ")
-        if not len(split_auth_header) == 2: return None
-        if not split_auth_header[0] == self.token_prefix: return None
-        return split_auth_header[1]
-    
-    def raise_invalid_token_error(self) -> None:
-        """
-        Raises an HTTPException with status code 401 and a message indicating an invalid token.
-        """
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
-                            detail=f"Invalid {self.token_prefix} token")
-    
-    async def __call__(self, request: Request) -> Account:
-        """
-        Callable method to authenticate the user using the access Bearer token.
-        Use as an endpoint parameter to obtain the account of the user assosiated with the token.
-        Raises an HTTPException if the token is invalid.
-        
-        Example:
-        ```python
-        from fastapi import Depends, FastAPI
-        from routes.authentication.authentication_utils import BearerTokenAuth
-        app = FastAPI()
-        bearer_token_auth: BearerTokenAuth = BearerTokenAuth()
-        @app.get("/protected")
-        async def protected_endpoint(token: Account = Depends(bearer_token_auth)):
-            pass
-        ```
-
-        Args:
-            request (Request): Used to get the headers from the request.
-
-        Returns:
-            Account: The account object of the user associated with the token. Raises an HTTPException if the token is invalid.
-        """
-        auth_header = request.headers.get("Authorization")
-        token: str = self.abstract_token_from_header(auth_header=auth_header)
-        if not token: self.raise_invalid_token_error()
-        decoded_token: AccessToken = token_manager.verify_and_decode_jwt_token(token=token, token_type=TokenType.ACCESS)
-        if not decoded_token: self.raise_invalid_token_error()
-        account: Account = db_manager.accounts_interface.get_account(username=decoded_token.sub)
-        if not account: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                            detail="Issue fetching account information")
-        return account
     
 def get_client_scopes_from_profile_scopes(profile_scopes: list[ProfileScope]) -> list[ClientScope]:
     """
