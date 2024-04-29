@@ -7,7 +7,7 @@ from database.clients_interface import ClientsInterface
 from models.client_models import Client
 import re
 
-from models.scope_models import ClientScope, ScopeAccessType, ScopeAttribute
+from models.scope_models import ClientScope, ScopeAccessType, ScopeAttribute, Scopes
 from utils.hash_utils import hash_string
 
 class DBManager:
@@ -59,5 +59,9 @@ class DBManager:
                                     name="Authentication Service", 
                                     description="Client for the authentication service", 
                                     redirect_uri=auth_client_redirect_uri,
-                                    scopes=[])
+                                    scopes=Scopes(
+                                        client_scopes=[],
+                                        external_scopes=[],
+                                        account_scopes=[]
+                                    ))
         self.clients_interface.add_client(client=auth_client)
