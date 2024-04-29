@@ -10,35 +10,77 @@
             <div class="col-6">
                 <h2 class="text-center">Consent: grant *{{consent_details.name}}* permission</h2>
                 <p class="text-center">{{consent_details.description}}</p>
-                <h3 class="text-center">Requested scopes</h3>
-                <ul>
-                    {% for scope in consent_details.requested_scopes %}
-                        <li>
-                            <h4>{{scope.name}}: {{scope.description}}</h4>
-                            <ul>
-                                {% for attribute in scope.associated_attributes %}
-                                <li>
-                                    <p>
-                                        {{attribute.attribute_name}}: {{attribute.access_type.value}}
-                                    </p>
-                                </li>
+                {% if not consent_details.is_connected %}
+                    <div id="client_consent_block">
+                        <h2>Link Account With <em>{{consent_details.name}}</em></h2>
+                        <p>This is your first time linking your account with <em>'{{consent_details.name}}'</em></p>
+                        <p><strong>By linking your account with this application, you are granting the application access to the following:</strong></p>
+                        <ul>
+                            <h3>Account Information</h3>
+                                {% for scope in consent_details.client_account_access_scopes %}
+                                <li>{{scope.attribute_name}} : {{scope.access_type.value}}</li>
                                 {% endfor %}
-                            </ul>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <form method="post" action="/authentication/consent">
-                    <input type="hidden" name="client_id" value="{{ request_data.client_id }}">
-                    <input type="hidden" name="client_secret" value="{{ request_data.client_secret }}">
-                    <input type="hidden" name="username" value="{{ request_data.username }}">
-                    <input type="hidden" name="scope" value="{{ request_data.scope }}">
-                    <input type="hidden" name="response_type" value="{{ request_data.response_type }}">
-                    <input type="hidden" name="state" value="{{ request_data.state }}">
-                    <input type="hidden" name="code_challenge" value="{{ request_data.code_challenge }}">
-                    <input type="hidden" name="client_redirect_uri" value="{{ consent_details.client_redirect_uri }}">
-                    <button type="submit" class="btn btn-primary" name="consented" value="true">Accept</button>
-                    <button type="submit" class="btn btn-danger" name="consented" value="false">Decline</button>
-                </form>
+                            <h3>Third-Party Scopes</h3>
+                                {% for scope in consent_details.client_external_access_scopes %}
+                                    <li>
+                                        <p>{{scope.name}} : {{scope.description}}</p>
+                                        <ul>
+                                            {% for attribute in scope.associated_attributes %}
+                                            <li>
+                                                <p>
+                                                    {{attribute.attribute_name}} : {{attribute.access_type.value}}
+                                                </p>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </li>
+                                {% endfor %}
+                        </ul>
+                        <button onclick="hideClientInfoConsent()" class="btn btn-primary">Continue</button>
+                        <button type="submit" class="btn btn-danger" name="consented" value="false">Decline</button>
+                        <script>
+                            function hideClientInfoConsent() {
+                                var consentBlock = document.getElementById("client_consent_block");
+                                consentBlock.style.display = "none";
+                                var requestConsentBlock = document.getElementById("request_scope_block")
+                                requestConsentBlock.style.display = "block";
+                            }
+                        </script>
+                    </div>
+                {% else %}
+                    <p><strong><em>You have already linked your account with this application.</em></strong></p>
+                {% endif %}
+                <div id="request_scope_block" style="display: none;">
+                    <h3 class="text-center">Requested scopes</h3>
+                    <ul>
+                        {% for scope in consent_details.requested_scopes %}
+                            <li>
+                                <h4>{{scope.name}}: {{scope.description}}</h4>
+                                <ul>
+                                    {% for attribute in scope.associated_attributes %}
+                                    <li>
+                                        <p>
+                                            {{attribute.attribute_name}}: {{attribute.access_type.value}}
+                                        </p>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <form method="post" action="/authentication/consent">
+                        <input type="hidden" name="client_id" value="{{ request_data.client_id }}">
+                        <input type="hidden" name="client_secret" value="{{ request_data.client_secret }}">
+                        <input type="hidden" name="username" value="{{ request_data.username }}">
+                        <input type="hidden" name="scope" value="{{ request_data.scope }}">
+                        <input type="hidden" name="response_type" value="{{ request_data.response_type }}">
+                        <input type="hidden" name="state" value="{{ request_data.state }}">
+                        <input type="hidden" name="code_challenge" value="{{ request_data.code_challenge }}">
+                        <input type="hidden" name="client_redirect_uri" value="{{ consent_details.client_redirect_uri }}">
+                        <button type="submit" class="btn btn-primary" name="consented" value="true">Accept</button>
+                        <button type="submit" class="btn btn-danger" name="consented" value="false">Decline</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
