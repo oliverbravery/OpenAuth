@@ -43,6 +43,7 @@ def generate_client_profile(client_id: str, scopes: str) -> Profile:
     default_metadata: dict[str, any] = generate_default_metadata(profile_metadata_attributes=client.profile_metadata_attributes,
                                                                  profile_defaults=client.profile_defaults)
     scopes_as_list: list[str] = scopes.split(" ")
+    if scopes_as_list == ['']: scopes_as_list = []
     new_profile: Profile = Profile(
         client_id=client_id,
         scopes=scopes_to_profile_scopes(scope_name_list=scopes_as_list),

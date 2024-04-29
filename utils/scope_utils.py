@@ -52,7 +52,9 @@ def str_to_list_of_profile_scopes(scopes_str_list: str) -> list[ProfileScope]:
     Returns:
         list[ProfileScope]: The list of profile scopes.
     """
-    seperated_scopes: list[str] = scopes_str_list.split(" ")
+    seperated_scopes: list[str] = []
+    if scopes_str_list != "":
+        seperated_scopes: list[str] = scopes_str_list.split(" ")
     return scopes_to_profile_scopes(scope_name_list=seperated_scopes)
 
 def profile_scope_list_to_str(profile_scopes: list[ProfileScope]) -> str:
