@@ -102,3 +102,8 @@ The project structure is as follows:
     - `/utils` - contains all the utility functions used throughout the project that don't rely on the database (i.e. "_hash_password_").
 
     - `/templates` - contains all the HTML templates for rendered responses.
+
+# Notes
+- When requesting scopes, the scopes should be defined as a list of space-seperated strings. The strings should be in the format of <client_id>.<scope> (i.e. "client_id.read:profile"). This is to ensure that the scopes are unique to the client and not shared between clients.
+- When 'creating' scopes in the client, the scopes should be defined as a list of space-seperated strings. The strings should be in the format of <scope> (i.e. "read:profile"). The client_id will be implicitly added to the scope when it is created.
+- Basic account information such as username and display_name is always returned when requesting data, regardless of the scopes requested (assuming the user is authenticated).

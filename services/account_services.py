@@ -2,10 +2,9 @@ from models.account_models import Account, AccountRole, Profile
 from common import db_manager
 from models.auth_models import Authorization
 from models.client_models import Client
-from models.scope_models import ClientScope
-from models.util_models import ConsentDetails
+from models.scope_models import ProfileScope, ScopeAttribute
 from utils.account_utils import generate_default_metadata
-from utils.scope_utils import convert_names_to_scopes, scopes_to_profile_scopes
+from utils.scope_utils import scopes_to_profile_scopes
 from validators.account_validators import check_profile_exists
 
 def register_account_in_db_collections(new_account: Account) -> int:
@@ -86,3 +85,32 @@ def enroll_account_as_developer(account: Account) -> int:
     """
     account.account_role = AccountRole.DEVELOPER
     return db_manager.accounts_interface.update_account(account=account)
+
+def get_attributes_from_scopes(scopes: list[ProfileScope]) -> dict[str, list[ScopeAttribute]]:
+    """
+    Gets all the attributes belonging to the scopes provided.
+
+    Args:
+        scopes (list[ProfileScope]): The list of scopes to get the attributes from.
+
+    Returns:
+        dict[str, list[ScopeAttribute]]: The client_id mapped to the list of scope attributes linked to the client.
+    """
+    all_scope_attributes: dict[Client, list[ScopeAttribute]] = {}
+    client_id_to_profile_scopes: dict[str, list[ProfileScope]] = {scope.client_id:[] for scope in scopes}
+    for scope in scopes:
+        client_id_to_profile_scopes[scope.client_id].append(scope)
+    for client_id, scope_list in client_id_to_profile_scopes.items():
+        scope_name_list: list[str] = [scope.scope for scope in scope_list]
+        client: Client = db_manager.clients_interface.get_client(client_id=client_id)
+        if not client: return None
+        for client_scope in client.scopes:
+            if client_scope.name in scope_name_list:
+                if client not in all_scope_attributes:
+                    all_scope_attributes[client.client_id] = []
+                for attribute in client_scope.associated_attributes:
+                    if attribute not in all_scope_attributes[client]:
+                        all_scope_attributes[client.client_id].append(attribute)
+    return all_scope_attributes
+        
+    
