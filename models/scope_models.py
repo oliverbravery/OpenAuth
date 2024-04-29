@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import List
 from pydantic import BaseModel
+
+from models.account_models import AccountAttribute
     
 class ScopeAccessType(str, Enum):
     """
@@ -53,6 +55,17 @@ class ProfileScope(BaseModel):
     """
     client_id: str
     scope: str
+    
+class AccountScope(BaseModel):
+    """
+    Represents what access a client has to account attributes.
+
+    Args:
+        attribute (AccountAttribute): The account attribute that the client has access to.
+        access_type (ScopeAccessType): The access type of the attribute.
+    """
+    attribute: AccountAttribute
+    access_type: ScopeAccessType
      
 class Scopes(BaseModel):
     """
@@ -67,4 +80,4 @@ class Scopes(BaseModel):
     """
     client_scopes: List[ClientScope]
     external_scopes: List[ProfileScope]
-    account_scopes: List[ScopeAttribute]
+    account_scopes: List[AccountScope]
