@@ -69,7 +69,10 @@ async def login_submit(request: Request):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                             detail="Invalid client scopes.")
     consent_details: ConsentDetails = get_consent_details(client_id=form_data.client_id, 
-                                                                 requested_scopes=requested_scopes)
+                                                                 requested_scopes=requested_scopes,
+                                                                 username=form_data.username)
+    if not consent_details: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                                detail="Consent details retrieval failed.")
     return templates.TemplateResponse("consent.html", {"request": request,
                                                        "request_data": form_data, 
                                                        "consent_details": consent_details})

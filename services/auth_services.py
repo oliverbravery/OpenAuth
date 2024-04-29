@@ -10,6 +10,7 @@ from utils.auth_utils import decrypt_authorization_code, generate_authorization_
 from utils.hash_utils import hash_string, verify_hash
 from common import db_manager, token_manager
 from utils.scope_utils import str_to_list_of_profile_scopes
+from validators.account_validators import check_profile_exists
 from validators.auth_validators import verify_authorization_code, verify_code_challenge
 from validators.client_validators import validate_client_credentials
 
@@ -150,6 +151,7 @@ def get_client_scopes_from_profile_scopes(profile_scopes: list[ProfileScope]) ->
     Returns:
         list[ClientScope]: The list of client scopes. None if the profile scopes are invalid.
     """
+    if len(profile_scopes) == 0: return []
     client_scope_list: list[ClientScope] = []
     client_to_scope: dict[str, list[ProfileScope]] = {scope.client_id: [] for scope in profile_scopes}
     for scope in profile_scopes:
@@ -163,7 +165,8 @@ def get_client_scopes_from_profile_scopes(profile_scopes: list[ProfileScope]) ->
     if len(client_scope_list) != len(profile_scopes): return None
     return client_scope_list
     
-def get_consent_details(client_id: str, requested_scopes: list[ProfileScope]) -> ConsentDetails:
+def get_consent_details(client_id: str, requested_scopes: list[ProfileScope], 
+                        username: str) -> ConsentDetails:
     """
     Fetch and configure the consent details for the consent form.
     
@@ -181,9 +184,14 @@ def get_consent_details(client_id: str, requested_scopes: list[ProfileScope]) ->
     requested_scopes_as_client_scopes: list[ClientScope] = get_client_scopes_from_profile_scopes(
         profile_scopes=requested_scopes
     )
-    if not requested_scopes_as_client_scopes: return None
+    client_external_scopes: list[ClientScope] = get_client_scopes_from_profile_scopes(
+        profile_scopes=client.scopes.external_scopes)
     consent_details: ConsentDetails = ConsentDetails(name=client.name, 
                                                      description=client.description, 
-                                                     requested_scopes=requested_scopes_as_client_scopes, 
+                                                     requested_scopes=requested_scopes_as_client_scopes,
+                                                     client_account_access_scopes=client.scopes.account_scopes,
+                                                     client_external_access_scopes=client_external_scopes,
+                                                     account_connected=check_profile_exists(username=username,
+                                                                                            client_id=client_id),
                                                      client_redirect_uri=client.redirect_uri)
     return consent_details
