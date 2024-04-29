@@ -1,3 +1,4 @@
+from base64 import urlsafe_b64encode
 from datetime import timedelta
 import datetime
 import jwt
@@ -204,8 +205,12 @@ class TokenManager:
         Returns:
             dict: The JWKS dictionary for the API.
         """
-        jwk: dict = json.loads(self.public_key.public_bytes(
-            encoding=Encoding.PEM,
-            format=PublicFormat.SubjectPublicKeyInfo
-        ).decode("utf-8"))
+        public_numbers = self.public_key.public_numbers()
+        jwk: dict[str, any] = {
+            "kty": "RSA",
+            "n": urlsafe_b64encode(public_numbers.n.to_bytes(
+                (public_numbers.n.bit_length() + 7) // 8, byteorder="big")).decode("utf-8").rstrip("="),
+            "e": urlsafe_b64encode(public_numbers.e.to_bytes(
+                (public_numbers.e.bit_length() + 7) // 8, byteorder="big")).decode("utf-8").rstrip("="),
+        }
         return jwk
