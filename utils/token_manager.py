@@ -35,8 +35,6 @@ class TokenManager:
         self.refresh_token_expire_time = refresh_token_expire_time
         self.private_key = self.__load_pem_key(key_path=private_key_path, is_public=False)
         self.public_key = self.__load_pem_key(key_path=public_key_path, is_public=True)
-        print(f"DEBUG: Public Key: {self.public_key}")
-        print(f"DEBUG: Private Key: {self.private_key}")
         self.token_algorithm = token_algorithm
         
     def __load_pem_key(self, key_path: str, is_public: bool) -> PublicKeyTypes | PrivateKeyTypes:
