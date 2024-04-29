@@ -12,14 +12,12 @@ from utils.hash_utils import hash_string
 from validators.account_validators import verify_account_is_developer
 from validators.client_validators import validate_client_developers, validate_metadata_attributes, validate_profile_defaults
 from validators.scope_validators import validate_client_scopes
-from common import db_manager
+from common import db_manager, bearer_token_auth
 
 router = APIRouter(
     prefix="/developer",
     tags=["Developer"]
 )
-
-bearer_token_auth: BearerTokenAuth = BearerTokenAuth()
 
 @router.post("/enroll", status_code=status.HTTP_200_OK)
 async def enroll_developer(account: Account = Depends(bearer_token_auth)):

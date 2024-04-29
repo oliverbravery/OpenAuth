@@ -1,6 +1,7 @@
 from fastapi.templating import Jinja2Templates
 from database.db_manager import DBManager
 from cryptography.fernet import Fernet
+from services.auth_services import BearerTokenAuth
 from utils.token_manager import TokenManager
 from utils.database_utils import get_connection_string
 from dotenv import load_dotenv
@@ -32,6 +33,8 @@ if not RECAPTCHA_SECRET_KEY: raise ValueError("RECAPTCHA_SECRET_KEY not set in e
 google_verify_url: str = f"https://www.google.com/recaptcha/api/siteverify?secret={RECAPTCHA_SECRET_KEY}&response="
 
 templates: Jinja2Templates = Jinja2Templates(directory="templates")
+
+bearer_token_auth: BearerTokenAuth = BearerTokenAuth()
 
 token_manager: TokenManager = TokenManager(
     access_token_expire_time=int(ACCESS_TOKEN_EXPIRE_MINUTES),
