@@ -10,7 +10,6 @@ class ScopeAccessType(str, Enum):
     """
     READ = "read"
     WRITE = "write"
-    READ_WRITE = "read_write"
     
 class ScopeAttribute(BaseModel):
     """
