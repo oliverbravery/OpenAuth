@@ -1,7 +1,9 @@
+from base64 import urlsafe_b64encode
 from datetime import timedelta
 import datetime
 import jwt
-from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_pem_public_key
+import json
+from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_pem_public_key, Encoding, PublicFormat
 from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes, PublicKeyTypes
 from models.account_models import Account, Profile
 from models.token_models import AccessToken, BaseToken, RefreshToken, TokenType
@@ -195,3 +197,20 @@ class TokenManager:
                     iat=iat,
                 )
         return self.sign_jwt_token(token=token)
+    
+    def generate_jwks_dict(self) -> dict:
+        """
+        Generates the JWKS dictionary for the API.
+
+        Returns:
+            dict: The JWKS dictionary for the API.
+        """
+        public_numbers = self.public_key.public_numbers()
+        jwk: dict[str, any] = {
+            "kty": "RSA",
+            "n": urlsafe_b64encode(public_numbers.n.to_bytes(
+                (public_numbers.n.bit_length() + 7) // 8, byteorder="big")).decode("utf-8").rstrip("="),
+            "e": urlsafe_b64encode(public_numbers.e.to_bytes(
+                (public_numbers.e.bit_length() + 7) // 8, byteorder="big")).decode("utf-8").rstrip("="),
+        }
+        return jwk
