@@ -17,7 +17,7 @@ class ClientDeveloper(BaseModel):
     username: str
     scopes: List[str]
     
-class MetadataType(Enum):
+class MetadataType(str, Enum):
     """
     Represents the possible types for a metadata attribute.
     """
