@@ -32,8 +32,10 @@ async def authorize_endpoint(request_data: AuthorizationRequest = Depends()):
                                     client_secret=request_data.client_secret):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid client credentials.")
-    requested_scopes: list[ProfileScope] = scopes_to_profile_scopes(
-        scope_name_list=str_to_list_of_profile_scopes(scopes_str_list=request_data.scope))
+    requested_scopes: list[ProfileScope] = str_to_list_of_profile_scopes(scopes_str_list=request_data.scope)
+    if not requested_scopes:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Requested scopes are in an invalid format.")
     if not valid_request_scopes(scopes=requested_scopes):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                             detail="Invalid client scopes.")
@@ -65,6 +67,9 @@ async def login_submit(request: Request):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid credentials.")
     requested_scopes: list[ProfileScope] = str_to_list_of_profile_scopes(scopes_str_list=form_data.scope)
+    if not requested_scopes:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Requested scopes are in an invalid format.")
     if not valid_request_scopes(scopes=requested_scopes):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                             detail="Invalid client scopes.")
@@ -89,13 +94,13 @@ async def consent_submit(request: Request):
     if form_data.consented != 'true':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="User did not consent to the scopes requested.")
-    if create_profile_if_not_exists(client_id=form_data.client_id, username=form_data.username, 
-                                    accecpted_scopes=form_data.scope) == -1:
+    if create_profile_if_not_exists(client_id=form_data.client_id, username=form_data.username) == -1:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Profile creation failed.")
     authorize_response: AuthorizeResponse = generate_and_store_auth_code(username=form_data.username,
                                                                         state=form_data.state,
-                                                                        code_challenge=form_data.code_challenge)
+                                                                        code_challenge=form_data.code_challenge,
+                                                                        consented_scopes=form_data.scope)
     if authorize_response is None: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                                     detail="Authorization code generation failed.")
     configured_redirect_url: str = configure_redirect_uri(base_uri=form_data.client_redirect_uri, 

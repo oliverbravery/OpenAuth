@@ -36,9 +36,14 @@ def scopes_to_profile_scopes(scope_name_list: list[str]) -> list[ProfileScope]:
         scope_name_list (list[str]): The list of scope names.
 
     Returns:
-        list[ProfileScope]: The list of profile scopes.
+        list[ProfileScope]: The list of profile scopes. None if a scope is in a invalid format.
     """
-    return [str_to_profile_scope(scope=scope_name) for scope_name in scope_name_list]
+    profile_scopes: list[ProfileScope] = []
+    for scope_str in scope_name_list:
+        profile_scope: ProfileScope = str_to_profile_scope(scope=scope_str)
+        if profile_scope is None: return None
+        profile_scopes.append(profile_scope)
+    return profile_scopes
 
 def str_to_list_of_profile_scopes(scopes_str_list: str) -> list[ProfileScope]:
     """
@@ -52,10 +57,9 @@ def str_to_list_of_profile_scopes(scopes_str_list: str) -> list[ProfileScope]:
     Returns:
         list[ProfileScope]: The list of profile scopes.
     """
-    seperated_scopes: list[str] = []
-    if scopes_str_list != "":
-        seperated_scopes: list[str] = scopes_str_list.split(" ")
-    return scopes_to_profile_scopes(scope_name_list=seperated_scopes)
+    if scopes_str_list == "": return []
+    split_string: list[str] = scopes_str_list.split(" ")
+    return scopes_to_profile_scopes(scope_name_list=split_string)
 
 def profile_scope_list_to_str(profile_scopes: list[ProfileScope]) -> str:
     """

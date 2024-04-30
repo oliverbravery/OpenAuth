@@ -19,11 +19,9 @@ class Profile(BaseModel):
 
     Args:
         client_id (str): The client_id of the application associated with the profile.
-        scopes (List[ProfileScope]): The scopes that the application is allowed to access.
         metadata (Dict[str, any]): Additional attributes that the application has stored in the user's profile. Attributes are defined by the client. (Attribute name: Attribute value)
     """
     client_id: str
-    scopes: List[ProfileScope] = []
     metadata: Dict[str, Any] = {}
     
 class Account(BaseModel):

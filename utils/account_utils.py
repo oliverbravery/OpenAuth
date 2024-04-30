@@ -1,5 +1,6 @@
 from models.account_models import Account, Profile
 from models.client_models import MetadataAttribute
+from models.scope_models import AccountAttribute
 
 
 def generate_default_metadata(profile_metadata_attributes: list[MetadataAttribute], 
@@ -33,4 +34,19 @@ def get_profile_from_account(account: Account, client_id: str) -> Profile:
     for profile in account.profiles:
         if profile.client_id == client_id:
             return profile
+    return None
+
+def get_account_attribute(account: Account, attribute: AccountAttribute) -> any:
+    """
+    Get an attribute from an account. If the attribute does not exist, return None.
+
+    Args:
+        account (Account): The account to get the attribute from.
+        attribute (AccountAttribute): The attribute to get from the account.
+
+    Returns:
+        any: The attribute value if it exists, None otherwise.
+    """
+    if hasattr(account, attribute.value):
+        return getattr(account, attribute.value)
     return None
