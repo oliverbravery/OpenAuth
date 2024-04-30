@@ -186,7 +186,7 @@ def get_mapped_client_scopes_from_profile_scopes(profile_scopes: list[ProfileSco
     for scope in profile_scopes:
         client_to_profile_scope[scope.client_id].append(scope)
     client_id_to_client_scopes: dict[str, list[ClientScope]] = {}
-    for client_id, p_scopes in client_to_profile_scope:
+    for client_id, p_scopes in client_to_profile_scope.items():
         client_scopes: list[ClientScope] = get_client_scopes_from_profile_scopes(profile_scopes=p_scopes)
         if not client_scopes: return None
         client_id_to_client_scopes[client_id] = client_scopes
