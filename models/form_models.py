@@ -3,7 +3,7 @@ from fastapi.param_functions import Form
 from pydantic import BaseModel, Field
 from models.client_models import ClientDeveloper, MetadataAttribute
 from models.request_models import AuthorizationRequest
-from models.scope_models import ClientScope, Scopes
+from models.scope_models import AccountAttribute, ClientScope, Scopes
 
 class UserRegistrationForm:
     """
@@ -50,6 +50,7 @@ class ClientRegistrationForm(BaseModel):
     client_description: str = Field(..., description="A description of the client used in the consent page.", max_length=2000)
     client_redirect_uri: str = Field(..., description="The URI to which the user is redirected after granting or denying access to the client.")
     client_developers: List[ClientDeveloper] = Field(..., description="The developers that have access to the client along with the scopes they have access to.")
-    scopes: Scopes = Field(..., description="The client specific scopes and what attributes each scope can control.")
+    scopes: list[ClientScope] = Field(..., description="The client specific scopes and what attributes each scope can control.")
     client_profile_metadata_attributes: List[MetadataAttribute] = Field(..., description="The metadata attributes that the client can store in the user's profile.")
     client_profile_defaults: Dict[str, Any] = Field(..., description="The default values for the metadata attributes that the client can store in the user's profile.")
+    shared_read_attributes: list[AccountAttribute] = Field(..., description="The shared attributes that the client and other linked accounts can read from the user's account.")
