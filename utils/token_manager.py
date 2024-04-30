@@ -183,7 +183,7 @@ class TokenManager:
                 if not profile: return None
                 token: AccessToken = AccessToken(
                     sub=account.username,
-                    aud=[client_id],
+                    aud=client_id,
                     exp=exp,
                     iat=iat,
                     scope=profile_scope_list_to_str(profile_scopes=profile.scopes)
@@ -191,7 +191,7 @@ class TokenManager:
             case TokenType.REFRESH:
                 token: RefreshToken = RefreshToken(
                     sub=account.username,
-                    aud=[client_id],
+                    aud=client_id,
                     exp=exp,
                     iat=iat,
                 )
