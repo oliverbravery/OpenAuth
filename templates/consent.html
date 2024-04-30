@@ -14,45 +14,28 @@
                     <div id="client_consent_block">
                         <h2>Link Account With <em>{{consent_details.name}}</em></h2>
                         <p>This is your first time linking your account with <em>'{{consent_details.name}}'</em></p>
-                        <p><strong>By linking your account with this application, you are granting the application and other linked users access to the following information about you:</strong></p>
-                        <ul>
-                            <h3>Account Information</h3>
-                                {% for scope in consent_details.client_account_access_scopes %}
-                                <li>{{scope.attribute.value}} : {{scope.access_type.value}}</li>
+                        <h3>Store Data</h3>
+                            <p>The application would like to store the following information in your account:</p>
+                            <ul>
+                                {% for attribute in consent_details.client_metadata_attributes %}
+                                    <li>{{attribute.name}} - {{attribute.description}}</li>
                                 {% endfor %}
-                            <h3>Third-Party Scopes</h3>
-                                {% for scope in consent_details.client_external_access_scopes %}
-                                    <li>
-                                        <p>{{scope.name}} : {{scope.description}}</p>
-                                        <ul>
-                                            {% for attribute in scope.associated_attributes %}
-                                            <li>
-                                                <p>
-                                                    {{attribute.attribute_name}} : {{attribute.access_type.value}}
-                                                </p>
-                                            </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </li>
+                            </ul>
+                        <h3>User Sharable Data</h3>
+                            <p>By linking your account, other accounts associated with this application can access the following information about you:</p>
+                            <h4>Account Information (READ ONLY ACCESS)</h4>
+                                <ul>
+                                    {% for attribute in consent_details.client_shared_read_attributes %}
+                                        <li>{{attribute.value}}</li>
+                                    {% endfor %}
+                                </ul>
+                            <h4>Application specific account information</h4>
+                            <ul>
+                                {% for attribute_name, access in consent_details.client_public_metadata_attributes.items() %}
+                                    <li>{{attribute_name}} - {{access}}</li>
                                 {% endfor %}
-                            <h3>{{consent_details.name}} Scopes</h3>
-                                <p><em>The following are the scopes and attributes that the client you are linking with wants to store and access:</em></p>
-                                {% for scope in consent_details.client_internal_access_scopes %}
-                                    <li>
-                                        <p>{{scope.name}} : {{scope.description}}</p>
-                                        <ul>
-                                            {% for attribute in scope.associated_attributes %}
-                                            <li>
-                                                <p>
-                                                    {{attribute.attribute_name}} : {{attribute.access_type.value}}
-                                                </p>
-                                            </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </li>
-                                {% endfor %}
-                        </ul>
-                        <p><strong>Please review the scopes carefully.</strong> If you consent to share this information with the application and other linked users who have been granted these scopes, proceed with the account linking process.<p>
+                            </ul>     
+                        <p><strong>Please review these terms carefully.</strong> If you consent to share this information with the application and other linked users who have been granted these scopes, proceed with the account linking process.<p>
                         <button onclick="hideClientInfoConsent()" class="btn btn-primary">Continue</button>
                         <button type="submit" class="btn btn-danger" name="consented" value="false">Decline</button>
                         <script>

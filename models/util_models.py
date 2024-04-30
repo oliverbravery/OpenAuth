@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 from models.account_models import Account
 from models.client_models import MetadataAttribute
-from models.scope_models import ClientScope, ProfileScope
+from models.scope_models import AccountAttribute, ClientScope, ProfileScope, ScopeAccessType
 
 class DBCollection(Enum):
     """
@@ -39,7 +39,8 @@ class ConsentDetails(BaseModel):
         account_connected (bool): Whether the account has a profile associated with the client.
         client_redirect_uri (str): The redirect uri of the client application.
         client_metadata_attributes (list[MetadataAttribute]): List of all attributes a client wants to store for a user.
-        client_non_personal_scopes (list[ClientScope]): List of all non-personal scopes requested by the client. These are scopes that allow other linked users to access the associated attributes if they have the scope.
+        client_public_metadata_attributes (dict[str, str]): List of all metadata attributes that other linked accounts can access. (Attribute name: Attribute Access Types as a string)
+        client_shared_read_attributes (list[AccountAttribute]): List of all non-profile account attributes the client and linked accounts can obtain about a user.
     """
     name: str
     description: str
@@ -47,7 +48,8 @@ class ConsentDetails(BaseModel):
     account_connected: bool
     client_redirect_uri: str
     client_metadata_attributes: list[MetadataAttribute]
-    client_non_personal_scopes: list[ClientScope]
+    client_public_metadata_attributes: dict[str, str]
+    client_shared_read_attributes: list[AccountAttribute]
     
 class AuthenticatedAccount(Account):
     """
