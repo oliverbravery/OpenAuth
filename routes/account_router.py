@@ -8,9 +8,8 @@ from models.form_models import UserRegistrationForm
 from models.request_models import AuthorizationRequest, GrantType, TokenRequest
 from models.scope_models import AccountAttribute, ProfileScope, ScopeAccessType
 from models.util_models import AuthenticatedAccount
-from services.account_services import get_scoped_account_attributes, register_account_in_db_collections
+from services.account_services import get_account_attributes, get_scoped_account_attributes, register_account_in_db_collections
 from services.client_services import get_shared_read_attributes
-from utils.account_utils import get_account_attribute
 from utils.auth_utils import generate_code_challenge_and_verifier
 from utils.password_manager import PasswordManager
 from utils.scope_utils import str_to_list_of_profile_scopes
@@ -128,10 +127,9 @@ async def get_account(username: str, account: AuthenticatedAccount = Depends(bea
     if not scoped_account_information: 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="User account does not have the required information to fulfill the request.")
-    for attribute in read_only_attributes:
-        retreived_value: any = get_account_attribute(account=account, attribute=attribute)
-        if retreived_value is None:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-                                detail="Issue fetching account information.")
-        scoped_account_information[attribute.value] = retreived_value
+    retreived_account_attributes: dict[str, any] = get_account_attributes(username=username, attributes=read_only_attributes)
+    if not retreived_account_attributes:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                            detail="Issue fetching account information.")
+    scoped_account_information.update(retreived_account_attributes)
     return scoped_account_information
