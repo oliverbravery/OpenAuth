@@ -43,14 +43,14 @@ class ClientScope(BaseModel):
         shareable (bool): Whether other clients can request access to this scope.
         developer_only (bool): Whether the scope is only available to developers.
         is_personal_scope (bool): Whether the scope only allows the specific user to access the associated attributes or (if False) allow other linked users to access the associated attributes if they have the scope.
-        associated_attributes (List[ScopeAttribute]): The attributes (profile metadata) that this scope controls.
+        associated_attributes (List[ClientScopeAttribute]): The attributes (profile metadata) that this scope controls.
     """
     name: str
     description: str
     shareable: bool
     developer_only: bool
     is_personal_scope: bool
-    associated_attributes: List[ScopeAttribute]
+    associated_attributes: List[ClientScopeAttribute]
 
 class ProfileScope(BaseModel):
     """
