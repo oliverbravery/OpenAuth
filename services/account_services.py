@@ -2,10 +2,9 @@ from models.account_models import Account, AccountRole, Profile
 from common import db_manager
 from models.auth_models import Authorization
 from models.client_models import Client
-from models.scope_models import ClientScope, ProfileScope, ScopeAccessType
+from models.scope_models import AccountAttribute, ClientScope, ProfileScope, ScopeAccessType
 from services.auth_services import get_mapped_client_scopes_from_profile_scopes
-from utils.account_utils import generate_default_metadata, get_profile_from_account
-from utils.scope_utils import scopes_to_profile_scopes
+from utils.account_utils import generate_default_metadata, get_account_attribute, get_profile_from_account
 from validators.account_validators import check_profile_exists
 
 def register_account_in_db_collections(new_account: Account) -> int:
@@ -108,3 +107,24 @@ def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], all
                     fetched_value: any = profile.metadata.get(attribute.attribute_name)
                     attributes[f"{client_id}.{attribute.attribute_name}"] = fetched_value
     return attributes
+
+def get_account_attributes(username: str, attributes: list[AccountAttribute]) -> dict[str, any]:
+    """
+    Get the account attributes for the given username.
+
+    Args:
+        username (str): The username of the account.
+        attributes (list[AccountAttribute]): The attributes to get from the account.
+
+    Returns:
+        dict[str, any]: Dictionary of account attributes (Attribute name: Attribute value). None if the account does not exist or if an attribute does not exist.
+    """
+    account: Account = db_manager.accounts_interface.get_account(username=username)
+    if not account: return None
+    retreived_values: dict[str, any] = {}
+    for attribute in attributes:
+        retreived_value: any = get_account_attribute(account=account, attribute=attribute)
+        if retreived_value is None:
+            return None
+        retreived_values[attribute.value] = retreived_value
+    return retreived_values
