@@ -4,7 +4,7 @@ import datetime
 
 from pydantic import BaseModel
 
-from models.scope_models import AccountAttribute, ClientScope, Scopes
+from models.scope_models import AccountAttribute, ClientScope
 
 class ClientDeveloper(BaseModel):
     """
