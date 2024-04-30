@@ -15,7 +15,8 @@ from validators.auth_validators import verify_authorization_code, verify_code_ch
 from validators.client_validators import validate_client_credentials
 
 
-def generate_and_store_tokens(authorization: Authorization, user_account: Account, client_id: str) -> TokenResponse:
+def generate_and_store_tokens(authorization: Authorization, user_account: Account, client_id: str,
+                              scopes: str) -> TokenResponse:
     """
     Generate access and refresh tokens and store the refresh token hash in the database.
 
@@ -23,16 +24,19 @@ def generate_and_store_tokens(authorization: Authorization, user_account: Accoun
         authorization (Authorization): The authorization object related to the user.
         user_account (Account): The account object of the user.
         client_id (str): The client id of the application requesting the tokens.
+        scopes (str): space seperated list of scopes as a string.
 
     Returns:
         TokenResponse: OAuth2.0 compliant token response.
     """
     access_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.ACCESS,
                                                                   account=user_account,
-                                                                  client_id=client_id)
+                                                                  client_id=client_id,
+                                                                  scopes=scopes)
     refresh_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.REFRESH,
                                                                    account=user_account,
-                                                                   client_id=client_id)
+                                                                   client_id=client_id,
+                                                                   scopes=None)
     if not access_token or not refresh_token: return None
     authorization.hashed_refresh_token = hash_string(plaintext=refresh_token)
     response: int = db_manager.authorization_interface.update_authorization(authorization)
@@ -71,7 +75,7 @@ def get_tokens_with_authorization_code(auth_code: str, code_verifier: str, clien
     user_account: Account = db_manager.accounts_interface.get_account(username=username)
     if not user_account: return None
     if not validate_client_credentials(client_id=client_id, client_secret=client_secret): return None
-    return generate_and_store_tokens(authorization=authorization, user_account=user_account, client_id=client_id)
+    return generate_and_store_tokens(authorization=authorization, user_account=user_account, client_id=client_id, scopes=authorization.consented_scopes)
 
 def invalidate_refresh_token(username: str) -> bool:
     """
@@ -116,14 +120,15 @@ def refresh_and_update_tokens(refresh_token: str) -> TokenResponse:
     if not user_account: return None
     return generate_and_store_tokens(authorization=authorization, user_account=user_account, client_id=decoded_token.aud[0])
 
-def generate_and_store_auth_code(state: str, username: str, code_challenge: str) -> AuthorizeResponse:
+def generate_and_store_auth_code(state: str, username: str, code_challenge: str, consented_scopes: str) -> AuthorizeResponse:
     """
-    Generate an authorization code and store it in the database with the provided state, username, and code challenge.
+    Generate an authorization code and store it in the database with the provided state, username, code challenge and scopes.
 
     Args:
         state (str): The CSRF state.
         username (str): The username of the user.
-        code_challenge (str): The code challenge for the authorization code provided by the client.s
+        code_challenge (str): The code challenge for the authorization code provided by the client.
+        consented_scopes (str): The scopes the user has consented to.
 
     Returns:
         AuthorizeResponse: The response containing the authorization code and CSRF state.
@@ -134,7 +139,8 @@ def generate_and_store_auth_code(state: str, username: str, code_challenge: str)
         username=username,
         auth_code=authorization_code,
         code_challenge=code_challenge,
-        hashed_refresh_token=None
+        hashed_refresh_token=None,
+        consented_scopes=consented_scopes
     )
     response: int = db_manager.authorization_interface.update_authorization(authorization=user_authorization)
     if response == -1: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

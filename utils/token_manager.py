@@ -162,7 +162,7 @@ class TokenManager:
             return None
         return decoded_token
     
-    def generate_and_sign_jwt_token(self, tokenType: TokenType, account: Account, client_id: str) -> str:
+    def generate_and_sign_jwt_token(self, tokenType: TokenType, account: Account, client_id: str, scopes: str) -> str:
         """
         Generates a JWT token for the given account and token type.
 
@@ -170,6 +170,7 @@ class TokenManager:
             tokenType (TokenType): The type of token to be generated.
             account (Account): The account for which the token is generated.
             client_id: (str): The requesting application's client_id.
+            scopes (str): The scopes for the token (space separated string of scopes).
 
         Returns:
             str: The generated and signed JWT token.
@@ -178,15 +179,13 @@ class TokenManager:
         token: BaseToken
         match tokenType:
             case TokenType.ACCESS:
-                profile: Profile = get_profile_from_account(account=account,
-                                                            client_id=client_id)
-                if not profile: return None
+                if not scopes: raise ValueError("Access token must have at least one scope.")
                 token: AccessToken = AccessToken(
                     sub=account.username,
                     aud=client_id,
                     exp=exp,
                     iat=iat,
-                    scope=profile_scope_list_to_str(profile_scopes=profile.scopes)
+                    scope=scopes
                 )
             case TokenType.REFRESH:
                 token: RefreshToken = RefreshToken(
