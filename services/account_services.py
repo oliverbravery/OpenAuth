@@ -2,7 +2,7 @@ from models.account_models import Account, AccountRole, Profile
 from common import db_manager
 from models.auth_models import Authorization
 from models.client_models import Client
-from models.scope_models import ProfileScope, ScopeAttribute
+from models.scope_models import ProfileScope
 from utils.account_utils import generate_default_metadata
 from utils.scope_utils import scopes_to_profile_scopes
 from validators.account_validators import check_profile_exists
@@ -65,7 +65,7 @@ def create_profile_if_not_exists(client_id: str, username: str, accecpted_scopes
     Returns:
         int: 0 if the profile was created successfully, -1 if the profile could not be created.
     """
-    if check_profile_exists(username=username, client_id=client_id): 
+    if check_profile_exists(username=username, client_id=client_id):  
         response: int = db_manager.accounts_interface.update_profile_scopes(username=username, 
                                                                             client_id=client_id, 
                                                                             scopes=accecpted_scopes)

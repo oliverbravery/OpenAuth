@@ -2,11 +2,11 @@ from secrets import token_urlsafe
 from fastapi import Depends, APIRouter, status, HTTPException, Request, Response
 import httpx
 from starlette.templating import _TemplateResponse
-from common import AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, RECAPTCHA_SITE_KEY, templates, bearer_token_auth
+from common import AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, RECAPTCHA_SITE_KEY
 from models.account_models import Account, Profile
 from models.form_models import UserRegistrationForm
 from models.request_models import AuthorizationRequest, GrantType, TokenRequest
-from models.scope_models import ScopeAccessType, ScopeAttribute
+from models.scope_models import ScopeAccessType
 from models.util_models import AuthenticatedAccount
 from services.account_services import get_attributes_from_scopes, register_account_in_db_collections
 from utils.account_utils import get_profile_from_account

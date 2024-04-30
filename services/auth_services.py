@@ -1,15 +1,14 @@
-from fastapi import HTTPException, Request, status
+from fastapi import HTTPException, status
 from models.account_models import Account
 from models.auth_models import Authorization
 from models.client_models import Client
 from models.response_models import AuthorizeResponse, TokenResponse
 from models.scope_models import ClientScope, ProfileScope
-from models.token_models import AccessToken, RefreshToken, TokenType
-from models.util_models import AuthenticatedAccount, ConsentDetails
+from models.token_models import RefreshToken, TokenType
+from models.util_models import ConsentDetails
 from utils.auth_utils import decrypt_authorization_code, generate_authorization_code
 from utils.hash_utils import hash_string, verify_hash
 from common import db_manager, token_manager
-from utils.scope_utils import str_to_list_of_profile_scopes
 from validators.account_validators import check_profile_exists
 from validators.auth_validators import verify_authorization_code, verify_code_challenge
 from validators.client_validators import validate_client_credentials

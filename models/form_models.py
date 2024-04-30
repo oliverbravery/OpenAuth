@@ -3,7 +3,7 @@ from fastapi.param_functions import Form
 from pydantic import BaseModel, Field
 from models.client_models import ClientDeveloper, MetadataAttribute
 from models.request_models import AuthorizationRequest
-from models.scope_models import AccountAttribute, ClientScope, Scopes
+from models.scope_models import AccountAttribute, ClientScope
 
 class UserRegistrationForm:
     """

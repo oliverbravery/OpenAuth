@@ -10,7 +10,7 @@ from utils.client_utils import generate_client_credential
 from utils.hash_utils import hash_string
 from validators.account_validators import verify_account_is_developer
 from validators.client_validators import validate_client_developers, validate_metadata_attributes, validate_profile_defaults
-from validators.scope_validators import validate_client_scopes, validate_external_scopes
+from validators.scope_validators import validate_client_scopes
 from common import db_manager, bearer_token_auth
 
 router = APIRouter(
@@ -42,9 +42,10 @@ async def add_client(client_registration_form: ClientRegistrationForm, account: 
         description=client_registration_form.client_description,
         redirect_uri=client_registration_form.client_redirect_uri,
         developers=client_registration_form.client_developers,
-        scopes=client_registration_form.scopes,
         profile_metadata_attributes=client_registration_form.client_profile_metadata_attributes,
-        profile_defaults=client_registration_form.client_profile_defaults
+        profile_defaults=client_registration_form.client_profile_defaults,
+        scopes=client_registration_form.scopes,
+        shared_read_attributes=client_registration_form.shared_read_attributes,
     )
     if not validate_client_developers(client=new_client):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
@@ -58,9 +59,6 @@ async def add_client(client_registration_form: ClientRegistrationForm, account: 
     if not validate_client_scopes(client=new_client):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail="Client scopes must have unique names and their associated attributes must exist in the profile metadata attributes.")
-    if not validate_external_scopes(client=new_client):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                            detail="External scopes must exist and be sharable.")
     new_client.client_id = generate_unique_client_id()
     plaintext_client_secret: str = generate_client_credential(credential_type=ClientCredentialType.SECRET)
     new_client.client_secret_hash = hash_string(plaintext=plaintext_client_secret)
