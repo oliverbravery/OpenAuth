@@ -4,7 +4,7 @@ from models.auth_models import Authorization
 from models.client_models import Client
 from models.scope_models import ClientScope, ProfileScope, ScopeAccessType
 from services.auth_services import get_mapped_client_scopes_from_profile_scopes
-from utils.account_utils import generate_default_metadata, get_profile_attribute_from_account
+from utils.account_utils import generate_default_metadata, get_profile_from_account
 from utils.scope_utils import scopes_to_profile_scopes
 from validators.account_validators import check_profile_exists
 
@@ -112,9 +112,8 @@ def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], all
         for scope in client_scopes:
             for attribute in scope.associated_attributes:
                 if attribute.access_type in allowed_access_types:
-                    fetched_value: any = get_profile_attribute_from_account(account=account, 
-                                                                            client_id=client_id, 
-                                                                            attribute_name=attribute.attribute_name)
-                    if fetched_value is None: return None
+                    profile: Profile = get_profile_from_account(account=account, client_id=client_id)
+                    if not profile: return None
+                    fetched_value: any = profile.metadata.get(attribute.attribute_name)
                     attributes[f"{client_id}.{attribute.attribute_name}"] = fetched_value
     return attributes
