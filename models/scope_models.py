@@ -18,12 +18,14 @@ class ScopeAccessType(str, Enum):
     READ = "read"
     WRITE = "write"
     
-class ScopeAttribute(BaseModel):
+class ClientScopeAttribute(BaseModel):
     """
-    Represents an attribute of a profile (and it's metadata) and what a scope can do with it.
+    Represents an attribute of the client's specific metadata and what a scope can do with it.
+    
+    NOTE: This is only for the client's metadata attributes.
     
     Args:
-        attribute_name (str): The name of the attribute in the profile/ profile metadata.
+        attribute_name (str): The name of the attribute in the profile metadata.
         access_type (ScopeAccessType): The access type of the attribute.
     """
     attribute_name: str
@@ -33,19 +35,21 @@ class ClientScope(BaseModel):
     """
     Represents a scope for a client.
     
-    A scope is a permission that the client can request to allow it to access certain attributes of the user's profile.
+    A scope is a permission that the client can request to allow it to access certain attributes of the user's client specific profile.
     
     Args:
         name (str): The 'name' of the scope.
         description (str): A description of the scope and what it allows the client to do.
         shareable (bool): Whether other clients can request access to this scope.
         developer_only (bool): Whether the scope is only available to developers.
-        associated_attributes (List[ScopeAttribute]): The attributes (profile or profile metadata) that this scope controls.
+        is_personal_scope (bool): Whether the scope only allows the specific user to access the associated attributes or (if False) allow other linked users to access the associated attributes if they have the scope.
+        associated_attributes (List[ScopeAttribute]): The attributes (profile metadata) that this scope controls.
     """
     name: str
     description: str
     shareable: bool
     developer_only: bool
+    is_personal_scope: bool
     associated_attributes: List[ScopeAttribute]
 
 class ProfileScope(BaseModel):
@@ -60,29 +64,3 @@ class ProfileScope(BaseModel):
     """
     client_id: str
     scope: str
-    
-class AccountScope(BaseModel):
-    """
-    Represents what access a client has to account attributes.
-
-    Args:
-        attribute (AccountAttribute): The account attribute that the client has access to.
-        access_type (ScopeAccessType): The access type of the attribute.
-    """
-    attribute: AccountAttribute
-    access_type: ScopeAccessType
-     
-class Scopes(BaseModel):
-    """
-    Used by client to store the scopes that the client creates for it's metadata and also for the scopes it has access to.
-    
-    The consent screen will require the user to approve the client to access the external scopes and account scopes.
-
-    Args:
-        client_scopes (List[ClientScope]): The scopes that the client has created for it's own metadata. These are the scopes the client can request. Scopes are used to control access to this client specific profile attributes.
-        external_scopes (List[ProfileScope]): External scopes from other clients that the client has access to. These are the scopes that the client has been granted access to by the user.
-        account_scopes (List[ScopeAttribute]): The non-profile metadata attributes that the client has access to in a user's account (i.e. email, display name, etc).
-    """
-    client_scopes: List[ClientScope]
-    external_scopes: List[ProfileScope]
-    account_scopes: List[AccountScope]
