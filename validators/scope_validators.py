@@ -54,27 +54,10 @@ def validate_client_scopes(client: Client) -> bool:
     Returns:
         bool: True if the client's scopes are valid, False otherwise.
     """
-    if not check_client_scopes_have_unique_names(scopes=client.scopes.client_scopes): return False
+    if not check_client_scopes_have_unique_names(scopes=client.scopes): return False
     metadata_attribute_names: list[str] = [metadata_attribute.name for metadata_attribute in client.profile_metadata_attributes]
-    for scope in client.scopes.client_scopes:
+    for scope in client.scopes:
         scope_attribute_names: list[str] = [scope_attribute.attribute_name for scope_attribute in scope.associated_attributes]
         if len(scope_attribute_names) != len(set(scope_attribute_names)): return False
         if not all([attribute in metadata_attribute_names for attribute in scope_attribute_names]): return False
     return True
-
-def validate_external_scopes(external_scopes: list[ProfileScope], client_id: str) -> bool:
-    """
-    Validate that the external scopes are valid scopes that exist and are external to the client.
-    
-    External scopes must be sharable and not developer only.
-
-    Args:
-        external_scopes (list[ProfileScope]): List of external scopes to validate.
-        client_id (str): The client id of the client.
-
-    Returns:
-        bool: True if the external scopes are valid, False otherwise.
-    """
-    for scope in external_scopes:
-        if scope.client_id == client_id: return False
-    return valid_request_scopes(scopes=external_scopes, shareable_only=True)
