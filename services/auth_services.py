@@ -191,6 +191,7 @@ def get_consent_details(client_id: str, requested_scopes: list[ProfileScope],
                                                      requested_scopes=requested_scopes_as_client_scopes,
                                                      client_account_access_scopes=client.scopes.account_scopes,
                                                      client_external_access_scopes=client_external_scopes,
+                                                     client_internal_access_scopes=client.scopes.client_scopes,
                                                      account_connected=check_profile_exists(username=username,
                                                                                             client_id=client_id),
                                                      client_redirect_uri=client.redirect_uri)

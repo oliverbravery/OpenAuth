@@ -37,6 +37,7 @@ class ConsentDetails(BaseModel):
         requested_scopes (list[ClientScope]): The description of the scopes requested.
         client_account_access_scopes (list[ProfileScope]): The scopes that the client wants access to in the user's account (i.e. the user's username).
         client_external_access_scopes (list[ClientScope]): The scopes that the client wants access to owned by other clients.
+        client_internal_access_scopes (list[ClientScope]): The scopes that the client wants to create about its own profile specific metadata.
         account_connected (bool): Whether the account has a profile associated with the client.
         client_redirect_uri (str): The redirect uri of the client application.
     """
@@ -45,6 +46,7 @@ class ConsentDetails(BaseModel):
     requested_scopes: list[ClientScope]
     client_account_access_scopes: list[AccountScope]
     client_external_access_scopes: list[ClientScope]
+    client_internal_access_scopes: list[ClientScope]
     account_connected: bool
     client_redirect_uri: str
     
