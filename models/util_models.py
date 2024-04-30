@@ -3,7 +3,8 @@ from pydantic import BaseModel
 
 from models.account_models import Account
 from models.client_models import MetadataAttribute
-from models.scope_models import AccountAttribute, ClientScope, ProfileScope, ScopeAccessType
+from models.scope_models import AccountAttribute, ClientScope
+from models.token_models import AccessToken
 
 class DBCollection(Enum):
     """
@@ -59,6 +60,6 @@ class AuthenticatedAccount(Account):
 
     Args:
         Account (Account): The account object for the authenticated account.
-        request_scopes (list[ProfileScope]): The scopes found in the verified bearer token.
+        access_token (AccessToken): The verified bearer token.
     """
-    request_scopes: list[ProfileScope]
+    access_token: AccessToken

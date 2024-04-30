@@ -119,8 +119,7 @@ class BearerTokenAuth:
         account: Account = db_manager.accounts_interface.get_account(username=decoded_token.sub)
         if not account: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                             detail="Issue fetching account information")
-        scopes: list[ProfileScope] = str_to_list_of_profile_scopes(scopes_str_list=decoded_token.scope)
-        authenticated_account: AuthenticatedAccount = AuthenticatedAccount(**account.model_dump(), request_scopes=scopes)
+        authenticated_account: AuthenticatedAccount = AuthenticatedAccount(**account.model_dump(), access_token=decoded_token)
         return authenticated_account
     
 bearer_token_auth: BearerTokenAuth = BearerTokenAuth()
