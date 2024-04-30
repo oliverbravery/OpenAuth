@@ -1,5 +1,5 @@
 from models.client_models import Client
-from models.scope_models import ClientScope, ProfileScope
+from models.scope_models import ClientScope, ProfileScope, ScopeAccessType
 
 
 def profile_scope_to_str(scope: ProfileScope) -> str:
@@ -52,7 +52,9 @@ def str_to_list_of_profile_scopes(scopes_str_list: str) -> list[ProfileScope]:
     Returns:
         list[ProfileScope]: The list of profile scopes.
     """
-    seperated_scopes: list[str] = scopes_str_list.split(" ")
+    seperated_scopes: list[str] = []
+    if scopes_str_list != "":
+        seperated_scopes: list[str] = scopes_str_list.split(" ")
     return scopes_to_profile_scopes(scope_name_list=seperated_scopes)
 
 def profile_scope_list_to_str(profile_scopes: list[ProfileScope]) -> str:
@@ -90,3 +92,22 @@ def convert_names_to_scopes(scope_names: list[str], client: Client) -> list[Clie
                 located = True
         if not located: return None
     return client_scopes
+
+def map_attributes_to_access_types(scopes: list[ClientScope]) -> dict[str, list[ScopeAccessType]]:
+    """
+    Maps the attributes to their access types for a list of client scopes.
+
+    Args:
+        scopes (list[ClientScope]): The list of client scopes.
+
+    Returns:
+        dict[str, list[ScopeAccessType]]: The mapping of attributes to their access types.
+    """
+    mappings: dict[str, list[ScopeAccessType]] = {}
+    for scope in scopes:
+        for attribute in scope.associated_attributes:
+            if attribute.attribute_name not in mappings:
+                mappings[attribute.attribute_name] = []
+            if attribute.access_type not in mappings[attribute.attribute_name]:
+                mappings[attribute.attribute_name].append(attribute.access_type)
+    return mappings

@@ -2,14 +2,11 @@ from secrets import token_urlsafe
 from fastapi import Depends, APIRouter, status, HTTPException, Request, Response
 import httpx
 from starlette.templating import _TemplateResponse
-from common import AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, RECAPTCHA_SITE_KEY, templates, bearer_token_auth
-from models.account_models import Account, Profile
+from common import AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, RECAPTCHA_SITE_KEY, templates
+from models.account_models import Account
 from models.form_models import UserRegistrationForm
 from models.request_models import AuthorizationRequest, GrantType, TokenRequest
-from models.scope_models import ScopeAccessType, ScopeAttribute
-from models.util_models import AuthenticatedAccount
-from services.account_services import get_attributes_from_scopes, register_account_in_db_collections
-from utils.account_utils import get_profile_from_account
+from services.account_services import register_account_in_db_collections
 from utils.auth_utils import generate_code_challenge_and_verifier
 from utils.password_manager import PasswordManager
 from utils.web_utils import configure_redirect_uri
@@ -94,50 +91,3 @@ async def login_account_callback(request: Request, response: Response, code: str
             return token_data
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to get token.")
-    
-@router.get("/{username}", status_code=status.HTTP_200_OK)
-async def get_account_information(username: str, account: AuthenticatedAccount = Depends(bearer_token_auth)):
-    """
-    Returns all account information for the specified account that the requesting account has access to (based on the bearer token scopes).
-    
-    TODO: Currently only allows the account to get its own information.
-
-    Args:
-        username (str): The username of the account to get.
-        account (AuthenticatedAccount): The account making the request. Depends on the bearer token.
-        
-    Response:
-        dict: The attributes of the account mapped to the values retrieved.
-        
-        Example:
-        ```json
-        {
-            "username": "test",
-            "display_name": "Test User",
-            "attributes": {
-                "<client_id>.example_attribute": "Example Value",
-            }
-        }
-        ```
-    """
-    if account.username != username:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
-                            detail="Account does not have access to this information.")
-    attributes: dict[str, list[ScopeAttribute]] = get_attributes_from_scopes(scopes=account.request_scopes)
-    if not attributes:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-                            detail="Failed to get account information.")
-    account_info: dict[str, any] = {
-        "username": account.username,
-        "display_name": account.display_name,
-        "attributes": {}
-    }
-    for client_id, scope_attribute in attributes.items():
-        client_profile: Profile = get_profile_from_account(account=account, client_id=client_id)
-        if client_profile:
-            for attribute in scope_attribute:
-                if attribute.access_type == ScopeAccessType.READ:
-                    metadata_attribute: any = client_profile.metadata.get(attribute.attribute_name)
-                    if metadata_attribute:
-                        account_info["attributes"][f"{client_id}.{attribute.attribute_name}"] = metadata_attribute
-    return account_info

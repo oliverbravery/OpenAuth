@@ -1,15 +1,16 @@
-from fastapi import HTTPException, Request, status
+from fastapi import HTTPException, status
 from models.account_models import Account
 from models.auth_models import Authorization
 from models.client_models import Client
 from models.response_models import AuthorizeResponse, TokenResponse
-from models.scope_models import ClientScope, ProfileScope
-from models.token_models import AccessToken, RefreshToken, TokenType
-from models.util_models import AuthenticatedAccount, ConsentDetails
+from models.scope_models import ClientScope, ProfileScope, ScopeAccessType
+from models.token_models import RefreshToken, TokenType
+from models.util_models import ConsentDetails
 from utils.auth_utils import decrypt_authorization_code, generate_authorization_code
 from utils.hash_utils import hash_string, verify_hash
 from common import db_manager, token_manager
-from utils.scope_utils import str_to_list_of_profile_scopes
+from utils.scope_utils import map_attributes_to_access_types
+from validators.account_validators import check_profile_exists
 from validators.auth_validators import verify_authorization_code, verify_code_challenge
 from validators.client_validators import validate_client_credentials
 
@@ -150,6 +151,7 @@ def get_client_scopes_from_profile_scopes(profile_scopes: list[ProfileScope]) ->
     Returns:
         list[ClientScope]: The list of client scopes. None if the profile scopes are invalid.
     """
+    if len(profile_scopes) == 0: return []
     client_scope_list: list[ClientScope] = []
     client_to_scope: dict[str, list[ProfileScope]] = {scope.client_id: [] for scope in profile_scopes}
     for scope in profile_scopes:
@@ -163,7 +165,8 @@ def get_client_scopes_from_profile_scopes(profile_scopes: list[ProfileScope]) ->
     if len(client_scope_list) != len(profile_scopes): return None
     return client_scope_list
     
-def get_consent_details(client_id: str, requested_scopes: list[ProfileScope]) -> ConsentDetails:
+def get_consent_details(client_id: str, requested_scopes: list[ProfileScope], 
+                        username: str) -> ConsentDetails:
     """
     Fetch and configure the consent details for the consent form.
     
@@ -181,9 +184,17 @@ def get_consent_details(client_id: str, requested_scopes: list[ProfileScope]) ->
     requested_scopes_as_client_scopes: list[ClientScope] = get_client_scopes_from_profile_scopes(
         profile_scopes=requested_scopes
     )
-    if not requested_scopes_as_client_scopes: return None
+    client_non_personal_scopes: list[ClientScope] = [scope for scope in client.scopes if not scope.is_personal_scope]
+    public_metadata_attributes: dict[str, list[ScopeAccessType]] = map_attributes_to_access_types(scopes=client_non_personal_scopes)
+    comma_seperated_public_metadata_attributes: dict[str, str] = {key: ", ".join([v.value for v in value]) for key, value in public_metadata_attributes.items()}
     consent_details: ConsentDetails = ConsentDetails(name=client.name, 
                                                      description=client.description, 
-                                                     requested_scopes=requested_scopes_as_client_scopes, 
-                                                     client_redirect_uri=client.redirect_uri)
+                                                     requested_scopes=requested_scopes_as_client_scopes,
+                                                     account_connected=check_profile_exists(username=username,
+                                                                                            client_id=client_id),
+                                                     client_redirect_uri=client.redirect_uri,
+                                                     client_metadata_attributes=client.profile_metadata_attributes,
+                                                     client_public_metadata_attributes=comma_seperated_public_metadata_attributes,
+                                                     client_shared_read_attributes=client.shared_read_attributes
+                                                     )
     return consent_details

@@ -42,9 +42,10 @@ async def add_client(client_registration_form: ClientRegistrationForm, account: 
         description=client_registration_form.client_description,
         redirect_uri=client_registration_form.client_redirect_uri,
         developers=client_registration_form.client_developers,
-        scopes=client_registration_form.client_scopes,
         profile_metadata_attributes=client_registration_form.client_profile_metadata_attributes,
-        profile_defaults=client_registration_form.client_profile_defaults
+        profile_defaults=client_registration_form.client_profile_defaults,
+        scopes=client_registration_form.scopes,
+        shared_read_attributes=client_registration_form.shared_read_attributes,
     )
     if not validate_client_developers(client=new_client):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 

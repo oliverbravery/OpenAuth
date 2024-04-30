@@ -4,7 +4,7 @@ import datetime
 
 from pydantic import BaseModel
 
-from models.scope_models import ClientScope
+from models.scope_models import AccountAttribute, ClientScope
 
 class ClientDeveloper(BaseModel):
     """
@@ -17,7 +17,7 @@ class ClientDeveloper(BaseModel):
     username: str
     scopes: List[str]
     
-class MetadataType(Enum):
+class MetadataType(str, Enum):
     """
     Represents the possible types for a metadata attribute.
     """
@@ -65,9 +65,10 @@ class Client(BaseModel):
         description (str): A description of the application and why it needs access to certain scopes.
         redirect_uri (str): The URI to which the user is redirected after granting or denying access to the application.
         developers (List[ClientAdmin]): The list of developers that have access to the client.
-        scopes (list[ClientScope]): The scopes of the client.
         profile_metadata_attributes (List[MetadataAttribute]): The metadata attributes that the client can store in the user's profile.
         profile_defaults (dict[str, any]): Any default values that the client wants to store in the user's profile.
+        scopes (list[ClientScope]): List of all custom scopes created by the client to control access to ONLY client profile specific metadata attributes.
+        shared_read_attributes (list[AccountAttribute]): List of all shared attributes that the client and other linked accounts can read from the user's account.
     """
     client_id: str
     client_secret_hash: str
@@ -75,6 +76,8 @@ class Client(BaseModel):
     description: str
     redirect_uri: str
     developers: List[ClientDeveloper] = []
-    scopes: list[ClientScope] = []
     profile_metadata_attributes: list[MetadataAttribute] = []
     profile_defaults: Dict[str, Any] = {}
+    scopes: list[ClientScope]
+    shared_read_attributes: list[AccountAttribute]
+    

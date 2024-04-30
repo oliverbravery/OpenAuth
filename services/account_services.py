@@ -2,7 +2,6 @@ from models.account_models import Account, AccountRole, Profile
 from common import db_manager
 from models.auth_models import Authorization
 from models.client_models import Client
-from models.scope_models import ProfileScope, ScopeAttribute
 from utils.account_utils import generate_default_metadata
 from utils.scope_utils import scopes_to_profile_scopes
 from validators.account_validators import check_profile_exists
@@ -43,6 +42,7 @@ def generate_client_profile(client_id: str, scopes: str) -> Profile:
     default_metadata: dict[str, any] = generate_default_metadata(profile_metadata_attributes=client.profile_metadata_attributes,
                                                                  profile_defaults=client.profile_defaults)
     scopes_as_list: list[str] = scopes.split(" ")
+    if scopes_as_list == ['']: scopes_as_list = []
     new_profile: Profile = Profile(
         client_id=client_id,
         scopes=scopes_to_profile_scopes(scope_name_list=scopes_as_list),
@@ -64,7 +64,7 @@ def create_profile_if_not_exists(client_id: str, username: str, accecpted_scopes
     Returns:
         int: 0 if the profile was created successfully, -1 if the profile could not be created.
     """
-    if check_profile_exists(username=username, client_id=client_id): 
+    if check_profile_exists(username=username, client_id=client_id):  
         response: int = db_manager.accounts_interface.update_profile_scopes(username=username, 
                                                                             client_id=client_id, 
                                                                             scopes=accecpted_scopes)
@@ -85,32 +85,3 @@ def enroll_account_as_developer(account: Account) -> int:
     """
     account.account_role = AccountRole.DEVELOPER
     return db_manager.accounts_interface.update_account(account=account)
-
-def get_attributes_from_scopes(scopes: list[ProfileScope]) -> dict[str, list[ScopeAttribute]]:
-    """
-    Gets all the attributes belonging to the scopes provided.
-
-    Args:
-        scopes (list[ProfileScope]): The list of scopes to get the attributes from.
-
-    Returns:
-        dict[str, list[ScopeAttribute]]: The client_id mapped to the list of scope attributes linked to the client.
-    """
-    all_scope_attributes: dict[Client, list[ScopeAttribute]] = {}
-    client_id_to_profile_scopes: dict[str, list[ProfileScope]] = {scope.client_id:[] for scope in scopes}
-    for scope in scopes:
-        client_id_to_profile_scopes[scope.client_id].append(scope)
-    for client_id, scope_list in client_id_to_profile_scopes.items():
-        scope_name_list: list[str] = [scope.scope for scope in scope_list]
-        client: Client = db_manager.clients_interface.get_client(client_id=client_id)
-        if not client: return None
-        for client_scope in client.scopes:
-            if client_scope.name in scope_name_list:
-                if client not in all_scope_attributes:
-                    all_scope_attributes[client.client_id] = []
-                for attribute in client_scope.associated_attributes:
-                    if attribute not in all_scope_attributes[client]:
-                        all_scope_attributes[client.client_id].append(attribute)
-    return all_scope_attributes
-        
-    

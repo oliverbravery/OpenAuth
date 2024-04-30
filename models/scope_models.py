@@ -1,6 +1,13 @@
 from enum import Enum
 from typing import List
 from pydantic import BaseModel
+
+class AccountAttribute(str, Enum):
+    """
+    Enum class for representing the different attributes an account has (non-profile attributes)
+    """
+    DISPLAY_NAME = "display_name"
+    EMAIL = "email"
     
 class ScopeAccessType(str, Enum):
     """
@@ -11,12 +18,14 @@ class ScopeAccessType(str, Enum):
     READ = "read"
     WRITE = "write"
     
-class ScopeAttribute(BaseModel):
+class ClientScopeAttribute(BaseModel):
     """
-    Represents an attribute of a profile (and it's metadata) and what a scope can do with it.
+    Represents an attribute of the client's specific metadata and what a scope can do with it.
+    
+    NOTE: This is only for the client's metadata attributes.
     
     Args:
-        attribute_name (str): The name of the attribute in the profile/ profile metadata.
+        attribute_name (str): The name of the attribute in the profile metadata.
         access_type (ScopeAccessType): The access type of the attribute.
     """
     attribute_name: str
@@ -26,20 +35,22 @@ class ClientScope(BaseModel):
     """
     Represents a scope for a client.
     
-    A scope is a permission that the client can request to allow it to access certain attributes of the user's profile.
+    A scope is a permission that the client can request to allow it to access certain attributes of the user's client specific profile.
     
     Args:
         name (str): The 'name' of the scope.
         description (str): A description of the scope and what it allows the client to do.
         shareable (bool): Whether other clients can request access to this scope.
         developer_only (bool): Whether the scope is only available to developers.
-        associated_attributes (List[ScopeAttribute]): The attributes (profile or profile metadata) that this scope controls.
+        is_personal_scope (bool): Whether the scope only allows the specific user to access the associated attributes or (if False) allow other linked users to access the associated attributes if they have the scope.
+        associated_attributes (List[ClientScopeAttribute]): The attributes (profile metadata) that this scope controls.
     """
     name: str
     description: str
     shareable: bool
     developer_only: bool
-    associated_attributes: List[ScopeAttribute]
+    is_personal_scope: bool
+    associated_attributes: List[ClientScopeAttribute]
 
 class ProfileScope(BaseModel):
     """
@@ -53,4 +64,3 @@ class ProfileScope(BaseModel):
     """
     client_id: str
     scope: str
-    
