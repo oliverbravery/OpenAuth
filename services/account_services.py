@@ -2,7 +2,9 @@ from models.account_models import Account, AccountRole, Profile
 from common import db_manager
 from models.auth_models import Authorization
 from models.client_models import Client
-from utils.account_utils import generate_default_metadata
+from models.scope_models import ClientScope, ProfileScope, ScopeAccessType
+from services.auth_services import get_mapped_client_scopes_from_profile_scopes
+from utils.account_utils import generate_default_metadata, get_profile_attribute_from_account
 from utils.scope_utils import scopes_to_profile_scopes
 from validators.account_validators import check_profile_exists
 
@@ -85,3 +87,34 @@ def enroll_account_as_developer(account: Account) -> int:
     """
     account.account_role = AccountRole.DEVELOPER
     return db_manager.accounts_interface.update_account(account=account)
+
+def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], allowed_access_types: list[ScopeAccessType]) -> dict[str, any]:
+    """
+    Get the attributes of an account based on the scopes.
+    
+    NOTE: Only attributes for scopes that have a ScopeAccessType from allowed_access_types are returned. Useful for only getting READ attributes for example.
+
+    Args:
+        username (str): The username of the account.
+        scopes (list[ProfileScope]): The scopes that the client has access to.
+        allowed_access_types (list[ScopeAccessType]): The access type of attributes to be returned.
+
+    Returns:
+        dict[str, any]: Dictionary of account attributes (Attribute name: Attribute value). Attribute name is composed of client_id and attribute name (<client_id>.<attribute_name>).
+    """
+    if len(scopes) == 0: return {}
+    account: Account = db_manager.accounts_interface.get_account(username=username)
+    if not account: return None
+    client_id_to_client_scope: dict[str, list[ClientScope]] = get_mapped_client_scopes_from_profile_scopes(profile_scopes=scopes)
+    if not client_id_to_client_scope: return None
+    attributes: dict[str, any] = {}
+    for client_id, client_scopes in client_id_to_client_scope.items():
+        for scope in client_scopes:
+            for attribute in scope.associated_attributes:
+                if attribute.access_type in allowed_access_types:
+                    fetched_value: any = get_profile_attribute_from_account(account=account, 
+                                                                            client_id=client_id, 
+                                                                            attribute_name=attribute.attribute_name)
+                    if fetched_value is None: return None
+                    attributes[f"{client_id}.{attribute.attribute_name}"] = fetched_value
+    return attributes
