@@ -164,6 +164,28 @@ def get_client_scopes_from_profile_scopes(profile_scopes: list[ProfileScope]) ->
                 client_scope_list.append(c_scope)
     if len(client_scope_list) != len(profile_scopes): return None
     return client_scope_list
+
+def get_mapped_client_scopes_from_profile_scopes(profile_scopes: list[ProfileScope]) -> dict[str, list[ClientScope]]:
+    """
+    Convert a list of profile scopes to a dictionary of client_ids mapped to a list of client scopes.
+
+    Args:
+        profile_scopes (list[ProfileScope]): The list of profile scopes to be converted.
+
+    Returns:
+        dict[str, list[ClientScope]]: The dictionary of client ids mapped to a list of client scopes. None if the profile scopes are invalid.
+    """
+    if len(profile_scopes) == 0: return []
+    client_to_profile_scope: dict[str, list[ProfileScope]] = {scope.client_id: [] for scope in profile_scopes}
+    for scope in profile_scopes:
+        client_to_profile_scope[scope.client_id].append(scope)
+    client_id_to_client_scopes: dict[str, list[ClientScope]] = {}
+    for client_id, p_scopes in client_to_profile_scope:
+        client_scopes: list[ClientScope] = get_client_scopes_from_profile_scopes(profile_scopes=p_scopes)
+        if not client_scopes: return None
+        client_id_to_client_scopes[client_id] = client_scopes
+    return client_id_to_client_scopes
+    
     
 def get_consent_details(client_id: str, requested_scopes: list[ProfileScope], 
                         username: str) -> ConsentDetails:
