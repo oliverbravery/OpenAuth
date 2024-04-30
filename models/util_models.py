@@ -2,7 +2,8 @@ from enum import Enum
 from pydantic import BaseModel
 
 from models.account_models import Account
-from models.scope_models import AccountScope, ClientScope, ProfileScope, Scopes
+from models.client_models import MetadataAttribute
+from models.scope_models import ClientScope, ProfileScope
 
 class DBCollection(Enum):
     """
@@ -35,20 +36,18 @@ class ConsentDetails(BaseModel):
         name (str): The name of the client application.
         description (str): The description of the client application / the scopes requested.
         requested_scopes (list[ClientScope]): The description of the scopes requested.
-        client_account_access_scopes (list[ProfileScope]): The scopes that the client wants access to in the user's account (i.e. the user's username).
-        client_external_access_scopes (list[ClientScope]): The scopes that the client wants access to owned by other clients.
-        client_internal_access_scopes (list[ClientScope]): The scopes that the client wants to create about its own profile specific metadata.
         account_connected (bool): Whether the account has a profile associated with the client.
         client_redirect_uri (str): The redirect uri of the client application.
+        client_metadata_attributes (list[MetadataAttribute]): List of all attributes a client wants to store for a user.
+        client_non_personal_scopes (list[ClientScope]): List of all non-personal scopes requested by the client. These are scopes that allow other linked users to access the associated attributes if they have the scope.
     """
     name: str
     description: str
     requested_scopes: list[ClientScope]
-    client_account_access_scopes: list[AccountScope]
-    client_external_access_scopes: list[ClientScope]
-    client_internal_access_scopes: list[ClientScope]
     account_connected: bool
     client_redirect_uri: str
+    client_metadata_attributes: list[MetadataAttribute]
+    client_non_personal_scopes: list[ClientScope]
     
 class AuthenticatedAccount(Account):
     """
