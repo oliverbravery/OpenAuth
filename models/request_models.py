@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Any, Dict, Optional
 from pydantic import BaseModel
 
 
@@ -65,3 +65,7 @@ class TokenRequest(BaseModel):
             "code_verifier": self.code_verifier,
             "refresh_token": self.refresh_token
         }
+        
+class UpdateAccountRequest(BaseModel):
+    username: str
+    attribute_updates: Dict[str, Any]
