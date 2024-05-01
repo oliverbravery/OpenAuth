@@ -79,7 +79,7 @@ def enroll_account_as_developer(account: Account) -> int:
     account.account_role = AccountRole.DEVELOPER
     return db_manager.accounts_interface.update_account(account=account)
 
-def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], allowed_access_types: list[ScopeAccessType]) -> dict[str, any]:
+def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], allowed_access_types: list[ScopeAccessType], is_personal: bool) -> dict[str, any]:
     """
     Get the attributes of an account based on the scopes.
     
@@ -89,6 +89,7 @@ def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], all
         username (str): The username of the account.
         scopes (list[ProfileScope]): The scopes that the client has access to.
         allowed_access_types (list[ScopeAccessType]): The access type of attributes to be returned.
+        is_personal (bool): Whether the scope needs to be personal or not.
 
     Returns:
         dict[str, any]: Dictionary of account attributes (Attribute name: Attribute value). Attribute name is composed of client_id and attribute name (<client_id>.<attribute_name>).
@@ -105,6 +106,7 @@ def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], all
                 if attribute.access_type in allowed_access_types:
                     profile: Profile = get_profile_from_account(account=account, client_id=client_id)
                     if not profile: return None
+                    if scope.is_personal_scope != is_personal: return None
                     fetched_value: any = profile.metadata.get(attribute.attribute_name)
                     attributes[f"{client_id}.{attribute.attribute_name}"] = fetched_value
     return attributes
