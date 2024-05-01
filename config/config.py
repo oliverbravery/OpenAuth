@@ -1,3 +1,4 @@
+from models.client_models import Client
 from models.config_models import AuthConfig, DatabaseConfig, DefaultClientConfig, GoogleRecaptchaConfig, JWTConfig
 from dotenv import load_dotenv
 from os import getenv
@@ -47,3 +48,22 @@ class Config:
             client_secret=getenv("AUTH_DEFAULT_CLIENT_SECRET"),
             client_model_path=getenv("AUTH_DEFAULT_CLIENT_MODEL_PATH")
         )
+        
+    def load_client_model(self) -> Client:
+        """
+        Loads the client model from the file path provided in the environment variables.
+        
+        Raises:
+            ValueError: If the client model is not in the valid Client format.
+
+        Returns:
+            Client: The client model object.
+        """
+        with open(self.default_client_config.client_model_path, "r") as client_model_file:
+            try:
+                default_client: Client = Client.model_validate_json(client_model_file.read())
+                return default_client
+            except ValueError as e:
+                raise ValueError(f"Client model in file {self.default_client_config.client_model_path} is not in the valid Client format. {e}")
+            
+            
