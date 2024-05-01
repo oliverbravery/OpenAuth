@@ -67,5 +67,10 @@ class TokenRequest(BaseModel):
         }
         
 class UpdateAccountRequest(BaseModel):
-    username: str
+    """
+    A class used to represent the data required to update the account attributes.
+
+    Args:
+        attribute_updates (dict[str, any]): The attributes to update for the account. The key is the attribute (<client_id>.<attribute_name>) name and the value is the new value.
+    """
     attribute_updates: Dict[str, Any]
