@@ -17,6 +17,10 @@ def hex_validator(v, num_bits: int):
 
 class TokenAlgorithm(str, Enum):
     RS256 = "RS256"
+    
+class ApiConfig(BaseModel):
+    host: str
+    port: int
 
 class DatabaseConfig(BaseModel):
     host: str
