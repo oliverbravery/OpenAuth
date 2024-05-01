@@ -148,6 +148,9 @@ async def update_account(update_account_request: UpdateAccountRequest, account: 
         attribute_updates (dict[str, any]): The attributes to update for the account. The key is the attribute (<client_id>.<attribute_name>) name and the value is the new value.
         account (AuthenticatedAccount): The account making the request based on the access token.
     """
+    if update_account_request.attribute_updates == {}:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="No attributes to update.")
     if not check_user_exists(username=update_account_request.username):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail="User does not exist.")
@@ -160,7 +163,7 @@ async def update_account(update_account_request: UpdateAccountRequest, account: 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail="Invalid scopes in access token.")
     all_allowed_write_attributes: dict[str, any] = get_scoped_account_attributes(username=update_account_request.username, scopes=requested_scopes, allowed_access_types=[ScopeAccessType.WRITE])
-    if not all_allowed_write_attributes:
+    if all_allowed_write_attributes == None:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                             detail="Issue handling scopes.")
     for attribute in update_account_request.attribute_updates:
