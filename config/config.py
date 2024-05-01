@@ -72,7 +72,7 @@ class Config:
             try:
                 default_client: Client = Client.model_validate_json(client_model_file.read())
                 default_client.client_id = self.default_client_config.client_id
-                default_client.client_secret = hash_string(plaintext=self.default_client_config.client_secret)
+                default_client.client_secret_hash = hash_string(plaintext=self.default_client_config.client_secret)
                 default_client.redirect_uri = f"http://{self.api_config.host}:{self.api_config.port}/account/login/callback"
                 if not validate_client_developers(client=default_client): raise ValueError("Client model does not have valid developers.")
                 if not validate_metadata_attributes(client=default_client): raise ValueError("Metadata attributes are not unique.")
