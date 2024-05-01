@@ -81,6 +81,6 @@ def verify_attribute_is_correct_type(client: Client, attribute_name: str, value:
     
     for metadata_attribute in client.profile_metadata_attributes:
         if metadata_attribute.name == attribute_name:
-            return validate_attribute_for_metadata_type(metadata_type=metadata_attribute.type.value,
+            return validate_attribute_for_metadata_type(metadata_type=metadata_attribute.type.get_pythonic_type(),
                                                  value=value)
     return False
