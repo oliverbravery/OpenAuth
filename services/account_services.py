@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from models.account_models import Account, AccountRole, Profile
 from common import db_manager
 from models.auth_models import Authorization
@@ -6,7 +7,6 @@ from models.scope_models import AccountAttribute, ClientScope, ProfileScope, Sco
 from services.auth_services import get_mapped_client_scopes_from_profile_scopes
 from utils.account_utils import generate_default_metadata, get_account_attribute, get_profile_from_account
 from validators.account_validators import check_profile_exists, verify_attribute_is_correct_type
-from validators.client_validators import validate_attribute_for_metadata_type
 
 def register_account_in_db_collections(new_account: Account) -> int:
     """
@@ -140,6 +140,12 @@ def update_existing_attributes(username: str, attribute_updates: dict[str, any])
     - The account exists.
     - The attributes are in the correct format (<client_id>.<attribute_name>), exist in the profile and are of the correct type.
     - The user already has the profiles in their account.
+    
+    Raises:
+    - HTTPException: 404 - Account not found.
+    - HTTPException: 400 - Attribute name is not in the correct format.
+    - HTTPException: 404 - Account does not have an profile assosiated with the requested update attributes.
+    - HTTPException: 400 - Attribute does not exist in the profile.
 
     Args:
         username (str): The username of the account.
@@ -149,24 +155,23 @@ def update_existing_attributes(username: str, attribute_updates: dict[str, any])
         int: 0 if the attributes were updated successfully, -1 otherwise.
     """
     account: Account = db_manager.accounts_interface.get_account(username=username)
-    if not account: return -1
+    if not account: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found.")
     client_id_to_local_attribute_updates: dict[str, dict[str, any]] = {}
     for attribute, new_value in attribute_updates.items():
         split_attribute: list[str] = attribute.split('.')
-        if len(split_attribute) != 2: return -1
+        if len(split_attribute) != 2: raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attribute name is not in the correct format.")
         client_id, attribute_name = split_attribute[0], split_attribute[1]
         if client_id not in client_id_to_local_attribute_updates:
             client_id_to_local_attribute_updates[client_id] = {}
         client_id_to_local_attribute_updates[client_id][attribute_name] = new_value
     for client_id, local_attribute_updates in client_id_to_local_attribute_updates.items():
         profile: Profile = get_profile_from_account(account=account, client_id=client_id)
-        if not profile: return -1
+        if not profile: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account does not have an profile assosiated with the requested update attributes.")
         client: Client = db_manager.clients_interface.get_client(client_id=client_id)
         if not client: return -1
         for attribute_name, attribute_value in local_attribute_updates.items():
             if not verify_attribute_is_correct_type(client=client, attribute_name=attribute_name, value=attribute_value): return -1
-            # Add the attribute to the account
-            if attribute_name not in profile.metadata: return -1
+            if attribute_name not in profile.metadata: raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attribute does not exist in the profile.")
             profile.metadata[attribute_name] = attribute_value
         response: int = db_manager.accounts_interface.update_profile(username=username, profile=profile)
         if response == -1: return -1
