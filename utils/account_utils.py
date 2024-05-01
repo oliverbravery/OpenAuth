@@ -51,21 +51,3 @@ def get_account_attribute(account: Account, attribute: AccountAttribute) -> any:
     if hasattr(account, attribute.value):
         return getattr(account, attribute.value)
     return None
-
-def convert_to_profile_attributes(data: dict[str, any]) -> dict[ProfileScope, any]:
-    """
-    Convert a dictionary of data to a dictionary of profile attributes.
-
-    Args:
-        data (dict[str, any]): The data to convert.
-
-    Returns:
-        dict[ProfileScope, any]: The converted profile attributes. None if the data is invalid.
-    """
-    profile_attribute_updates: dict[ProfileScope, any] = {}
-    for attribute in data:
-        profile_scope: ProfileScope = str_to_profile_scope(scope=attribute)
-        if not profile_scope: return None
-        if profile_scope in profile_attribute_updates: return None
-        profile_attribute_updates[profile_scope] = data[attribute]
-    return profile_attribute_updates
