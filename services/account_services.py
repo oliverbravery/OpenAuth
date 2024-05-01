@@ -145,6 +145,7 @@ def update_existing_attributes(username: str, attribute_updates: dict[str, any])
     - HTTPException: 404 - Account not found.
     - HTTPException: 400 - Attribute name is not in the correct format.
     - HTTPException: 404 - Account does not have an profile assosiated with the requested update attributes.
+    - HTTPException: 400 - Attribute is not of the correct type.
     - HTTPException: 400 - Attribute does not exist in the profile.
 
     Args:
@@ -170,7 +171,7 @@ def update_existing_attributes(username: str, attribute_updates: dict[str, any])
         client: Client = db_manager.clients_interface.get_client(client_id=client_id)
         if not client: return -1
         for attribute_name, attribute_value in local_attribute_updates.items():
-            if not verify_attribute_is_correct_type(client=client, attribute_name=attribute_name, value=attribute_value): return -1
+            if not verify_attribute_is_correct_type(client=client, attribute_name=attribute_name, value=attribute_value): raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attribute is not of the correct type.")
             if attribute_name not in profile.metadata: raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attribute does not exist in the profile.")
             profile.metadata[attribute_name] = attribute_value
         response: int = db_manager.accounts_interface.update_profile(username=username, profile=profile)
