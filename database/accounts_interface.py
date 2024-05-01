@@ -76,3 +76,16 @@ class AccountsInterface(DBGenericInterface):
             int: 0 if the profile was added successfully, -1 otherwise.
         """
         return self.update_generic(search_params={"username": username}, update_params={"$push": {"profiles": profile.model_dump()}})
+    
+    def update_profile(self, username: str, profile: Profile) -> int:
+        """
+        Update an existing profile in an account.
+
+        Args:
+            username (str): The username of the account to update the profile in.
+            profile (Profile): The profile to update.
+
+        Returns:
+            int: 0 if the profile was updated successfully, -1 otherwise.
+        """
+        return self.update_generic(search_params={"username": username, "profiles.client_id": profile.client_id}, update_params={"$set": {"profiles.$": profile.model_dump()}})
