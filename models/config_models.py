@@ -46,6 +46,8 @@ class GoogleRecaptchaConfig(BaseModel):
 class AuthConfig(BaseModel):
     authentication_code_secret: str
     
+    _authentication_code_secret_validator = field_validator('authentication_code_secret', allow_reuse=True)(partial(hex_validator, num_bits=256))
+    
 class DefaultClientConfig(BaseModel):
     client_id: str
     client_secret: str
