@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from models.account_models import Account, AccountRole, Profile
 from common import db_manager
 from models.auth_models import Authorization
@@ -5,7 +6,7 @@ from models.client_models import Client
 from models.scope_models import AccountAttribute, ClientScope, ProfileScope, ScopeAccessType
 from services.auth_services import get_mapped_client_scopes_from_profile_scopes
 from utils.account_utils import generate_default_metadata, get_account_attribute, get_profile_from_account
-from validators.account_validators import check_profile_exists
+from validators.account_validators import check_profile_exists, verify_attribute_is_correct_type
 
 def register_account_in_db_collections(new_account: Account) -> int:
     """
@@ -78,7 +79,7 @@ def enroll_account_as_developer(account: Account) -> int:
     account.account_role = AccountRole.DEVELOPER
     return db_manager.accounts_interface.update_account(account=account)
 
-def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], allowed_access_types: list[ScopeAccessType]) -> dict[str, any]:
+def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], allowed_access_types: list[ScopeAccessType], is_personal: bool) -> dict[str, any]:
     """
     Get the attributes of an account based on the scopes.
     
@@ -88,6 +89,7 @@ def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], all
         username (str): The username of the account.
         scopes (list[ProfileScope]): The scopes that the client has access to.
         allowed_access_types (list[ScopeAccessType]): The access type of attributes to be returned.
+        is_personal (bool): Whether the scope needs to be personal or not.
 
     Returns:
         dict[str, any]: Dictionary of account attributes (Attribute name: Attribute value). Attribute name is composed of client_id and attribute name (<client_id>.<attribute_name>).
@@ -104,6 +106,7 @@ def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], all
                 if attribute.access_type in allowed_access_types:
                     profile: Profile = get_profile_from_account(account=account, client_id=client_id)
                     if not profile: return None
+                    if scope.is_personal_scope != is_personal: return None
                     fetched_value: any = profile.metadata.get(attribute.attribute_name)
                     attributes[f"{client_id}.{attribute.attribute_name}"] = fetched_value
     return attributes
@@ -128,3 +131,51 @@ def get_account_attributes(username: str, attributes: list[AccountAttribute]) ->
             return None
         retreived_values[attribute.value] = retreived_value
     return retreived_values
+
+def update_existing_attributes(username: str, attribute_updates: dict[str, any]) -> int:
+    """
+    Update the existing attributes of a profile.
+    
+    NOTE: Assumes that valid permissions have been checked before calling this function.
+    
+    Checks:
+    - The account exists.
+    - The attributes are in the correct format (<client_id>.<attribute_name>), exist in the profile and are of the correct type.
+    - The user already has the profiles in their account.
+    
+    Raises:
+    - HTTPException: 404 - Account not found.
+    - HTTPException: 400 - Attribute name is not in the correct format.
+    - HTTPException: 404 - Account does not have an profile assosiated with the requested update attributes.
+    - HTTPException: 400 - Attribute is not of the correct type.
+    - HTTPException: 400 - Attribute does not exist in the profile.
+
+    Args:
+        username (str): The username of the account.
+        attribute_updates (dict[str, any]): The attributes to update. The key is the combined attribute name (<client_id>.<attribute_name>) and the value is the new value.
+
+    Returns:
+        int: 0 if the attributes were updated successfully, -1 otherwise.
+    """
+    account: Account = db_manager.accounts_interface.get_account(username=username)
+    if not account: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found.")
+    client_id_to_local_attribute_updates: dict[str, dict[str, any]] = {}
+    for attribute, new_value in attribute_updates.items():
+        split_attribute: list[str] = attribute.split('.')
+        if len(split_attribute) != 2: raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attribute name is not in the correct format.")
+        client_id, attribute_name = split_attribute[0], split_attribute[1]
+        if client_id not in client_id_to_local_attribute_updates:
+            client_id_to_local_attribute_updates[client_id] = {}
+        client_id_to_local_attribute_updates[client_id][attribute_name] = new_value
+    for client_id, local_attribute_updates in client_id_to_local_attribute_updates.items():
+        profile: Profile = get_profile_from_account(account=account, client_id=client_id)
+        if not profile: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account does not have an profile assosiated with the requested update attributes.")
+        client: Client = db_manager.clients_interface.get_client(client_id=client_id)
+        if not client: return -1
+        for attribute_name, attribute_value in local_attribute_updates.items():
+            if not verify_attribute_is_correct_type(client=client, attribute_name=attribute_name, value=attribute_value): raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attribute is not of the correct type.")
+            if attribute_name not in profile.metadata: raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attribute does not exist in the profile.")
+            profile.metadata[attribute_name] = attribute_value
+        response: int = db_manager.accounts_interface.update_profile(username=username, profile=profile)
+        if response == -1: return -1
+    return 0

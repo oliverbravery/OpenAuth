@@ -77,16 +77,15 @@ class AccountsInterface(DBGenericInterface):
         """
         return self.update_generic(search_params={"username": username}, update_params={"$push": {"profiles": profile.model_dump()}})
     
-    def update_profile_scopes(self, username: str, client_id: str, scopes: str) -> int:
+    def update_profile(self, username: str, profile: Profile) -> int:
         """
-        Updates the scopes of a profile for a specific account.
+        Update an existing profile in an account.
 
         Args:
-            username (str): The username of the account to update.
-            client_id (str): The client ID of the profile to update.
-            scopes (str): The new scopes for the profile.
+            username (str): The username of the account to update the profile in.
+            profile (Profile): The profile to update.
 
         Returns:
-            int: 0 if the scopes were updated successfully, -1 otherwise.
+            int: 0 if the profile was updated successfully, -1 otherwise.
         """
-        return self.update_generic(search_params={"username": username, "profiles.client_id": client_id}, update_params={"$set": {"profiles.$.scopes": scopes}})
+        return self.update_generic(search_params={"username": username, "profiles.client_id": profile.client_id}, update_params={"$set": {"profiles.$": profile.model_dump()}})

@@ -1,8 +1,10 @@
 from fastapi import HTTPException, status
 from common import db_manager
 from models.account_models import Account, AccountRole
+from models.client_models import Client
 from utils.account_utils import get_profile_from_account
 from utils.password_manager import PasswordManager
+from validators.client_validators import validate_attribute_for_metadata_type
 
 def check_user_exists(username: str) -> bool:
     """
@@ -63,3 +65,22 @@ def check_profile_exists(username: str, client_id: str) -> bool:
     if not account: return False
     return True if get_profile_from_account(account=account, 
                                             client_id=client_id) else False
+    
+def verify_attribute_is_correct_type(client: Client, attribute_name: str, value: any) -> bool:
+    """
+    Check that the attribute value is of the correct type for the metadata attribute.
+
+    Args:
+        client (Client): The client to check.
+        attribute_name (str): The name of the attribute.
+        value (any): The value to check.
+
+    Returns:
+        bool: True if the attribute value is of the correct type, False otherwise.
+    """
+    
+    for metadata_attribute in client.profile_metadata_attributes:
+        if metadata_attribute.name == attribute_name:
+            return validate_attribute_for_metadata_type(metadata_type=metadata_attribute.type.get_pythonic_type(),
+                                                 value=value)
+    return False

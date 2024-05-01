@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Any, Dict, Optional
 from pydantic import BaseModel
 
 
@@ -65,3 +65,12 @@ class TokenRequest(BaseModel):
             "code_verifier": self.code_verifier,
             "refresh_token": self.refresh_token
         }
+        
+class UpdateAccountRequest(BaseModel):
+    """
+    A class used to represent the data required to update the account attributes.
+
+    Args:
+        attribute_updates (dict[str, any]): The attributes to update for the account. The key is the attribute (<client_id>.<attribute_name>) name and the value is the new value.
+    """
+    attribute_updates: Dict[str, Any]
