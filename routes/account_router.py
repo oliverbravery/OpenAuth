@@ -123,7 +123,8 @@ async def get_account(username: str, account: AuthenticatedAccount = Depends(bea
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail="Invalid scopes in access token.")
     scoped_account_information: dict[str, any] = get_scoped_account_attributes(username=username, scopes=requested_scopes,
-                                                                               allowed_access_types=[ScopeAccessType.READ])
+                                                                               allowed_access_types=[ScopeAccessType.READ],
+                                                                               is_personal=username==account.username)
     if not scoped_account_information: 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="User account does not have the required information to fulfill the request.")
@@ -135,7 +136,7 @@ async def get_account(username: str, account: AuthenticatedAccount = Depends(bea
     return scoped_account_information
 
 @router.patch("/{username}", status_code=status.HTTP_200_OK)
-async def update_account(update_account_request: UpdateAccountRequest, account: AuthenticatedAccount = Depends(bearer_token_auth)):
+async def update_account(username: str, update_account_request: UpdateAccountRequest, account: AuthenticatedAccount = Depends(bearer_token_auth)):
     """
     Update the account information for the given username based on the request scopes.
     
@@ -145,16 +146,16 @@ async def update_account(update_account_request: UpdateAccountRequest, account: 
 
     Args:
         username (str): The username of the account to update.
-        attribute_updates (dict[str, any]): The attributes to update for the account. The key is the attribute (<client_id>.<attribute_name>) name and the value is the new value.
+        update_account_request (UpdateAccountRequest): The request to update the account information.
         account (AuthenticatedAccount): The account making the request based on the access token.
     """
     if update_account_request.attribute_updates == {}:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="No attributes to update.")
-    if not check_user_exists(username=update_account_request.username):
+    if not check_user_exists(username=username):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail="User does not exist.")
-    if not check_profile_exists(username=update_account_request.username, client_id=account.access_token.aud):
+    if not check_profile_exists(username=username, client_id=account.access_token.aud):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="User account is not linked to the client.")
     if account.access_token.scope == "": return None
@@ -162,15 +163,18 @@ async def update_account(update_account_request: UpdateAccountRequest, account: 
     if not requested_scopes:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail="Invalid scopes in access token.")
-    all_allowed_write_attributes: dict[str, any] = get_scoped_account_attributes(username=update_account_request.username, scopes=requested_scopes, allowed_access_types=[ScopeAccessType.WRITE])
+    all_allowed_write_attributes: dict[str, any] = get_scoped_account_attributes(username=username, 
+                                                                                 scopes=requested_scopes, 
+                                                                                 allowed_access_types=[ScopeAccessType.WRITE],
+                                                                                 is_personal=username==account.username)
     if all_allowed_write_attributes == None:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                             detail="Issue handling scopes.")
-    for attribute in update_account_request.attribute_updates:
+    for attribute, _ in update_account_request.attribute_updates.items():
         if attribute not in all_allowed_write_attributes:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                                 detail="Scope does not allow for updating the attribute.")
-    response: int = update_existing_attributes(username=update_account_request.username, attribute_updates=update_account_request.attribute_updates)
+    response: int = update_existing_attributes(username=username, attribute_updates=update_account_request.attribute_updates)
     if response == -1:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                             detail="Issue updating account information.")
