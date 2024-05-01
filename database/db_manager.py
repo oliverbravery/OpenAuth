@@ -4,11 +4,6 @@ from pymongo.database import Database
 from database.accounts_interface import AccountsInterface
 from database.authorization_interface import AuthorizationInterface
 from database.clients_interface import ClientsInterface
-from models.client_models import Client, MetadataAttribute, MetadataType
-import re
-
-from models.scope_models import ClientScope, ClientScopeAttribute, ScopeAccessType, AccountAttribute
-from utils.hash_utils import hash_string
 
 class DBManager:
     """
@@ -35,61 +30,3 @@ class DBManager:
         self.accounts_interface: AccountsInterface = AccountsInterface(database=self.__db) 
         self.authorization_interface: AuthorizationInterface = AuthorizationInterface(database=self.__db)
         self.clients_interface: ClientsInterface = ClientsInterface(database=self.__db)
-        
-    def create_auth_service_client(self, AUTH_CLIENT_ID: str, AUTH_CLIENT_SECRET: str, 
-                                     AUTH_SERVICE_HOST: str, AUTH_SERVICE_PORT: str):
-        """
-        Creates an authentication client for the application.
-        
-        Args: 
-            AUTH_CLIENT_ID (str): The client id of the application.
-            AUTH_CLIENT_SECRET (str): The client secret of the application.
-            AUTH_SERVICE_HOST (str): The host of the authentication service.
-            AUTH_SERVICE_PORT (str): The port of the authentication service.
-        """
-        if not AUTH_CLIENT_ID or not AUTH_CLIENT_SECRET:
-            raise ValueError("AUTH_CLIENT_ID and AUTH_CLIENT_SECRET must be set in the environment.")
-        if re.fullmatch(f"[0-9a-fA-F]{{{256 // 4}}}", AUTH_CLIENT_SECRET) is None or re.fullmatch(f"[0-9a-fA-F]{{{128 // 4}}}", AUTH_CLIENT_ID) is None:
-            raise ValueError("AUTH_CLIENT_ID and AUTH_CLIENT_SECRET must be hexadecimal strings of the correct length.")
-        if AUTH_SERVICE_HOST is None or AUTH_SERVICE_PORT is None:
-            raise ValueError("AUTH_SERVICE_HOST and AUTH_SERVICE_PORT must be set to create authentication client.")
-        auth_client_redirect_uri: str = f"http://{AUTH_SERVICE_HOST}:{AUTH_SERVICE_PORT}/account/login/callback"
-        hashed_secret: str = hash_string(AUTH_CLIENT_SECRET)
-        auth_client: Client = Client(client_id=AUTH_CLIENT_ID, client_secret_hash=hashed_secret, 
-                                    name="Authentication Service", 
-                                    description="Client for the authentication service", 
-                                    redirect_uri=auth_client_redirect_uri,
-                                    scopes=[
-                                        ClientScope(
-                                            name="read:sauce",
-                                            description="Read all the sauce",
-                                            shareable=False,
-                                            developer_only=False,
-                                            is_personal_scope=False,
-                                            associated_attributes=[
-                                                ClientScopeAttribute(
-                                                    attribute_name="sauce",
-                                                    access_type=ScopeAccessType.READ
-                                                )
-                                            ]
-                                        )
-                                        ],
-                                    shared_read_attributes=[
-                                        AccountAttribute.DISPLAY_NAME
-                                    ],
-                                    profile_metadata_attributes=[
-                                        MetadataAttribute(
-                                            name="sauce",
-                                            description="The sauce",
-                                            type=MetadataType.STRING
-                                        ),
-                                        MetadataAttribute(
-                                            name="cheese",
-                                            description="The cheese",
-                                            type=MetadataType.STRING
-                                        )
-                                    ],
-                                    profile_defaults={
-                                        "sauce": "mayo"
-                                    })
-        self.clients_interface.add_client(client=auth_client)
