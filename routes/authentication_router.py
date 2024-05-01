@@ -7,11 +7,11 @@ from models.scope_models import ProfileScope
 from models.util_models import ConsentDetails, Endpoints
 from services.account_services import create_profile_if_not_exists
 from services.auth_services import generate_and_store_auth_code, get_consent_details, get_tokens_with_authorization_code, refresh_and_update_tokens
-from utils.scope_utils import scopes_to_profile_scopes, str_to_list_of_profile_scopes
+from utils.scope_utils import str_to_list_of_profile_scopes
 from utils.web_utils import configure_redirect_uri, form_to_object
 from validators.client_validators import validate_client_credentials
 from models.request_models import AuthorizationRequest, GrantType, TokenRequest
-from common import templates, RECAPTCHA_SITE_KEY
+from common import templates, config
 from validators.account_validators import validate_user_credentials
 from validators.scope_validators import valid_request_scopes
 from validators.web_validators import verify_captcha_completed
@@ -50,7 +50,7 @@ async def login_form(request: Request, request_data: AuthorizationRequest = Depe
     """
     return templates.TemplateResponse("login.html", {"request": request,
                                                      "request_data": request_data,
-                                                     "recaptcha_site_key": RECAPTCHA_SITE_KEY})
+                                                     "recaptcha_site_key": config.google_recaptcha_config.site_key})
 
 @router.post("/login", response_class=HTMLResponse)
 async def login_submit(request: Request): 

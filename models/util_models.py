@@ -1,6 +1,5 @@
 from enum import Enum
 from pydantic import BaseModel
-
 from models.account_models import Account
 from models.client_models import MetadataAttribute
 from models.scope_models import AccountAttribute, ClientScope

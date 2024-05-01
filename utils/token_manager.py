@@ -4,10 +4,8 @@ import datetime
 import jwt
 from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_pem_public_key
 from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes, PublicKeyTypes
-from models.account_models import Account, Profile
+from models.account_models import Account
 from models.token_models import AccessToken, BaseToken, RefreshToken, TokenType
-from utils.account_utils import get_profile_from_account
-from utils.scope_utils import profile_scope_list_to_str
 
 class TokenManager:
     """

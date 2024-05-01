@@ -1,9 +1,7 @@
 from enum import Enum
 from typing import List, Dict, Any
 import datetime
-
 from pydantic import BaseModel
-
 from models.scope_models import AccountAttribute, ClientScope
 
 class ClientDeveloper(BaseModel):

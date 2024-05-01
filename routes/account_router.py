@@ -2,7 +2,7 @@ from secrets import token_urlsafe
 from fastapi import Depends, APIRouter, status, HTTPException, Request, Response
 import httpx
 from starlette.templating import _TemplateResponse
-from common import AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, RECAPTCHA_SITE_KEY, templates, bearer_token_auth
+from common import templates, bearer_token_auth, config
 from models.account_models import Account
 from models.form_models import UserRegistrationForm
 from models.request_models import AuthorizationRequest, GrantType, TokenRequest, UpdateAccountRequest
@@ -52,14 +52,14 @@ async def login_account(request: Request, response: Response):
     code_challenge, code_verifier = generate_code_challenge_and_verifier()
     state: str = token_urlsafe(256)
     login_auth_request: AuthorizationRequest = AuthorizationRequest(
-        client_id=AUTH_CLIENT_ID,
-        client_secret=AUTH_CLIENT_SECRET,
+        client_id=config.default_client_config.client_id,
+        client_secret=config.default_client_config.client_secret,
         response_type="code",
         state=state,
         code_challenge=code_challenge,
-        scope=f"{AUTH_CLIENT_ID}.read:sauce"
+        scope=f"{config.default_client_config.client_id}.read:sauce"
     )
-    configured_response: _TemplateResponse = templates.TemplateResponse("login.html", {"recaptcha_site_key": RECAPTCHA_SITE_KEY,
+    configured_response: _TemplateResponse = templates.TemplateResponse("login.html", {"recaptcha_site_key": config.google_recaptcha_config.site_key,
                                                      "request": request,
                                                      "request_data": login_auth_request.model_dump()})
     configured_response.set_cookie(key="code_verifier", value=code_verifier, httponly=True, secure=False)
@@ -80,8 +80,8 @@ async def login_account_callback(request: Request, response: Response, code: str
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="CSRF state mismatch.")
     token_request: TokenRequest = TokenRequest(grant_type=GrantType.AUTHORIZATION_CODE,
-                                               client_id=AUTH_CLIENT_ID,
-                                               client_secret=AUTH_CLIENT_SECRET,
+                                               client_id=config.default_client_config.client_id,
+                                               client_secret=config.default_client_config.client_secret,
                                                code=code,
                                                code_verifier=code_verifier_cookie,
                                                refresh_token=None,)

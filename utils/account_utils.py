@@ -1,7 +1,6 @@
 from models.account_models import Account, Profile
 from models.client_models import MetadataAttribute
-from models.scope_models import AccountAttribute, ProfileScope
-from utils.scope_utils import str_to_profile_scope
+from models.scope_models import AccountAttribute
 
 
 def generate_default_metadata(profile_metadata_attributes: list[MetadataAttribute], 
