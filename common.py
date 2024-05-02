@@ -22,7 +22,7 @@ token_manager: TokenManager = TokenManager(
     refresh_token_expire_time=int(config.jwt_config.refresh_token_expire),
     private_key_path=str(config.jwt_config.private_key_path),
     public_key_path=str(config.jwt_config.public_key_path),
-    token_algorithm=str(config.jwt_config.token_algorithm)
+    token_algorithm=str(config.jwt_config.token_algorithm.value)
 )
 
 db_manager: DBManager = DBManager(

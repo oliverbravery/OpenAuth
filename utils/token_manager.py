@@ -101,7 +101,6 @@ class TokenManager:
             str: The signed string interpretation of the JWT token.
         """
         to_encode: dict = token.model_dump()
-        #TODO: RS256 needs PEM encoded private key to sign the token. This is asymetric so need to generate PEM public and private key. Sign with private, give public to clients to verify that tokens are legit.
         encoded_jwt: str = jwt.encode(to_encode, self.private_key, algorithm=self.token_algorithm)
         return encoded_jwt
     
@@ -177,7 +176,7 @@ class TokenManager:
         token: BaseToken
         match tokenType:
             case TokenType.ACCESS:
-                if not scopes: raise ValueError("Access token must have at least one scope.")
+                if scopes is None: scopes = ""
                 token: AccessToken = AccessToken(
                     sub=account.username,
                     aud=client_id,
