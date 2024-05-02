@@ -1,3 +1,4 @@
+from cryptography.fernet import Fernet
 from pydantic import BaseModel, field_validator
 from functools import partial
 from pathlib import Path
@@ -14,6 +15,13 @@ def hex_validator(v, num_bits: int):
     if not re.fullmatch(f"[0-9a-fA-F]{{{num_bits // 4}}}", v):
         raise ValueError(f"Value must be a {num_bits}-bit hex string. Got: {v}")
     return v
+
+def fernet_key_validator(v):
+    try:
+        fernet: Fernet = Fernet(v)
+        return v
+    except Exception:
+        raise ValueError(f"Value must be a valid Fernet key. Got: {v}")
 
 class TokenAlgorithm(str, Enum):
     RS256 = "RS256"
@@ -46,7 +54,7 @@ class GoogleRecaptchaConfig(BaseModel):
 class AuthConfig(BaseModel):
     authentication_code_secret: str
     
-    _authentication_code_secret_validator = field_validator('authentication_code_secret')(partial(hex_validator, num_bits=256))
+    _authentication_code_secret_validator = field_validator('authentication_code_secret')(fernet_key_validator)
     
 class DefaultClientConfig(BaseModel):
     client_id: str
@@ -54,6 +62,6 @@ class DefaultClientConfig(BaseModel):
     client_model_path: str
     
     _client_id_validator = field_validator('client_id')(partial(hex_validator, num_bits=128))
-    _client_secret_validator = field_validator('client_id')(partial(hex_validator, num_bits=256))
+    _client_secret_validator = field_validator('client_secret')(partial(hex_validator, num_bits=256))
     _client_model_path_validator = field_validator('client_model_path')(must_be_a_valid_path)
     
