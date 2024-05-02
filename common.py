@@ -9,7 +9,6 @@ from models.util_models import AuthenticatedAccount
 from utils.token_manager import TokenManager
 from utils.database_utils import get_connection_string
 
-
 config: Config = Config()
 
 fernet: Fernet = Fernet(config.auth_config.authentication_code_secret)
@@ -35,8 +34,13 @@ db_manager: DBManager = DBManager(
     db_name=config.database_config.name)
 
 # Load the default client model into the database if it does not exist
+from services.client_services import load_client_model
 if db_manager.clients_interface.get_client(client_id=config.default_client_config.client_id) is None:
-    db_manager.clients_interface.add_client(client=config.load_client_model())
+    db_manager.clients_interface.add_client(client=load_client_model(client_id=config.default_client_config.client_id,
+                                                                      client_secret=config.default_client_config.client_secret,
+                                                                      redirect_port=config.api_config.port,
+                                                                      redirect_host=config.api_config.host,
+                                                                      client_model_path=config.default_client_config.client_model_path))
 
 class BearerTokenAuth:
     """

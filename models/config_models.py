@@ -36,8 +36,8 @@ class JWTConfig(BaseModel):
     access_token_expire: int
     refresh_token_expire: int
 
-    _private_key_path_validator = field_validator('private_key_path', allow_reuse=True)(must_be_a_valid_path)
-    _public_key_path_validator = field_validator('public_key_path', allow_reuse=True)(must_be_a_valid_path)
+    _private_key_path_validator = field_validator('private_key_path')(must_be_a_valid_path)
+    _public_key_path_validator = field_validator('public_key_path')(must_be_a_valid_path)
     
 class GoogleRecaptchaConfig(BaseModel):
     secret_key: str
@@ -46,14 +46,14 @@ class GoogleRecaptchaConfig(BaseModel):
 class AuthConfig(BaseModel):
     authentication_code_secret: str
     
-    _authentication_code_secret_validator = field_validator('authentication_code_secret', allow_reuse=True)(partial(hex_validator, num_bits=256))
+    _authentication_code_secret_validator = field_validator('authentication_code_secret')(partial(hex_validator, num_bits=256))
     
 class DefaultClientConfig(BaseModel):
     client_id: str
     client_secret: str
     client_model_path: str
     
-    _client_id_validator = field_validator('client_id', allow_reuse=True)(partial(hex_validator, num_bits=128))
-    _client_secret_validator = field_validator('client_id', allow_reuse=True)(partial(hex_validator, num_bits=256))
-    _client_model_path_validator = field_validator('client_model_path', allow_reuse=True)(must_be_a_valid_path)
+    _client_id_validator = field_validator('client_id')(partial(hex_validator, num_bits=128))
+    _client_secret_validator = field_validator('client_id')(partial(hex_validator, num_bits=256))
+    _client_model_path_validator = field_validator('client_model_path')(must_be_a_valid_path)
     
