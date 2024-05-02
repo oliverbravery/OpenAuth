@@ -67,7 +67,7 @@ async def login_submit(request: Request):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid credentials.")
     requested_scopes: list[ProfileScope] = str_to_list_of_profile_scopes(scopes_str_list=form_data.scope)
-    if not requested_scopes:
+    if requested_scopes == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Requested scopes are in an invalid format.")
     if not valid_request_scopes(scopes=requested_scopes):

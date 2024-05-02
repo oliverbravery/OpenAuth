@@ -57,7 +57,7 @@ async def login_account(request: Request, response: Response):
         response_type="code",
         state=state,
         code_challenge=code_challenge,
-        scope=f"{config.default_client_config.client_id}.read:sauce"
+        scope=""
     )
     configured_response: _TemplateResponse = templates.TemplateResponse("login.html", {"recaptcha_site_key": config.google_recaptcha_config.site_key,
                                                      "request": request,
