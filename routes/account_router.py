@@ -113,23 +113,22 @@ async def get_account(username: str, account: AuthenticatedAccount = Depends(bea
     if not check_profile_exists(username=username, client_id=account.access_token.aud):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="User account is not linked to the client.")
-    if account.access_token.scope == "": return {}
     read_only_attributes: list[AccountAttribute] = get_shared_read_attributes(client_id=account.access_token.aud)
-    if not read_only_attributes:
+    if read_only_attributes == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail="Some clients in the access token audience do not exist.")
     requested_scopes: list[ProfileScope] = str_to_list_of_profile_scopes(scopes_str_list=account.access_token.scope)
-    if not requested_scopes:
+    if requested_scopes == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail="Invalid scopes in access token.")
     scoped_account_information: dict[str, any] = get_scoped_account_attributes(username=username, scopes=requested_scopes,
                                                                                allowed_access_types=[ScopeAccessType.READ],
                                                                                is_personal=username==account.username)
-    if not scoped_account_information: 
+    if scoped_account_information == None: 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="User account does not have the required information to fulfill the request.")
     retreived_account_attributes: dict[str, any] = get_account_attributes(username=username, attributes=read_only_attributes)
-    if not retreived_account_attributes:
+    if retreived_account_attributes == None:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                             detail="Issue fetching account information.")
     scoped_account_information.update(retreived_account_attributes)
@@ -160,7 +159,7 @@ async def update_account(username: str, update_account_request: UpdateAccountReq
                             detail="User account is not linked to the client.")
     if account.access_token.scope == "": return None
     requested_scopes: list[ProfileScope] = str_to_list_of_profile_scopes(scopes_str_list=account.access_token.scope)
-    if not requested_scopes:
+    if requested_scopes == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail="Invalid scopes in access token.")
     all_allowed_write_attributes: dict[str, any] = get_scoped_account_attributes(username=username, 
