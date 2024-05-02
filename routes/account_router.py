@@ -2,7 +2,7 @@ from secrets import token_urlsafe
 from fastapi import Depends, APIRouter, status, HTTPException, Request, Response
 import httpx
 from starlette.templating import _TemplateResponse
-from common import AUTH_CLIENT_ID, AUTH_CLIENT_SECRET, RECAPTCHA_SITE_KEY, templates, bearer_token_auth
+from common import templates, bearer_token_auth, config
 from models.account_models import Account
 from models.form_models import UserRegistrationForm
 from models.request_models import AuthorizationRequest, GrantType, TokenRequest, UpdateAccountRequest
@@ -52,14 +52,14 @@ async def login_account(request: Request, response: Response):
     code_challenge, code_verifier = generate_code_challenge_and_verifier()
     state: str = token_urlsafe(256)
     login_auth_request: AuthorizationRequest = AuthorizationRequest(
-        client_id=AUTH_CLIENT_ID,
-        client_secret=AUTH_CLIENT_SECRET,
+        client_id=config.default_client_config.client_id,
+        client_secret=config.default_client_config.client_secret,
         response_type="code",
         state=state,
         code_challenge=code_challenge,
-        scope=f"{AUTH_CLIENT_ID}.read:sauce"
+        scope=""
     )
-    configured_response: _TemplateResponse = templates.TemplateResponse("login.html", {"recaptcha_site_key": RECAPTCHA_SITE_KEY,
+    configured_response: _TemplateResponse = templates.TemplateResponse("login.html", {"recaptcha_site_key": config.google_recaptcha_config.site_key,
                                                      "request": request,
                                                      "request_data": login_auth_request.model_dump()})
     configured_response.set_cookie(key="code_verifier", value=code_verifier, httponly=True, secure=False)
@@ -80,8 +80,8 @@ async def login_account_callback(request: Request, response: Response, code: str
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="CSRF state mismatch.")
     token_request: TokenRequest = TokenRequest(grant_type=GrantType.AUTHORIZATION_CODE,
-                                               client_id=AUTH_CLIENT_ID,
-                                               client_secret=AUTH_CLIENT_SECRET,
+                                               client_id=config.default_client_config.client_id,
+                                               client_secret=config.default_client_config.client_secret,
                                                code=code,
                                                code_verifier=code_verifier_cookie,
                                                refresh_token=None,)
@@ -113,23 +113,22 @@ async def get_account(username: str, account: AuthenticatedAccount = Depends(bea
     if not check_profile_exists(username=username, client_id=account.access_token.aud):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="User account is not linked to the client.")
-    if account.access_token.scope == "": return {}
     read_only_attributes: list[AccountAttribute] = get_shared_read_attributes(client_id=account.access_token.aud)
-    if not read_only_attributes:
+    if read_only_attributes == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail="Some clients in the access token audience do not exist.")
     requested_scopes: list[ProfileScope] = str_to_list_of_profile_scopes(scopes_str_list=account.access_token.scope)
-    if not requested_scopes:
+    if requested_scopes == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail="Invalid scopes in access token.")
     scoped_account_information: dict[str, any] = get_scoped_account_attributes(username=username, scopes=requested_scopes,
                                                                                allowed_access_types=[ScopeAccessType.READ],
                                                                                is_personal=username==account.username)
-    if not scoped_account_information: 
+    if scoped_account_information == None: 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="User account does not have the required information to fulfill the request.")
     retreived_account_attributes: dict[str, any] = get_account_attributes(username=username, attributes=read_only_attributes)
-    if not retreived_account_attributes:
+    if retreived_account_attributes == None:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                             detail="Issue fetching account information.")
     scoped_account_information.update(retreived_account_attributes)
@@ -160,7 +159,7 @@ async def update_account(username: str, update_account_request: UpdateAccountReq
                             detail="User account is not linked to the client.")
     if account.access_token.scope == "": return None
     requested_scopes: list[ProfileScope] = str_to_list_of_profile_scopes(scopes_str_list=account.access_token.scope)
-    if not requested_scopes:
+    if requested_scopes == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail="Invalid scopes in access token.")
     all_allowed_write_attributes: dict[str, any] = get_scoped_account_attributes(username=username, 
