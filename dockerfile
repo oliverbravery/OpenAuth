@@ -17,4 +17,4 @@ COPY . .
 EXPOSE $AUTH_PORT
 
 # Define the command to run the application
-CMD ["uvicorn", "main:app", "--host", $AUTH_HOST, "--port", $AUTH_PORT]
+CMD uvicorn main:app --host $AUTH_HOST --port $AUTH_PORT
