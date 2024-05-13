@@ -1,19 +1,22 @@
 from secrets import token_urlsafe
 from fastapi import Depends, APIRouter, status, HTTPException, Request, Response
+from fastapi.datastructures import FormData
+from fastapi.responses import HTMLResponse, RedirectResponse
 import httpx
 from starlette.templating import _TemplateResponse
+from auth_service.validators.web_validators import verify_captcha_completed
 from common import templates, bearer_token_auth, config
 from models.account_models import Account
 from models.form_models import UserRegistrationForm
 from models.request_models import AuthorizationRequest, GrantType, TokenRequest, UpdateAccountRequest
 from models.scope_models import AccountAttribute, ProfileScope, ScopeAccessType
-from models.util_models import AuthenticatedAccount
+from models.util_models import AuthenticatedAccount, Endpoints
 from services.account_services import get_account_attributes, get_scoped_account_attributes, register_account_in_db_collections, update_existing_attributes
 from services.client_services import get_shared_read_attributes
 from utils.auth_utils import generate_code_challenge_and_verifier
 from utils.password_manager import PasswordManager
 from utils.scope_utils import str_to_list_of_profile_scopes
-from utils.web_utils import configure_redirect_uri
+from utils.web_utils import configure_redirect_uri, form_to_object
 from validators.account_validators import check_profile_exists, check_user_exists
 
 router = APIRouter(
@@ -21,31 +24,37 @@ router = APIRouter(
     tags=["Accounts"]
 )
 
+@router.get("/register", response_class=HTMLResponse)
+async def register_account_form(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request,
+                                                     "recaptcha_site_key": config.google_recaptcha_config.site_key})
+    
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register_account(form_data: UserRegistrationForm = Depends()):
+async def register_account_submit(request: Request):
     """
-    Register a new account.
-
-    Args:
-        form_data (UserRegistrationForm): The form data for the new account.
+    Register the account based on the form data and return a redirect response to the login page.
     """
+    fetched_form_data: FormData = await request.form()
+    form_data: UserRegistrationForm = form_to_object(form_data=fetched_form_data, object_class=UserRegistrationForm)
     hashed_password: str = PasswordManager.get_password_hash(form_data.password)
+    if not verify_captcha_completed(captcha_response=form_data.g_recaptcha_response):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Captcha verification failed.")
+    if check_user_exists(username=form_data.username):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+                            detail="User already exists.")
     new_account: Account = Account(
         username=form_data.username,
         display_name=form_data.display_name,
         email=form_data.email,
         hashed_password=hashed_password,
-        hashed_totp_pin=None,
         profiles=[]
     )
-    if check_user_exists(username=new_account.username):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-                            detail="User already exists.")
     response: int = register_account_in_db_collections(new_account=new_account)
-    if response == 0:
-        return "Account registered successfully."
-    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-                        detail="Account registration failed.")
+    if response != 0:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                            detail="Account registration failed.")
+    return RedirectResponse(url="/account/login")
     
 @router.get("/login", status_code=status.HTTP_200_OK)
 async def login_account(request: Request, response: Response):
