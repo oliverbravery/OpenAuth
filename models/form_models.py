@@ -5,7 +5,7 @@ from models.client_models import ClientDeveloper, MetadataAttribute
 from models.request_models import AuthorizationRequest
 from models.scope_models import AccountAttribute, ClientScope
 
-class UserRegistrationForm:
+class UserRegistrationForm(BaseModel):
     """
     A class used to represent a new account form. 
     It is used to parse the data from the request body when registering a new account.
