@@ -4,13 +4,13 @@ from fastapi.datastructures import FormData
 from fastapi.responses import HTMLResponse, RedirectResponse
 import httpx
 from starlette.templating import _TemplateResponse
-from auth_service.validators.web_validators import verify_captcha_completed
+from validators.web_validators import verify_captcha_completed
 from common import templates, bearer_token_auth, config
 from models.account_models import Account
 from models.form_models import UserRegistrationForm
 from models.request_models import AuthorizationRequest, GrantType, TokenRequest, UpdateAccountRequest
 from models.scope_models import AccountAttribute, ProfileScope, ScopeAccessType
-from models.util_models import AuthenticatedAccount, Endpoints
+from models.util_models import AuthenticatedAccount
 from services.account_services import get_account_attributes, get_scoped_account_attributes, register_account_in_db_collections, update_existing_attributes
 from services.client_services import get_shared_read_attributes
 from utils.auth_utils import generate_code_challenge_and_verifier
