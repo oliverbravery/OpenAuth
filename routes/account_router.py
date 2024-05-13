@@ -29,7 +29,7 @@ async def register_account_form(request: Request):
     return templates.TemplateResponse("register.html", {"request": request,
                                                      "recaptcha_site_key": config.google_recaptcha_config.site_key})
     
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post("/register", status_code=status.HTTP_200_OK)
 async def register_account_submit(request: Request):
     """
     Register the account based on the form data and return a redirect response to the login page.
@@ -54,7 +54,7 @@ async def register_account_submit(request: Request):
     if response != 0:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                             detail="Account registration failed.")
-    return RedirectResponse(url="/account/login")
+    return "Account registered successfully."
     
 @router.get("/login", status_code=status.HTTP_200_OK)
 async def login_account(request: Request, response: Response):
