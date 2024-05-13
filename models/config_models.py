@@ -26,6 +26,15 @@ def fernet_key_validator(v):
 class TokenAlgorithm(str, Enum):
     RS256 = "RS256"
     
+class DevConfig(BaseModel):
+    """
+    Represents the configuration for the development environment.
+
+    Args:
+        reCAPTCHA_enabled (bool): Whether reCAPTCHA is enabled.
+    """
+    reCAPTCHA_enabled: bool
+    
 class ApiConfig(BaseModel):
     host: str
     port: int

@@ -1,4 +1,4 @@
-from models.config_models import ApiConfig, AuthConfig, DatabaseConfig, DefaultClientConfig, GoogleRecaptchaConfig, JWTConfig
+from models.config_models import ApiConfig, AuthConfig, DatabaseConfig, DefaultClientConfig, DevConfig, GoogleRecaptchaConfig, JWTConfig
 from dotenv import load_dotenv
 from os import getenv
 
@@ -6,6 +6,7 @@ class Config:
     """
     Used to load and store the environment variables.
     """
+    dev_config: DevConfig
     api_config: ApiConfig
     database_config: DatabaseConfig
     jwt_config: JWTConfig
@@ -21,6 +22,9 @@ class Config:
         Loads the environment variables.
         """
         load_dotenv(override=True)
+        self.dev_config = DevConfig(
+            reCAPTCHA_enabled=False if getenv("AUTH_DISABLE_RECAPTCHA") == "true" else True
+        )
         self.api_config = ApiConfig(
             host=getenv("AUTH_HOST"),
             port=int(getenv("AUTH_PORT"))
