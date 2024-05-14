@@ -23,7 +23,8 @@ class Config:
         """
         load_dotenv(override=True)
         self.dev_config = DevConfig(
-            reCAPTCHA_enabled=False if getenv("AUTH_DISABLE_RECAPTCHA") == "true" else True
+            reCAPTCHA_enabled=False if getenv("AUTH_DISABLE_RECAPTCHA") == "true" else True,
+            login_state_validation_enabled=False if getenv("AUTH_DISABLE_LOGIN_STATE_VALIDATION") == "true" else True
         )
         self.api_config = ApiConfig(
             host=getenv("AUTH_HOST"),

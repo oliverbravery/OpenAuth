@@ -34,6 +34,7 @@ class DevConfig(BaseModel):
         reCAPTCHA_enabled (bool): Whether reCAPTCHA is enabled.
     """
     reCAPTCHA_enabled: bool
+    login_state_validation_enabled: bool
     
 class ApiConfig(BaseModel):
     host: str
