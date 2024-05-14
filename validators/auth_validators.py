@@ -1,7 +1,8 @@
 from base64 import urlsafe_b64encode
 import hashlib
+from models.token_models import StateToken, TokenType
 from models.auth_models import Authorization
-from common import db_manager
+from common import db_manager, token_manager, config
 
 def verify_authorization_code(auth_code: str, username: str) -> bool:
     """
@@ -31,3 +32,22 @@ def verify_code_challenge(code_challenge: str, code_verifier: str) -> bool:
     """
     generated_code_challenge: str = urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).decode()
     return code_challenge == generated_code_challenge
+
+def login_state_valid(login_state: str, username: str, scopes: str) -> bool:
+    """
+    Checks that the login state is signed correctly and has not expired. 
+
+    Args:
+        login_state (str): The StateToken to validate.
+        username (str): The username to cross reference with the login state.
+        scopes (str): The scopes to cross reference with the login state.
+
+    Returns:
+        bool: True if the login state is valid. False if not.
+    """
+    if not config.dev_config.login_state_validation_enabled: return True
+    token: StateToken = token_manager.decode_jwt_token(token=login_state, token_type=TokenType.STATE)
+    if token is None: return False
+    if token.sub != username: return False
+    if token.scope != scopes: return False
+    return True

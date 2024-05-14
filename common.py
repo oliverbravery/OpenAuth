@@ -20,6 +20,7 @@ templates: Jinja2Templates = Jinja2Templates(directory="templates")
 token_manager: TokenManager = TokenManager(
     access_token_expire_time=int(config.jwt_config.access_token_expire),
     refresh_token_expire_time=int(config.jwt_config.refresh_token_expire),
+    state_token_expire_time=int(config.jwt_config.state_token_expire),
     private_key_path=str(config.jwt_config.private_key_path),
     public_key_path=str(config.jwt_config.public_key_path),
     token_algorithm=str(config.jwt_config.token_algorithm.value)

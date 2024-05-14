@@ -5,22 +5,16 @@ from models.client_models import ClientDeveloper, MetadataAttribute
 from models.request_models import AuthorizationRequest
 from models.scope_models import AccountAttribute, ClientScope
 
-class UserRegistrationForm:
+class UserRegistrationForm(BaseModel):
     """
     A class used to represent a new account form. 
     It is used to parse the data from the request body when registering a new account.
     """
-    def __init__(
-        self,
-        username: str = Form(),
-        password: str = Form(),
-        email: str = Form(),
-        display_name: str = Form(),
-    ):
-        self.username: str = username
-        self.password: str = password
-        self.email: str = email
-        self.display_name: str = display_name
+    username: str = Form(),
+    password: str = Form(),
+    email: str = Form(),
+    display_name: str = Form(),
+    g_recaptcha_response: str = Form(alias="g-recaptcha-response")
         
 class LoginForm(AuthorizationRequest):
     """
@@ -29,7 +23,6 @@ class LoginForm(AuthorizationRequest):
     """
     username: str = Form()
     password: str = Form()
-    totp_pin: str = Form()
     g_recaptcha_response: str = Form(alias="g-recaptcha-response")
     
 class ConsentForm(AuthorizationRequest):
@@ -40,6 +33,7 @@ class ConsentForm(AuthorizationRequest):
     client_redirect_uri: str
     consented: str
     username: str
+    login_state: str
     
 class ClientRegistrationForm(BaseModel):
     """

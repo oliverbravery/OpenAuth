@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.datastructures import FormData
 from fastapi.responses import HTMLResponse, RedirectResponse
+from utils.auth_utils import generate_login_state
+from validators.auth_validators import login_state_valid
 from models.form_models import ConsentForm, LoginForm
 from models.response_models import AuthorizeResponse, TokenResponse
 from models.scope_models import ProfileScope
@@ -73,6 +75,7 @@ async def login_submit(request: Request):
     if not valid_request_scopes(scopes=requested_scopes):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                             detail="Invalid client scopes.")
+    state_token: str = generate_login_state(username=form_data.username, scopes=form_data.scope)
     consent_details: ConsentDetails = get_consent_details(client_id=form_data.client_id, 
                                                                  requested_scopes=requested_scopes,
                                                                  username=form_data.username)
@@ -80,7 +83,8 @@ async def login_submit(request: Request):
                                                 detail="Consent details retrieval failed.")
     return templates.TemplateResponse("consent.html", {"request": request,
                                                        "request_data": form_data, 
-                                                       "consent_details": consent_details})
+                                                       "consent_details": consent_details,
+                                                       "login_state": state_token})
 
 @router.post("/consent", response_class=HTMLResponse)
 async def consent_submit(request: Request):
@@ -91,6 +95,10 @@ async def consent_submit(request: Request):
     """
     fetched_form_data: FormData = await request.form()
     form_data: ConsentForm = form_to_object(form_data=fetched_form_data, object_class=ConsentForm)
+    if not login_state_valid(login_state=form_data.login_state, username=form_data.username,
+                             scopes=form_data.scope):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="User is not authenticated.")
     if form_data.consented != 'true':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="User did not consent to the scopes requested.")

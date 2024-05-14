@@ -30,7 +30,6 @@ class Account(BaseModel):
         display_name (str): The display name of the user.
         email (str): The email of the user.
         hashed_password (str): The hashed password of the user.
-        hashed_totp_pin (Optional[str]): The hashed TOTP pin of the user.
         profiles (List[Profile]): The profiles associated with the user.
         account_role (AccountRole): The role of the user in the auth service. Defaults to 'standard'.
     """
@@ -38,6 +37,5 @@ class Account(BaseModel):
     display_name: str
     email: str
     hashed_password: str
-    hashed_totp_pin: Optional[str] = None
     profiles: List[Profile] = []
     account_role: AccountRole = AccountRole.STANDARD

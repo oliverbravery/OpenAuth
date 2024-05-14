@@ -26,6 +26,16 @@ def fernet_key_validator(v):
 class TokenAlgorithm(str, Enum):
     RS256 = "RS256"
     
+class DevConfig(BaseModel):
+    """
+    Represents the configuration for the development environment.
+
+    Args:
+        reCAPTCHA_enabled (bool): Whether reCAPTCHA is enabled.
+    """
+    reCAPTCHA_enabled: bool
+    login_state_validation_enabled: bool
+    
 class ApiConfig(BaseModel):
     host: str
     port: int
@@ -43,6 +53,7 @@ class JWTConfig(BaseModel):
     token_algorithm: TokenAlgorithm
     access_token_expire: int
     refresh_token_expire: int
+    state_token_expire: int
 
     _private_key_path_validator = field_validator('private_key_path')(must_be_a_valid_path)
     _public_key_path_validator = field_validator('public_key_path')(must_be_a_valid_path)

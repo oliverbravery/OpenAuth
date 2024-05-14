@@ -24,6 +24,7 @@ class MetadataType(str, Enum):
     FLOAT = "float"
     BOOLEAN = "boolean"
     DATETIME = "datetime"
+    UNSTRUCTURED = "unstructured"
     
     def get_pythonic_type(self) -> type:
         """
@@ -37,6 +38,7 @@ class MetadataType(str, Enum):
         if self == MetadataType.FLOAT: return float
         if self == MetadataType.BOOLEAN: return bool
         if self == MetadataType.DATETIME: return datetime.datetime
+        if self == MetadataType.UNSTRUCTURED: return dict
     
 class MetadataAttribute(BaseModel):
     """

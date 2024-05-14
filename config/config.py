@@ -1,4 +1,4 @@
-from models.config_models import ApiConfig, AuthConfig, DatabaseConfig, DefaultClientConfig, GoogleRecaptchaConfig, JWTConfig
+from models.config_models import ApiConfig, AuthConfig, DatabaseConfig, DefaultClientConfig, DevConfig, GoogleRecaptchaConfig, JWTConfig
 from dotenv import load_dotenv
 from os import getenv
 
@@ -6,6 +6,7 @@ class Config:
     """
     Used to load and store the environment variables.
     """
+    dev_config: DevConfig
     api_config: ApiConfig
     database_config: DatabaseConfig
     jwt_config: JWTConfig
@@ -21,6 +22,10 @@ class Config:
         Loads the environment variables.
         """
         load_dotenv(override=True)
+        self.dev_config = DevConfig(
+            reCAPTCHA_enabled=False if getenv("AUTH_DISABLE_RECAPTCHA") == "true" else True,
+            login_state_validation_enabled=False if getenv("AUTH_DISABLE_LOGIN_STATE_VALIDATION") == "true" else True
+        )
         self.api_config = ApiConfig(
             host=getenv("AUTH_HOST"),
             port=int(getenv("AUTH_PORT"))
@@ -37,7 +42,8 @@ class Config:
             public_key_path=getenv("AUTH_JWT_PUBLIC_PEM_PATH"),
             token_algorithm=getenv("AUTH_TOKEN_ALGORITHM"),
             access_token_expire=int(getenv("AUTH_ACCESS_TOKEN_EXPIRE")),
-            refresh_token_expire=int(getenv("AUTH_REFRESH_TOKEN_EXPIRE"))
+            refresh_token_expire=int(getenv("AUTH_REFRESH_TOKEN_EXPIRE")),
+            state_token_expire=int(getenv("AUTH_STATE_TOKEN_EXPIRE"))
         )
         self.google_recaptcha_config = GoogleRecaptchaConfig(
             secret_key=getenv("AUTH_RECAPTCHA_SECRET_KEY"),

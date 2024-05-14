@@ -5,7 +5,7 @@ import jwt
 from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_pem_public_key
 from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes, PublicKeyTypes
 from models.account_models import Account
-from models.token_models import AccessToken, BaseToken, RefreshToken, TokenType
+from models.token_models import AccessToken, BaseToken, RefreshToken, TokenType, StateToken
 
 class TokenManager:
     """
@@ -14,11 +14,12 @@ class TokenManager:
     """
     access_token_expire_time: int
     refresh_token_expire_time: int
+    state_token_expire_time: int
     token_algorithm: str
     private_key: PrivateKeyTypes
     public_key: PublicKeyTypes
     
-    def __init__(self, access_token_expire_time: int, refresh_token_expire_time: int, 
+    def __init__(self, access_token_expire_time: int, refresh_token_expire_time: int, state_token_expire_time: int, 
                  private_key_path: str, public_key_path: str, token_algorithm: str = "RS256") -> None:
         """
         Initializes the TokenManager object.
@@ -26,12 +27,14 @@ class TokenManager:
         Args:
             access_token_expire_time (int): Time in minutes for the access token to expire.
             refresh_token_expire_time (int): Time in minutes for the refresh token to expire.
+            state_token_expire_time (int): Time in minutes for the state token to expire.
             private_key_path (str): The path to the private key file.
             public_key_path (str): The path to the public key file.
             token_algorithm (str, optional): Algorithm to be used for encoding the JWT token. Defaults to "RS256".
         """
         self.access_token_expire_time = access_token_expire_time
         self.refresh_token_expire_time = refresh_token_expire_time
+        self.state_token_expire_time = state_token_expire_time
         self.private_key = self.__load_pem_key(key_path=private_key_path, is_public=False)
         self.public_key = self.__load_pem_key(key_path=public_key_path, is_public=True)
         self.token_algorithm = token_algorithm
@@ -75,6 +78,8 @@ class TokenManager:
                 return self.access_token_expire_time
             case TokenType.REFRESH:
                 return self.refresh_token_expire_time
+            case TokenType.STATE:
+                return self.state_token_expire_time
             
     def calculate_jwt_timestamps(self, token_type: TokenType) -> tuple[datetime.datetime, datetime.datetime]:
         """
@@ -122,6 +127,8 @@ class TokenManager:
                 token_class = AccessToken
             case TokenType.REFRESH:
                 token_class = RefreshToken
+            case TokenType.STATE:
+                token_class = StateToken
         try:
             decoded_jwt_token: dict[str, any] = jwt.decode(token, self.public_key, algorithms=[self.token_algorithm], options={"verify_aud": False})
         except Exception as e:
@@ -190,6 +197,14 @@ class TokenManager:
                     aud=client_id,
                     exp=exp,
                     iat=iat,
+                )
+            case TokenType.STATE:
+                token: StateToken = StateToken(
+                    sub=account.username,
+                    aud=client_id,
+                    exp=exp,
+                    iat=iat,
+                    scope=scopes
                 )
         return self.sign_jwt_token(token=token)
     
