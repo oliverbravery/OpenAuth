@@ -41,7 +41,8 @@ class Config:
             public_key_path=getenv("AUTH_JWT_PUBLIC_PEM_PATH"),
             token_algorithm=getenv("AUTH_TOKEN_ALGORITHM"),
             access_token_expire=int(getenv("AUTH_ACCESS_TOKEN_EXPIRE")),
-            refresh_token_expire=int(getenv("AUTH_REFRESH_TOKEN_EXPIRE"))
+            refresh_token_expire=int(getenv("AUTH_REFRESH_TOKEN_EXPIRE")),
+            state_token_expire=int(getenv("AUTH_STATE_TOKEN_EXPIRE"))
         )
         self.google_recaptcha_config = GoogleRecaptchaConfig(
             secret_key=getenv("AUTH_RECAPTCHA_SECRET_KEY"),

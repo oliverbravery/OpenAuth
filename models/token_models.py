@@ -9,6 +9,7 @@ class TokenType(Enum):
     """
     ACCESS = "access"
     REFRESH = "refresh"
+    STATE = "state"
     
 class BaseToken(BaseModel):
     """
@@ -76,5 +77,11 @@ class RefreshToken(BaseToken):
     """
     A class used to represent the refresh token data.
     Inherited from the BaseToken class.
+    """
+    pass
+
+class StateToken(AccessToken):
+    """
+    A class used to represent the authentication state token data.
     """
     pass

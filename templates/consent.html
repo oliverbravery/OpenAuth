@@ -77,6 +77,7 @@
                         <input type="hidden" name="state" value="{{ request_data.state }}">
                         <input type="hidden" name="code_challenge" value="{{ request_data.code_challenge }}">
                         <input type="hidden" name="client_redirect_uri" value="{{ consent_details.client_redirect_uri }}">
+                        <input type="hidden" name="login_state" value="{{ login_state }}">
                         <button type="submit" class="btn btn-primary" name="consented" value="true">Accept</button>
                         <button type="submit" class="btn btn-danger" name="consented" value="false">Decline</button>
                     </form>

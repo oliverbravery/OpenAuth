@@ -33,6 +33,7 @@ class ConsentForm(AuthorizationRequest):
     client_redirect_uri: str
     consented: str
     username: str
+    login_state: str
     
 class ClientRegistrationForm(BaseModel):
     """

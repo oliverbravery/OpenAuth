@@ -1,7 +1,9 @@
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 import hashlib
 from secrets import token_urlsafe
-from common import fernet
+from models.token_models import StateToken, TokenType
+from models.account_models import Account, AccountRole
+from common import fernet, token_manager, config
 
 def generate_code_challenge_and_verifier() -> tuple[str, str]:
     """
@@ -42,3 +44,26 @@ def decrypt_authorization_code(auth_code: str) -> tuple[str, str]:
     """
     decrypted_combined_code: str = fernet.decrypt(urlsafe_b64decode(auth_code.encode())).decode()
     return decrypted_combined_code.split(":")[0], decrypted_combined_code[len(decrypted_combined_code.split(":")[0])+1:]
+
+def generate_login_state(username: str, scopes: str) -> str:
+    """
+    Generate a state for the login form to ensure that the user is the same as the one who logged in.
+    
+    The login state is a JWT token containing the username and scopes.
+
+    Args:
+        username (str): The username of the user.
+        scopes (str): The verified scopes of the user.
+
+    Returns:
+        str: The state as a JWT token.
+    """
+    dummy_account: Account = Account(
+        username=username,display_name="",email="",
+        hashed_password="",profiles=[],account_role=AccountRole.STANDARD,
+    )
+    state_token: StateToken = token_manager.generate_and_sign_jwt_token(TokenType.STATE, 
+                                                                        account=dummy_account,
+                                                                        client_id=config.default_client_config.client_id,
+                                                                        scopes=scopes)
+    return state_token
