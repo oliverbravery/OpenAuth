@@ -106,7 +106,7 @@ def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], all
                 if attribute.access_type in allowed_access_types:
                     profile: Profile = get_profile_from_account(account=account, client_id=client_id)
                     if not profile: return None
-                    if scope.is_personal_scope != is_personal: return None
+                    if scope.is_personal_scope and is_personal != True: return None
                     fetched_value: any = profile.metadata.get(attribute.attribute_name)
                     attributes[f"{client_id}.{attribute.attribute_name}"] = fetched_value
     return attributes
