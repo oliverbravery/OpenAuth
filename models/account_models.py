@@ -10,6 +10,14 @@ class AccountRole(str, Enum):
     STANDARD = "standard"
     DEVELOPER = "developer"
     
+class StandardAccountAttributes(str, Enum):
+    """
+    Enum class for representing the different standard attributes an account has
+    """
+    DISPLAY_NAME = "display_name"
+    EMAIL = "email"
+    USERNAME = "username"
+    
 class Profile(BaseModel):
     """
     Represents a profile for a client stored in the user's account.
