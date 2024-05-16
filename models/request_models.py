@@ -2,6 +2,8 @@ from enum import Enum
 from typing import Any, Dict, Optional
 from pydantic import BaseModel
 
+from models.account_models import StandardAccountAttributes
+
 
 class ResponseType(str, Enum):
     """
@@ -74,3 +76,9 @@ class UpdateAccountRequest(BaseModel):
         attribute_updates (dict[str, any]): The attributes to update for the account. The key is the attribute (<client_id>.<attribute_name>) name and the value is the new value.
     """
     attribute_updates: Dict[str, Any]
+    
+class ValidateTokenRequest(BaseModel):
+    """
+    A class used to represent the data required to validate a token.
+    """
+    validating_properties: dict[StandardAccountAttributes,Any]
