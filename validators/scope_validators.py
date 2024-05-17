@@ -3,8 +3,8 @@ from models.scope_models import ClientScope, ProfileScope
 from common import db_manager
 
 
-def valid_request_scopes(scopes: list[ProfileScope], developer_only: bool = False, 
-                         shareable_only:bool=False) -> bool:
+def valid_request_scopes(scopes: list[ProfileScope], developer_only: bool = None, 
+                         shareable_only:bool=None) -> bool:
     """
     Check that the requested scopes are valid scopes that exist.
     
@@ -12,8 +12,8 @@ def valid_request_scopes(scopes: list[ProfileScope], developer_only: bool = Fals
 
     Args:
         scopes (list[ProfileScope]): List of requested scopes to validate.
-        developer_only (bool, optional): If True, only developer only scopes are allowed. Defaults to False.
-        shareable_only (bool, optional): If True, only shareable scopes are allowed. Defaults to False.
+        developer_only (bool, optional): If True, only developer only scopes are allowed. Defaults to None (do not check).
+        shareable_only (bool, optional): If True, only shareable scopes are allowed. Defaults to None (do not check).
 
     Returns:
         bool: True if the requested scopes are valid, False otherwise.
@@ -25,7 +25,13 @@ def valid_request_scopes(scopes: list[ProfileScope], developer_only: bool = Fals
         str_scope_list: list[str] = [scope.scope for scope in scope_list]
         client: Client = db_manager.clients_interface.get_client(client_id=client_id)
         if not client: return False
-        matching_client_scopes: list[ClientScope] = [scope for scope in client.scopes if scope.name in str_scope_list and scope.developer_only == developer_only and scope.shareable == shareable_only]
+        matching_client_scopes: list[ClientScope] = []
+        for scope in client.scopes:
+            if scope.name in str_scope_list:
+                if (developer_only is not None and scope.developer_only != developer_only) or (shareable_only is not None and scope.shareable != shareable_only):
+                    pass
+                else:
+                    matching_client_scopes.append(scope)
         if len(matching_client_scopes) != len(scope_list): return False
     return True
 
