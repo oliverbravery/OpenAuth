@@ -1,6 +1,5 @@
 from fastapi import HTTPException, Request, status
 from fastapi.templating import Jinja2Templates
-from validators.auth_validators import verify_token_hash
 from config.config import Config
 from database.db_manager import DBManager
 from cryptography.fernet import Fernet
@@ -106,4 +105,5 @@ class BearerTokenAuth:
         authenticated_account: AuthenticatedAccount = AuthenticatedAccount(**account.model_dump(), access_token=decoded_token)
         return authenticated_account
     
+from validators.auth_validators import verify_token_hash
 bearer_token_auth: BearerTokenAuth = BearerTokenAuth()
