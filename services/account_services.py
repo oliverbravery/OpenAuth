@@ -169,7 +169,7 @@ def update_existing_attributes(username: str, attribute_updates: dict[str, any])
     account_attribute_updates: dict[str, any] = {}
     for attribute, new_value in attribute_updates.items():
         if '.' not in attribute:
-            if attribute not in AccountAttribute.__members__: raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attribute name is not in the correct format.")
+            if attribute not in AccountAttribute._value2member_map_: raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attribute name is not in the correct format.")
             account_attribute_updates[attribute] = new_value
         else:
             split_attribute: list[str] = attribute.split('.')
@@ -189,7 +189,7 @@ def update_existing_attributes(username: str, attribute_updates: dict[str, any])
             profile.metadata[attribute_name] = attribute_value
         response: int = db_manager.accounts_interface.update_profile(username=username, profile=profile)
         if response == -1: return -1
-    for key, value in account_attribute_updates:
+    for key, value in account_attribute_updates.items():
         setattr(account, key, value)
     response: int = db_manager.accounts_interface.update_account(account=account)
     if response == -1: return -1
