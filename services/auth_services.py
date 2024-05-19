@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from utils.hash_utils import hash_string
 from utils.token_manager import TokenManager
 from models.account_models import Account
 from models.auth_models import Authorization
@@ -91,7 +92,8 @@ def invalidate_refresh_token(username: str) -> bool:
     """
     authorization: Authorization = db_manager.authorization_interface.get_authorization(username=username)
     if not authorization: return False
-    authorization.hashed_refresh_token = None
+    invalid_hash: str = hash_string("INVALIDATED") # Required for bcrypt comparison
+    authorization.hashed_refresh_token = invalid_hash
     response: int = db_manager.authorization_interface.update_authorization(authorization)
     return True if response == 0 else False
 
