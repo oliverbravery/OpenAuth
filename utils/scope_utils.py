@@ -97,21 +97,29 @@ def convert_names_to_scopes(scope_names: list[str], client: Client) -> list[Clie
         if not located: return None
     return client_scopes
 
-def map_attributes_to_access_types(scopes: list[ClientScope]) -> dict[str, list[ScopeAccessType]]:
+def map_attributes_to_access_types(scopes: list[ClientScope], metadata_attributes: bool = None) -> dict[str, list[ScopeAccessType]]:
     """
     Maps the attributes to their access types for a list of client scopes.
 
     Args:
         scopes (list[ClientScope]): The list of client scopes.
+        metadata_attributes (bool): Whether to map the metadata attributes or account attributes. Defaults to None (both).
 
     Returns:
         dict[str, list[ScopeAccessType]]: The mapping of attributes to their access types.
     """
     mappings: dict[str, list[ScopeAccessType]] = {}
     for scope in scopes:
-        for attribute in scope.associated_attributes:
-            if attribute.attribute_name not in mappings:
-                mappings[attribute.attribute_name] = []
-            if attribute.access_type not in mappings[attribute.attribute_name]:
-                mappings[attribute.attribute_name].append(attribute.access_type)
+        if metadata_attributes is None or metadata_attributes is True:
+            for attribute in scope.associated_attributes.client_attributes:
+                if attribute.attribute_name not in mappings:
+                    mappings[attribute.attribute_name] = []
+                if attribute.access_type not in mappings[attribute.attribute_name]:
+                    mappings[attribute.attribute_name].append(attribute.access_type)
+        if metadata_attributes is None or metadata_attributes is False:
+            for attribute in scope.associated_attributes.account_attributes:
+                if attribute.attribute_name not in mappings:
+                    mappings[attribute.attribute_name.value] = []
+                if attribute.access_type not in mappings[attribute.attribute_name.value]:
+                    mappings[attribute.attribute_name.value].append(attribute.access_type)
     return mappings
