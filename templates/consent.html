@@ -23,18 +23,18 @@
                             </ul>
                         <h3>User Sharable Data</h3>
                             <p>By linking your account, other accounts associated with this application can access the following information about you:</p>
-                            <h4>Account Information (READ ONLY ACCESS)</h4>
+                            <h4>Account Attributes</h4>
                                 <ul>
-                                    {% for attribute in consent_details.client_shared_read_attributes %}
-                                        <li>{{attribute.value}}</li>
+                                    {% for attribute_name, access in consent_details.client_shared_account_attributes.items() %}
+                                        <li>{{attribute_name}} - {{access}}</li>
                                     {% endfor %}
                                 </ul>
-                            <h4>Application specific account information</h4>
-                            <ul>
-                                {% for attribute_name, access in consent_details.client_public_metadata_attributes.items() %}
-                                    <li>{{attribute_name}} - {{access}}</li>
-                                {% endfor %}
-                            </ul>     
+                            <h4>Application Attributes</h4>
+                                <ul>
+                                    {% for attribute_name, access in consent_details.client_public_metadata_attributes.items() %}
+                                        <li>{{attribute_name}} - {{access}}</li>
+                                    {% endfor %}
+                                </ul>   
                         <p><strong>Please review these terms carefully.</strong> If you consent to share this information with the application and other linked users who have been granted these scopes, proceed with the account linking process.<p>
                         <button onclick="hideClientInfoConsent()" class="btn btn-primary">Continue</button>
                         <button type="submit" class="btn btn-danger" name="consented" value="false">Decline</button>
