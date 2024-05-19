@@ -18,7 +18,7 @@ from validators.client_validators import validate_client_credentials
 def generate_and_store_tokens(authorization: Authorization, user_account: Account, client_id: str,
                               scopes: str) -> TokenResponse:
     """
-    Generate access and refresh tokens and store the refresh token hash in the database.
+    Generate access and refresh tokens and store the token hashes in the database.
 
     Args:
         authorization (Authorization): The authorization object related to the user.
@@ -39,6 +39,7 @@ def generate_and_store_tokens(authorization: Authorization, user_account: Accoun
                                                                    scopes=None)
     if not access_token or not refresh_token: return None
     authorization.hashed_refresh_token = hash_string(plaintext=refresh_token)
+    authorization.hashed_access_token = hash_string(plaintext=access_token)
     response: int = db_manager.authorization_interface.update_authorization(authorization)
     if response == -1: return None
     access_token_expires_in_seconds: int = token_manager.get_token_expire_time(token_type=TokenType.ACCESS)*60
@@ -115,10 +116,10 @@ def refresh_and_update_tokens(refresh_token: str) -> TokenResponse:
     if not verify_hash(plaintext=refresh_token, urlsafe_hash=hashed_refresh_token): 
         invalidate_refresh_token(username=decoded_token.sub)
         return None
-    if len(decoded_token.aud) != 1: return None
     user_account: Account = db_manager.accounts_interface.get_account(username=decoded_token.sub)
     if not user_account: return None
-    return generate_and_store_tokens(authorization=authorization, user_account=user_account, client_id=decoded_token.aud[0])
+    return generate_and_store_tokens(authorization=authorization, user_account=user_account, 
+                                     client_id=decoded_token.aud, scopes=authorization.consented_scopes)
 
 def generate_and_store_auth_code(state: str, username: str, code_challenge: str, consented_scopes: str) -> AuthorizeResponse:
     """
