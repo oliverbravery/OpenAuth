@@ -123,7 +123,7 @@ async def get_account(username: str, account: AuthenticatedAccount = Depends(bea
                             detail="User account is not linked to the client.")
     requested_scopes: list[ProfileScope] = str_to_list_of_profile_scopes(scopes_str_list=account.access_token.scope)
     if requested_scopes == None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
                             detail="Invalid scopes in access token.")
     scoped_account_information: dict[str, any] = get_scoped_account_attributes(username=username, scopes=requested_scopes,
                                                                                allowed_access_types=[ScopeAccessType.READ],
@@ -159,7 +159,7 @@ async def update_account(username: str, update_account_request: UpdateAccountReq
     if account.access_token.scope == "": return None
     requested_scopes: list[ProfileScope] = str_to_list_of_profile_scopes(scopes_str_list=account.access_token.scope)
     if requested_scopes == None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
                             detail="Invalid scopes in access token.")
     all_allowed_write_attributes: dict[str, any] = get_scoped_account_attributes(username=username, 
                                                                                  scopes=requested_scopes, 
@@ -170,7 +170,7 @@ async def update_account(username: str, update_account_request: UpdateAccountReq
                             detail="Issue handling scopes.")
     for attribute, _ in update_account_request.attribute_updates.items():
         if attribute not in all_allowed_write_attributes:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
                                 detail="Scope does not allow for updating the attribute.")
     response: int = update_existing_attributes(username=username, attribute_updates=update_account_request.attribute_updates)
     if response == -1:

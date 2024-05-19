@@ -27,7 +27,9 @@ async def enroll_developer(account: AuthenticatedAccount = Depends(bearer_token_
         if enroll_account_as_developer(account) == -1:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                                 detail="Failed to enroll account as a developer.")
-    return "Account is enrolled as a developer."
+        return "Account is enrolled as a developer."
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Account is already a developer.")
 
 @router.post("/add-client", status_code=status.HTTP_200_OK)
 async def add_client(client_registration_form: ClientRegistrationForm, account: AuthenticatedAccount = Depends(bearer_token_auth)):
