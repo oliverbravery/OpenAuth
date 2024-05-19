@@ -7,7 +7,7 @@ from models.scope_models import ClientScope, ProfileScope, ScopeAccessType
 from models.token_models import RefreshToken, TokenType
 from models.util_models import ConsentDetails
 from utils.auth_utils import decrypt_authorization_code, generate_authorization_code
-from utils.hash_utils import hash_string, verify_hash
+from utils.hash_utils import verify_hash
 from common import db_manager, token_manager
 from utils.scope_utils import map_attributes_to_access_types
 from validators.account_validators import check_profile_exists
@@ -29,23 +29,24 @@ def generate_and_store_tokens(authorization: Authorization, user_account: Accoun
     Returns:
         TokenResponse: OAuth2.0 compliant token response.
     """
-    access_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.ACCESS,
+    
+    access_token_str, _ = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.ACCESS,
                                                                   account=user_account,
                                                                   client_id=client_id,
                                                                   scopes=scopes)
-    refresh_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.REFRESH,
+    refresh_token_str, _ = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.REFRESH,
                                                                    account=user_account,
                                                                    client_id=client_id,
                                                                    scopes=None)
-    if not access_token or not refresh_token: return None
-    authorization.hashed_refresh_token = hash_string(plaintext=refresh_token)
-    authorization.hashed_access_token = hash_string(plaintext=access_token)
+    if not access_token_str or not refresh_token_str: return None
+    authorization.hashed_refresh_token = TokenManager.get_token_hash(token=refresh_token_str)
+    authorization.hashed_access_token = TokenManager.get_token_hash(token=access_token_str)
     response: int = db_manager.authorization_interface.update_authorization(authorization)
     if response == -1: return None
     access_token_expires_in_seconds: int = token_manager.get_token_expire_time(token_type=TokenType.ACCESS)*60
     token_response: TokenResponse = TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
+        access_token=access_token_str,
+        refresh_token=refresh_token_str,
         expires_in=access_token_expires_in_seconds
     )
     return token_response
@@ -92,7 +93,7 @@ def invalidate_refresh_token(username: str) -> bool:
     if not authorization: return False
     authorization.hashed_refresh_token = None
     response: int = db_manager.authorization_interface.update_authorization(authorization)
-    return response != -1
+    return True if response == 0 else False
 
 def refresh_and_update_tokens(refresh_token: str) -> TokenResponse:
     """
