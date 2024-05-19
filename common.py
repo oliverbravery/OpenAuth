@@ -97,10 +97,13 @@ class BearerTokenAuth:
         if not token: self.raise_invalid_token_error()
         decoded_token: AccessToken = token_manager.verify_and_decode_jwt_token(token=token, token_type=TokenType.ACCESS)
         if not decoded_token: self.raise_invalid_token_error()
+        if not verify_token_hash(token=decoded_token, token_type=TokenType.ACCESS):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token.")
         account: Account = db_manager.accounts_interface.get_account(username=decoded_token.sub)
         if not account: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                             detail="Issue fetching account information")
         authenticated_account: AuthenticatedAccount = AuthenticatedAccount(**account.model_dump(), access_token=decoded_token)
         return authenticated_account
     
+from validators.auth_validators import verify_token_hash
 bearer_token_auth: BearerTokenAuth = BearerTokenAuth()

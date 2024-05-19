@@ -1,6 +1,8 @@
 from base64 import urlsafe_b64encode
 import hashlib
-from models.token_models import StateToken, TokenType
+from utils.token_manager import TokenManager
+from utils.hash_utils import verify_hash
+from models.token_models import BaseToken, StateToken, TokenType
 from models.auth_models import Authorization
 from common import db_manager, token_manager, config
 
@@ -51,3 +53,25 @@ def login_state_valid(login_state: str, username: str, scopes: str) -> bool:
     if token.sub != username: return False
     if token.scope != scopes: return False
     return True
+
+def verify_token_hash(token: BaseToken, token_type: TokenType) -> bool:
+    """
+    Check if the token is valid in the database. If null in database the token is valid.
+
+    Args:
+        token (BaseToken): The token to validate.
+        token_type (TokenType): The type of the token.
+
+    Returns:
+        bool: True if the token is valid, False otherwise.
+    """
+    plaintext: str = TokenManager.get_token_hashable_string(token=token)
+    authorization: Authorization = db_manager.authorization_interface.get_authorization(username=token.sub)
+    ciphertext: str = None
+    if not authorization: return False
+    if token_type == TokenType.ACCESS:
+        ciphertext = authorization.hashed_access_token
+    elif token_type == TokenType.REFRESH:
+        ciphertext = authorization.hashed_refresh_token
+    if ciphertext is None: return True
+    return verify_hash(plaintext=plaintext, urlsafe_hash=ciphertext)

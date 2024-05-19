@@ -1,4 +1,6 @@
 from fastapi import HTTPException, status
+from utils.hash_utils import hash_string
+from utils.token_manager import TokenManager
 from models.account_models import Account
 from models.auth_models import Authorization
 from models.client_models import Client
@@ -7,18 +9,17 @@ from models.scope_models import ClientScope, ProfileScope, ScopeAccessType
 from models.token_models import RefreshToken, TokenType
 from models.util_models import ConsentDetails
 from utils.auth_utils import decrypt_authorization_code, generate_authorization_code
-from utils.hash_utils import hash_string, verify_hash
 from common import db_manager, token_manager
 from utils.scope_utils import map_attributes_to_access_types
 from validators.account_validators import check_profile_exists
-from validators.auth_validators import verify_authorization_code, verify_code_challenge
+from validators.auth_validators import verify_authorization_code, verify_code_challenge, verify_token_hash
 from validators.client_validators import validate_client_credentials
 
 
 def generate_and_store_tokens(authorization: Authorization, user_account: Account, client_id: str,
                               scopes: str) -> TokenResponse:
     """
-    Generate access and refresh tokens and store the refresh token hash in the database.
+    Generate access and refresh tokens and store the token hashes in the database.
 
     Args:
         authorization (Authorization): The authorization object related to the user.
@@ -29,22 +30,24 @@ def generate_and_store_tokens(authorization: Authorization, user_account: Accoun
     Returns:
         TokenResponse: OAuth2.0 compliant token response.
     """
-    access_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.ACCESS,
+    
+    access_token_str, access_token = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.ACCESS,
                                                                   account=user_account,
                                                                   client_id=client_id,
                                                                   scopes=scopes)
-    refresh_token: str = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.REFRESH,
+    refresh_token_str, refresh_token = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.REFRESH,
                                                                    account=user_account,
                                                                    client_id=client_id,
                                                                    scopes=None)
-    if not access_token or not refresh_token: return None
-    authorization.hashed_refresh_token = hash_string(plaintext=refresh_token)
+    if not access_token_str or not refresh_token_str: return None
+    authorization.hashed_refresh_token = TokenManager.get_token_hash(token=refresh_token)
+    authorization.hashed_access_token = TokenManager.get_token_hash(token=access_token)
     response: int = db_manager.authorization_interface.update_authorization(authorization)
     if response == -1: return None
     access_token_expires_in_seconds: int = token_manager.get_token_expire_time(token_type=TokenType.ACCESS)*60
     token_response: TokenResponse = TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
+        access_token=access_token_str,
+        refresh_token=refresh_token_str,
         expires_in=access_token_expires_in_seconds
     )
     return token_response
@@ -89,9 +92,10 @@ def invalidate_refresh_token(username: str) -> bool:
     """
     authorization: Authorization = db_manager.authorization_interface.get_authorization(username=username)
     if not authorization: return False
-    authorization.hashed_refresh_token = None
+    invalid_hash: str = hash_string("INVALIDATED") # Required for bcrypt comparison
+    authorization.hashed_refresh_token = invalid_hash
     response: int = db_manager.authorization_interface.update_authorization(authorization)
-    return response != -1
+    return True if response == 0 else False
 
 def refresh_and_update_tokens(refresh_token: str) -> TokenResponse:
     """
@@ -107,18 +111,14 @@ def refresh_and_update_tokens(refresh_token: str) -> TokenResponse:
     decoded_token: RefreshToken = token_manager.verify_and_decode_jwt_token(token=refresh_token, 
                                                                  token_type=TokenType.REFRESH)
     if not decoded_token: return None
-    authorization: Authorization = db_manager.authorization_interface.get_authorization(
-        username=decoded_token.sub)
-    if not authorization: return None
-    hashed_refresh_token: str = authorization.hashed_refresh_token
-    if not hashed_refresh_token: return None
-    if not verify_hash(plaintext=refresh_token, urlsafe_hash=hashed_refresh_token): 
+    if not verify_token_hash(token=decoded_token, token_type=TokenType.REFRESH): 
         invalidate_refresh_token(username=decoded_token.sub)
         return None
-    if len(decoded_token.aud) != 1: return None
     user_account: Account = db_manager.accounts_interface.get_account(username=decoded_token.sub)
     if not user_account: return None
-    return generate_and_store_tokens(authorization=authorization, user_account=user_account, client_id=decoded_token.aud[0])
+    authorization: Authorization = db_manager.authorization_interface.get_authorization(username=decoded_token.sub)
+    return generate_and_store_tokens(authorization=authorization, user_account=user_account, 
+                                     client_id=decoded_token.aud, scopes=authorization.consented_scopes)
 
 def generate_and_store_auth_code(state: str, username: str, code_challenge: str, consented_scopes: str) -> AuthorizeResponse:
     """

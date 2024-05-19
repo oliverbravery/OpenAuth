@@ -1,7 +1,7 @@
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 import hashlib
 from secrets import token_urlsafe
-from models.token_models import StateToken, TokenType
+from models.token_models import TokenType
 from models.account_models import Account, AccountRole
 from common import fernet, token_manager, config
 
@@ -62,8 +62,8 @@ def generate_login_state(username: str, scopes: str) -> str:
         username=username,display_name="",email="",
         hashed_password="",profiles=[],account_role=AccountRole.STANDARD,
     )
-    state_token: StateToken = token_manager.generate_and_sign_jwt_token(TokenType.STATE, 
+    state_token_str, _ = token_manager.generate_and_sign_jwt_token(TokenType.STATE, 
                                                                         account=dummy_account,
                                                                         client_id=config.default_client_config.client_id,
                                                                         scopes=scopes)
-    return state_token
+    return state_token_str
