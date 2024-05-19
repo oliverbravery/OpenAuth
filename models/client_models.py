@@ -68,7 +68,6 @@ class Client(BaseModel):
         profile_metadata_attributes (List[MetadataAttribute]): The metadata attributes that the client can store in the user's profile.
         profile_defaults (dict[str, any]): Any default values that the client wants to store in the user's profile.
         scopes (list[ClientScope]): List of all custom scopes created by the client to control access to ONLY client profile specific metadata attributes.
-        shared_read_attributes (list[AccountAttribute]): List of all shared attributes that the client and other linked accounts can read from the user's account.
     """
     client_id: str
     client_secret_hash: str
@@ -79,5 +78,4 @@ class Client(BaseModel):
     profile_metadata_attributes: list[MetadataAttribute] = []
     profile_defaults: Dict[str, Any] = {}
     scopes: list[ClientScope]
-    shared_read_attributes: list[AccountAttribute]
     
