@@ -54,7 +54,7 @@ def login_state_valid(login_state: str, username: str, scopes: str) -> bool:
     if token.scope != scopes: return False
     return True
 
-def verify_auth_token_hash(token: BaseToken, token_type: TokenType) -> bool:
+def verify_token_hash(token: BaseToken, token_type: TokenType) -> bool:
     """
     Check if the token is valid in the database. If null in database the token is valid.
 
