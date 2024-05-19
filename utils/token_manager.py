@@ -211,7 +211,7 @@ class TokenManager:
             return None
         return decoded_token
     
-    def generate_and_sign_jwt_token(self, tokenType: TokenType, account: Account, client_id: str, scopes: str) -> str:
+    def generate_and_sign_jwt_token(self, tokenType: TokenType, account: Account, client_id: str, scopes: str) -> tuple[str, BaseToken]:
         """
         Generates a JWT token for the given account and token type.
 
@@ -222,7 +222,7 @@ class TokenManager:
             scopes (str): The scopes for the token (space separated string of scopes).
 
         Returns:
-            str: The generated and signed JWT token.
+            Tuple[str, BaseToken]: The generated and signed JWT token with the BaseToken object.
         """
         iat, exp = self.calculate_jwt_timestamps(token_type=tokenType)
         token: BaseToken
@@ -251,7 +251,7 @@ class TokenManager:
                     iat=iat,
                     scope=scopes
                 )
-        return self.sign_jwt_token(token=token)
+        return self.sign_jwt_token(token=token), token
     
     def generate_jwks_dict(self) -> dict:
         """
