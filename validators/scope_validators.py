@@ -63,7 +63,7 @@ def validate_client_scopes(client: Client) -> bool:
     if not check_client_scopes_have_unique_names(scopes=client.scopes): return False
     metadata_attribute_names: list[str] = [metadata_attribute.name for metadata_attribute in client.profile_metadata_attributes]
     for scope in client.scopes:
-        scope_attribute_names: list[str] = [scope_attribute.attribute_name for scope_attribute in scope.associated_attributes]
-        if len(scope_attribute_names) != len(set(scope_attribute_names)): return False
-        if not all([attribute in metadata_attribute_names for attribute in scope_attribute_names]): return False
+        scope_metadata_attribute_names: list[str] = [scope_attribute.attribute_name for scope_attribute in scope.associated_attributes.client_attributes]
+        if len(scope_metadata_attribute_names) != len(set(scope_metadata_attribute_names)): return False
+        if not all([attribute in metadata_attribute_names for attribute in scope_metadata_attribute_names]): return False
     return True
