@@ -4,6 +4,7 @@ import datetime
 import jwt
 from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_pem_public_key
 from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes, PublicKeyTypes
+from utils.hash_utils import hash_string, verify_hash
 from models.account_models import Account
 from models.token_models import AccessToken, BaseToken, RefreshToken, TokenType, StateToken
 
@@ -108,6 +109,50 @@ class TokenManager:
         to_encode: dict = token.model_dump()
         encoded_jwt: str = jwt.encode(to_encode, self.private_key, algorithm=self.token_algorithm)
         return encoded_jwt
+    
+    @staticmethod
+    def get_token_hashable_string(token: BaseToken) -> str:
+        """
+        Generate a unique string from a token that can be hashed uniquely.
+        
+        Args:
+            token (BaseToken): The token object to generate a unique hash for.
+
+        Returns:
+            str: The unique string representation of the token.
+        """
+        hash_str: str = f"{token.sub}{token.iat}{token.aud}{token.exp}"
+        return hash_str
+    
+    @staticmethod
+    def get_token_hash(token: BaseToken) -> str:
+        """
+        Gets the hash of the token.
+
+        Args:
+            token (BaseToken): The token object to be hashed.
+
+        Returns:
+            str: The hashed string representation of the token.
+        """
+        hashable_str: str = TokenManager.get_token_hashable_string(token=token)
+        return hash_string(plaintext=hashable_str)
+    
+    @staticmethod
+    def validate_token_hash(token_to_verify: BaseToken, token_hash: str) -> bool:
+        """
+        Checks if the token to verify matches the hash.
+
+        Args:
+            token_to_verify (BaseToken): The token to be verified.
+            token_hash (str): The hash to be verified against.
+
+        Returns:
+            bool: True if the token matches the hash, False otherwise.
+        """
+        plaintext: str = TokenManager.get_token_hashable_string(token=token_to_verify)
+        return verify_hash(plaintext=plaintext, urlsafe_hash=token_hash)
+        
     
     def decode_jwt_token(self, token: str, token_type: TokenType) -> BaseToken:
         """
