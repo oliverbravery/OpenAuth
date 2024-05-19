@@ -1,5 +1,6 @@
 from fastapi import HTTPException, Request, status
 from fastapi.templating import Jinja2Templates
+from validators.auth_validators import verify_auth_token_hash
 from config.config import Config
 from database.db_manager import DBManager
 from cryptography.fernet import Fernet
@@ -97,6 +98,8 @@ class BearerTokenAuth:
         if not token: self.raise_invalid_token_error()
         decoded_token: AccessToken = token_manager.verify_and_decode_jwt_token(token=token, token_type=TokenType.ACCESS)
         if not decoded_token: self.raise_invalid_token_error()
+        if not verify_auth_token_hash(token=decoded_token, token_type=TokenType.ACCESS):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token.")
         account: Account = db_manager.accounts_interface.get_account(username=decoded_token.sub)
         if not account: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                             detail="Issue fetching account information")
