@@ -30,17 +30,17 @@ def generate_and_store_tokens(authorization: Authorization, user_account: Accoun
         TokenResponse: OAuth2.0 compliant token response.
     """
     
-    access_token_str, _ = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.ACCESS,
+    access_token_str, access_token = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.ACCESS,
                                                                   account=user_account,
                                                                   client_id=client_id,
                                                                   scopes=scopes)
-    refresh_token_str, _ = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.REFRESH,
+    refresh_token_str, refresh_token = token_manager.generate_and_sign_jwt_token(tokenType=TokenType.REFRESH,
                                                                    account=user_account,
                                                                    client_id=client_id,
                                                                    scopes=None)
     if not access_token_str or not refresh_token_str: return None
-    authorization.hashed_refresh_token = TokenManager.get_token_hash(token=refresh_token_str)
-    authorization.hashed_access_token = TokenManager.get_token_hash(token=access_token_str)
+    authorization.hashed_refresh_token = TokenManager.get_token_hash(token=refresh_token)
+    authorization.hashed_access_token = TokenManager.get_token_hash(token=access_token)
     response: int = db_manager.authorization_interface.update_authorization(authorization)
     if response == -1: return None
     access_token_expires_in_seconds: int = token_manager.get_token_expire_time(token_type=TokenType.ACCESS)*60
