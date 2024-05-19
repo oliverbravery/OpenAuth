@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from utils.token_manager import TokenManager
 from models.account_models import Account
 from models.auth_models import Authorization
 from models.client_models import Client
@@ -7,11 +8,10 @@ from models.scope_models import ClientScope, ProfileScope, ScopeAccessType
 from models.token_models import RefreshToken, TokenType
 from models.util_models import ConsentDetails
 from utils.auth_utils import decrypt_authorization_code, generate_authorization_code
-from utils.hash_utils import verify_hash
 from common import db_manager, token_manager
 from utils.scope_utils import map_attributes_to_access_types
 from validators.account_validators import check_profile_exists
-from validators.auth_validators import verify_authorization_code, verify_code_challenge
+from validators.auth_validators import verify_authorization_code, verify_code_challenge, verify_token_hash
 from validators.client_validators import validate_client_credentials
 
 
@@ -109,16 +109,12 @@ def refresh_and_update_tokens(refresh_token: str) -> TokenResponse:
     decoded_token: RefreshToken = token_manager.verify_and_decode_jwt_token(token=refresh_token, 
                                                                  token_type=TokenType.REFRESH)
     if not decoded_token: return None
-    authorization: Authorization = db_manager.authorization_interface.get_authorization(
-        username=decoded_token.sub)
-    if not authorization: return None
-    hashed_refresh_token: str = authorization.hashed_refresh_token
-    if not hashed_refresh_token: return None
-    if not verify_hash(plaintext=refresh_token, urlsafe_hash=hashed_refresh_token): 
+    if not verify_token_hash(token=decoded_token, token_type=TokenType.REFRESH): 
         invalidate_refresh_token(username=decoded_token.sub)
         return None
     user_account: Account = db_manager.accounts_interface.get_account(username=decoded_token.sub)
     if not user_account: return None
+    authorization: Authorization = db_manager.authorization_interface.get_authorization(username=decoded_token.sub)
     return generate_and_store_tokens(authorization=authorization, user_account=user_account, 
                                      client_id=decoded_token.aud, scopes=authorization.consented_scopes)
 
