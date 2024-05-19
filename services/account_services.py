@@ -92,7 +92,7 @@ def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], all
         is_personal (bool): Whether the scope needs to be personal or not.
 
     Returns:
-        dict[str, any]: Dictionary of account attributes (Attribute name: Attribute value). Attribute name is composed of client_id and attribute name (<client_id>.<attribute_name>).
+        dict[str, any]: Dictionary of account attributes (Attribute name: Attribute value). Attribute name is composed of client_id and attribute name (<client_id>.<attribute_name>) or just attribute name if an account attribute.
     """
     if len(scopes) == 0: return {}
     account: Account = db_manager.accounts_interface.get_account(username=username)
@@ -102,7 +102,13 @@ def get_scoped_account_attributes(username: str, scopes: list[ProfileScope], all
     attributes: dict[str, any] = {}
     for client_id, client_scopes in client_id_to_client_scope.items():
         for scope in client_scopes:
-            for attribute in scope.associated_attributes:
+            for attribute in scope.associated_attributes.account_attributes:
+                if attribute.access_type in allowed_access_types:
+                    if hasattr(account, attribute.attribute_name.value):
+                        attributes[f"{attribute.attribute_name.value}"] = getattr(account, 
+                                                                                  attribute.attribute_name.value)
+                    else: return None
+            for attribute in scope.associated_attributes.client_attributes:
                 if attribute.access_type in allowed_access_types:
                     profile: Profile = get_profile_from_account(account=account, client_id=client_id)
                     if not profile: return None
@@ -134,7 +140,7 @@ def get_account_attributes(username: str, attributes: list[AccountAttribute]) ->
 
 def update_existing_attributes(username: str, attribute_updates: dict[str, any]) -> int:
     """
-    Update the existing attributes of a profile.
+    Update the existing attributes of an account and profiles.
     
     NOTE: Assumes that valid permissions have been checked before calling this function.
     
@@ -152,7 +158,7 @@ def update_existing_attributes(username: str, attribute_updates: dict[str, any])
 
     Args:
         username (str): The username of the account.
-        attribute_updates (dict[str, any]): The attributes to update. The key is the combined attribute name (<client_id>.<attribute_name>) and the value is the new value.
+        attribute_updates (dict[str, any]): The attributes to update. The key is the combined attribute name (<client_id>.<attribute_name>) or just attribute name if an account attribute and the value is the new value.
 
     Returns:
         int: 0 if the attributes were updated successfully, -1 otherwise.
@@ -160,13 +166,18 @@ def update_existing_attributes(username: str, attribute_updates: dict[str, any])
     account: Account = db_manager.accounts_interface.get_account(username=username)
     if not account: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found.")
     client_id_to_local_attribute_updates: dict[str, dict[str, any]] = {}
+    account_attribute_updates: dict[str, any] = {}
     for attribute, new_value in attribute_updates.items():
-        split_attribute: list[str] = attribute.split('.')
-        if len(split_attribute) != 2: raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attribute name is not in the correct format.")
-        client_id, attribute_name = split_attribute[0], split_attribute[1]
-        if client_id not in client_id_to_local_attribute_updates:
-            client_id_to_local_attribute_updates[client_id] = {}
-        client_id_to_local_attribute_updates[client_id][attribute_name] = new_value
+        if '.' not in attribute:
+            if attribute not in AccountAttribute._value2member_map_: raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attribute name is not in the correct format.")
+            account_attribute_updates[attribute] = new_value
+        else:
+            split_attribute: list[str] = attribute.split('.')
+            if len(split_attribute) != 2: raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attribute name is not in the correct format.")
+            client_id, attribute_name = split_attribute[0], split_attribute[1]
+            if client_id not in client_id_to_local_attribute_updates:
+                client_id_to_local_attribute_updates[client_id] = {}
+            client_id_to_local_attribute_updates[client_id][attribute_name] = new_value
     for client_id, local_attribute_updates in client_id_to_local_attribute_updates.items():
         profile: Profile = get_profile_from_account(account=account, client_id=client_id)
         if not profile: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account does not have an profile assosiated with the requested update attributes.")
@@ -178,4 +189,8 @@ def update_existing_attributes(username: str, attribute_updates: dict[str, any])
             profile.metadata[attribute_name] = attribute_value
         response: int = db_manager.accounts_interface.update_profile(username=username, profile=profile)
         if response == -1: return -1
+    for key, value in account_attribute_updates.items():
+        setattr(account, key, value)
+    response: int = db_manager.accounts_interface.update_account(account=account)
+    if response == -1: return -1
     return 0

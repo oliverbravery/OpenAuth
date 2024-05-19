@@ -1,7 +1,7 @@
 from secrets import token_urlsafe
 from fastapi import Depends, APIRouter, status, HTTPException, Request, Response
 from fastapi.datastructures import FormData
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 import httpx
 from starlette.templating import _TemplateResponse
 from validators.web_validators import verify_captcha_completed
@@ -9,10 +9,9 @@ from common import templates, bearer_token_auth, config
 from models.account_models import Account
 from models.form_models import UserRegistrationForm
 from models.request_models import AuthorizationRequest, GrantType, TokenRequest, UpdateAccountRequest
-from models.scope_models import AccountAttribute, ProfileScope, ScopeAccessType
+from models.scope_models import ProfileScope, ScopeAccessType
 from models.util_models import AuthenticatedAccount
-from services.account_services import get_account_attributes, get_scoped_account_attributes, register_account_in_db_collections, update_existing_attributes
-from services.client_services import get_shared_read_attributes
+from services.account_services import get_scoped_account_attributes, register_account_in_db_collections, update_existing_attributes
 from utils.auth_utils import generate_code_challenge_and_verifier
 from utils.password_manager import PasswordManager
 from utils.scope_utils import str_to_list_of_profile_scopes
@@ -122,10 +121,6 @@ async def get_account(username: str, account: AuthenticatedAccount = Depends(bea
     if not check_profile_exists(username=username, client_id=account.access_token.aud):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="User account is not linked to the client.")
-    read_only_attributes: list[AccountAttribute] = get_shared_read_attributes(client_id=account.access_token.aud)
-    if read_only_attributes == None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                            detail="Some clients in the access token audience do not exist.")
     requested_scopes: list[ProfileScope] = str_to_list_of_profile_scopes(scopes_str_list=account.access_token.scope)
     if requested_scopes == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
@@ -136,11 +131,6 @@ async def get_account(username: str, account: AuthenticatedAccount = Depends(bea
     if scoped_account_information == None: 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="User account does not have the required information to fulfill the request.")
-    retreived_account_attributes: dict[str, any] = get_account_attributes(username=username, attributes=read_only_attributes)
-    if retreived_account_attributes == None:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-                            detail="Issue fetching account information.")
-    scoped_account_information.update(retreived_account_attributes)
     return scoped_account_information
 
 @router.patch("/{username}", status_code=status.HTTP_200_OK)

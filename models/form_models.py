@@ -47,4 +47,3 @@ class ClientRegistrationForm(BaseModel):
     scopes: list[ClientScope] = Field(..., description="The client specific scopes and what attributes each scope can control.")
     client_profile_metadata_attributes: List[MetadataAttribute] = Field(..., description="The metadata attributes that the client can store in the user's profile.")
     client_profile_defaults: Dict[str, Any] = Field(..., description="The default values for the metadata attributes that the client can store in the user's profile.")
-    shared_read_attributes: list[AccountAttribute] = Field(..., description="The shared attributes that the client and other linked accounts can read from the user's account.")

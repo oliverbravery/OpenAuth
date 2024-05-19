@@ -20,20 +20,6 @@ def generate_unique_client_id() -> str:
         return generate_unique_client_id()
     return generated_client_id
 
-def get_shared_read_attributes(client_id: str) -> list[AccountAttribute]:
-    """
-    Get the shared read attributes for a client.
-
-    Args:
-        client_id (str): The client id of the client.
-
-    Returns:
-        list[str]: The shared read attributes.
-    """
-    client = db_manager.clients_interface.get_client(client_id=client_id)
-    if not client: return None
-    return client.shared_read_attributes
-
 def load_client_model(client_id: str, client_secret: str, redirect_port: int, 
                       redirect_host: str, client_model_path: str) -> Client:
     """

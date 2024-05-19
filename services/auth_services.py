@@ -213,8 +213,8 @@ def get_consent_details(client_id: str, requested_scopes: list[ProfileScope],
         profile_scopes=requested_scopes
     )
     client_non_personal_scopes: list[ClientScope] = [scope for scope in client.scopes if not scope.is_personal_scope]
-    public_metadata_attributes: dict[str, list[ScopeAccessType]] = map_attributes_to_access_types(scopes=client_non_personal_scopes)
-    comma_seperated_public_metadata_attributes: dict[str, str] = {key: ", ".join([v.value for v in value]) for key, value in public_metadata_attributes.items()}
+    comma_seperated_public_metadata_attributes: dict[str, str] = {key: ", ".join([v.value for v in value]) for key, value in map_attributes_to_access_types(scopes=client_non_personal_scopes, metadata_attributes=True).items()}
+    comma_seperated_public_account_attributes: dict[str, str] = {key: ", ".join([v.value for v in value]) for key, value in map_attributes_to_access_types(scopes=client_non_personal_scopes, metadata_attributes=False).items()}
     consent_details: ConsentDetails = ConsentDetails(name=client.name, 
                                                      description=client.description, 
                                                      requested_scopes=requested_scopes_as_client_scopes,
@@ -223,6 +223,6 @@ def get_consent_details(client_id: str, requested_scopes: list[ProfileScope],
                                                      client_redirect_uri=client.redirect_uri,
                                                      client_metadata_attributes=client.profile_metadata_attributes,
                                                      client_public_metadata_attributes=comma_seperated_public_metadata_attributes,
-                                                     client_shared_read_attributes=client.shared_read_attributes
+                                                     client_shared_account_attributes=comma_seperated_public_account_attributes,
                                                      )
     return consent_details

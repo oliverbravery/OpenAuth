@@ -23,18 +23,18 @@
                             </ul>
                         <h3>User Sharable Data</h3>
                             <p>By linking your account, other accounts associated with this application can access the following information about you:</p>
-                            <h4>Account Information (READ ONLY ACCESS)</h4>
+                            <h4>Account Attributes</h4>
                                 <ul>
-                                    {% for attribute in consent_details.client_shared_read_attributes %}
-                                        <li>{{attribute.value}}</li>
+                                    {% for attribute_name, access in consent_details.client_shared_account_attributes.items() %}
+                                        <li>{{attribute_name}} - {{access}}</li>
                                     {% endfor %}
                                 </ul>
-                            <h4>Application specific account information</h4>
-                            <ul>
-                                {% for attribute_name, access in consent_details.client_public_metadata_attributes.items() %}
-                                    <li>{{attribute_name}} - {{access}}</li>
-                                {% endfor %}
-                            </ul>     
+                            <h4>Application Attributes</h4>
+                                <ul>
+                                    {% for attribute_name, access in consent_details.client_public_metadata_attributes.items() %}
+                                        <li>{{attribute_name}} - {{access}}</li>
+                                    {% endfor %}
+                                </ul>   
                         <p><strong>Please review these terms carefully.</strong> If you consent to share this information with the application and other linked users who have been granted these scopes, proceed with the account linking process.<p>
                         <button onclick="hideClientInfoConsent()" class="btn btn-primary">Continue</button>
                         <button type="submit" class="btn btn-danger" name="consented" value="false">Decline</button>
@@ -56,11 +56,22 @@
                         {% for scope in consent_details.requested_scopes %}
                             <li>
                                 <h4>{{scope.name}}: {{scope.description}}</h4>
+                                <h5>Application Attributes</h5>
                                 <ul>
-                                    {% for attribute in scope.associated_attributes %}
+                                    {% for attribute in scope.associated_attributes.client_attributes %}
                                     <li>
                                         <p>
                                             {{attribute.attribute_name}}: {{attribute.access_type.value}}
+                                        </p>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                <h5>Account Attributes</h5>
+                                <ul>
+                                    {% for attribute in scope.associated_attributes.account_attributes %}
+                                    <li>
+                                        <p>
+                                            {{attribute.attribute_name.value}}: {{attribute.access_type.value}}
                                         </p>
                                     </li>
                                     {% endfor %}

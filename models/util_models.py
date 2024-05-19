@@ -39,8 +39,8 @@ class ConsentDetails(BaseModel):
         account_connected (bool): Whether the account has a profile associated with the client.
         client_redirect_uri (str): The redirect uri of the client application.
         client_metadata_attributes (list[MetadataAttribute]): List of all attributes a client wants to store for a user.
-        client_public_metadata_attributes (dict[str, str]): List of all metadata attributes that other linked accounts can access. (Attribute name: Attribute Access Types as a string)
-        client_shared_read_attributes (list[AccountAttribute]): List of all non-profile account attributes the client and linked accounts can obtain about a user.
+        client_public_metadata_attributes (dict[str, str]): Dict of all metadata attributes that other linked accounts can access. (Attribute name: Attribute Access Types as a string)
+        client_shared_account_attributes (dict[str, str]): Dict of all non-profile account attributes that linked accounts can access. (Attribute name: Attribute Access Types as a string)
     """
     name: str
     description: str
@@ -49,7 +49,7 @@ class ConsentDetails(BaseModel):
     client_redirect_uri: str
     client_metadata_attributes: list[MetadataAttribute]
     client_public_metadata_attributes: dict[str, str]
-    client_shared_read_attributes: list[AccountAttribute]
+    client_shared_account_attributes: dict[str, str]
     
 class AuthenticatedAccount(Account):
     """
