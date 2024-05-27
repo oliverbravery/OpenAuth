@@ -115,6 +115,7 @@ async def get_account(username: str, account: AuthenticatedAccount = Depends(bea
         username (str): The username of the account to get.
         account (AuthenticatedAccount): The account making the request based on the access token.
     """
+    if username == "me": username = account.username
     if not check_user_exists(username=username):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail="User does not exist.")
