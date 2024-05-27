@@ -9,7 +9,7 @@ router = APIRouter(
     tags=["Client"]
 )
 
-@router.get("/validate-token/{client_id}", status_code=status.HTTP_200_OK)
+@router.post("/validate-token/{client_id}", status_code=status.HTTP_200_OK)
 def validate_token(client_id: str, validating_properties: ValidateTokenRequest, authenticated_account: AuthenticatedAccount = Depends(bearer_token_auth)):
     """
     Validate the token for the client. Checks if the client_id is in the audience of the access token and the token is valid.
