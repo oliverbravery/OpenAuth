@@ -132,6 +132,7 @@ async def get_account(username: str, account: AuthenticatedAccount = Depends(bea
     if scoped_account_information == None: 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail="User account does not have the required information to fulfill the request.")
+    scoped_account_information["username"] = username
     return scoped_account_information
 
 @router.patch("/{username}", status_code=status.HTTP_200_OK)
