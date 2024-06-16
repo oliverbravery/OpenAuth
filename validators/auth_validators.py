@@ -47,7 +47,6 @@ def login_state_valid(login_state: str, username: str, scopes: str) -> bool:
     Returns:
         bool: True if the login state is valid. False if not.
     """
-    if not config.dev_config.login_state_validation_enabled: return True
     token: StateToken = token_manager.decode_jwt_token(token=login_state, token_type=TokenType.STATE)
     if token is None: return False
     if token.sub != username: return False

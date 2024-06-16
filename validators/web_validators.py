@@ -12,7 +12,6 @@ async def verify_captcha_completed(captcha_response: str) -> bool:
     Returns:
         bool: True if the captcha was completed, False otherwise.
     """
-    if not config.dev_config.reCAPTCHA_enabled: return True
     url: str = google_verify_url + captcha_response
     try:
         async with httpx.AsyncClient() as client:
