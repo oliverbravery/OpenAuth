@@ -1,0 +1,32 @@
+services:
+  auth-service:
+    build: .
+    ports:
+      - "${AUTH_PORT}:${AUTH_PORT}"
+    hostname: ${AUTH_HOST}
+    env_file:
+      - .env
+    depends_on:
+      - auth-mongodb
+    volumes:
+      - ./environment:/app/environment
+    networks:
+      - auth-network
+
+  auth-mongodb:
+    image: mongo
+    volumes:
+      - auth-mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${AUTH_MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${AUTH_MONGO_PASSWORD}
+      - ME_CONFIG_MONGODB_PORT=${AUTH_MONGO_PORT}
+    hostname: ${AUTH_MONGO_HOST}
+    networks:
+      - auth-network
+
+networks:
+  auth-network:
+
+volumes:
+  auth-mongodb-data:
