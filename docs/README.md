@@ -14,7 +14,6 @@ Open Auth provides authentication and authorization for other services. It is bu
 - [Upcoming Features](#upcoming-features)
 - [License](#license)
 - [Development](#development)
-- [Support](#support)
 
 ## Quick Links
 - [API Documentation](ENDPOINTS.md)
@@ -77,6 +76,3 @@ This project is licensed under the MIT License - see the [LICENSE](/LICENSE.md) 
 All development-related documentation can be found in the [development documentation](/docs/DEVELOPMENT.md). This includes information on the project structure and coding standards.
 
 > **Note:** This is a side project, and as such, contributions may take some time to be reviewed and merged. I will do my best to address any issues and implement any suggestions as soon as possible but please be patient.
-
-## Support
-As a university student, I dedicate a significant amount of my free time to maintaining and improving projects like this one. If you would like to support me and my work, please consider sponsoring me on GitHub. Your support means a lot to me and helps me to continue developing and maintaining these projects. Thank you for your support!
